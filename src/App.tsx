@@ -19,7 +19,7 @@ export default function App() {
   const [state, setState] = useState<LearningState>({
     currentSection: 'ch1',
     subState: 'video',
-    unlockedSections: new Set(['ch1', 'faq']), // FAQ always unlocked
+    unlockedSections: new Set(['ch1', 'faq']),
     quizScores: {} as Record<SectionId, number>,
   });
 
@@ -70,20 +70,18 @@ return (
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center relative z-10 custom-scrollbar">
-        <div className="w-full max-w-6xl">
+        <div className="w-full max-w-[95rem] px-4">
           
           {currentConfig?.id === 'faq' ? (
             <FAQPanel />
           ) : (
             <>
               {state.subState === 'video' && currentConfig?.hasVideo ? (
-                // LessonContainer handles BOTH the Video and the Transcript internally
                 <LessonContainer 
                   lessonId={state.currentSection}
                   onComplete={() => setState(prev => ({ ...prev, subState: 'quiz' }))} 
                 />
               ) : (
-                // When in quiz mode, we restrict the width so it doesn't stretch too wide
                 <div className="max-w-3xl mx-auto">
                   <QuizSection 
                     sectionId={state.currentSection}

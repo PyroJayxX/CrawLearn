@@ -48,10 +48,6 @@ export default function VideoLesson({
 
   return (
     <div className="flex flex-col gap-6 h-full">
-      {/* UI Header */}
-      <div className="flex justify-between items-center text-accent text-sm font-semibold tracking-wider flex-none">
-        <span>NOW PLAYING</span>
-      </div>
 
       {/* Video Player Wrapper */}
       <div className="bg-black/40 border border-accent/20 rounded-xl overflow-hidden aspect-video relative group">

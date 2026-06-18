@@ -11,17 +11,17 @@ interface LessonContainerProps {
 // Updated with your actual YouTube Links
 const LESSON_DATA: Record<string, { videoUrl: string; transcript: any[] }> = {
   'ch1': {
-    videoUrl: 'https://www.youtube.com/watch?v=_H01KLkpzFU', // Updated format
+    videoUrl: 'https://www.youtube.com/watch?v=_H01KLkpzFU', 
     transcript: [
       { id: '1', timeLabel: '0:00', seconds: 0, text: 'This is the hardcoded transcript for Video 1.' },
     ]
   },
   'ch2': {
-    videoUrl: 'https://www.youtube.com/watch?v=PRwZE8a_ITM', // Updated format
+    videoUrl: 'https://www.youtube.com/watch?v=PRwZE8a_ITM', 
     transcript: [ /* ... */ ]
   },
   'ch3': {
-    videoUrl: 'https://www.youtube.com/watch?v=YRgSUywizZs', // Updated format
+    videoUrl: 'https://www.youtube.com/watch?v=YRgSUywizZs', 
     transcript: [ /* ... */ ]
   }
 };
@@ -44,9 +44,11 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
 
   if (!currentLesson) return <div>Lesson data not found.</div>;
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full h-full">
-      <div className="lg:col-span-2">
+
+return (
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 w-full h-full">
+      
+      <div className="lg:col-span-3">
         <VideoLesson 
           playerRef={playerRef} 
           videoUrl={currentLesson.videoUrl}
