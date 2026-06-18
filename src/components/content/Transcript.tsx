@@ -48,7 +48,7 @@ export default function InteractiveTranscript({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex justify-between items-center mb-4 px-2 text-accent text-sm font-semibold tracking-wider flex-none">
-        <span>INTERACTIVE TRANSCRIPT</span>
+        <span>TRANSCRIPT</span>
       </div>
       
       {/* Scrollable Container */}
