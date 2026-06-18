@@ -1,10 +1,9 @@
 import { useState, useMemo } from 'react';
 import { LearningState, SectionConfig, SectionId, SubState } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
-import VideoLesson from './components/content/VideoLesson';
 import QuizSection from './components/assessment/QuizSection';
 import FAQPanel from './components/shared/FAQPanel';
-import Transcript from './components/content/Transcript';
+import LessonContainer from './components/layout/LessonContainer'; 
 
 // Mock Config - In reality, this might be fetched or separated into a config file
 const MODULE_CONFIG: SectionConfig[] = [
@@ -54,11 +53,14 @@ export default function App() {
       unlockedSections: newUnlocked
     }));
   };
-
-  return (
-    <div className="h-screen w-screen flex flex-col bg-background text-white overflow-hidden">
+return (
+    <div className="h-screen w-screen flex flex-col bg-background text-white overflow-hidden relative">
+      {/* Background Glow Effect */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-accent/20 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-highlight/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+      
       {/* Navigation Header */}
-      <header className="flex-none border-b border-accent/30 p-4">
+      <header className="flex-none border-b border-accent/30 p-4 relative z-10">
         <ModuleNavigator 
           sections={MODULE_CONFIG}
           currentState={state}
@@ -66,34 +68,32 @@ export default function App() {
         />
       </header>
 
-      {/* Main Content Area - Scrollable, prevents bleeding */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
-        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center relative z-10 custom-scrollbar">
+        <div className="w-full max-w-6xl">
           
           {currentConfig?.id === 'faq' ? (
-            <div className="lg:col-span-3"><FAQPanel /></div>
+            <FAQPanel />
           ) : (
             <>
-              {/* Left Column: Core Content */}
-              <div className="lg:col-span-2 flex flex-col gap-6">
-                {state.subState === 'video' && currentConfig?.hasVideo ? (
-                  <VideoLesson 
-                    onVideoComplete={() => setState(prev => ({ ...prev, subState: 'quiz' }))} 
-                  />
-                ) : (
+              {state.subState === 'video' && currentConfig?.hasVideo ? (
+                // LessonContainer handles BOTH the Video and the Transcript internally
+                <LessonContainer 
+                  lessonId={state.currentSection}
+                  onComplete={() => setState(prev => ({ ...prev, subState: 'quiz' }))} 
+                />
+              ) : (
+                // When in quiz mode, we restrict the width so it doesn't stretch too wide
+                <div className="max-w-3xl mx-auto">
                   <QuizSection 
                     sectionId={state.currentSection}
                     onComplete={handleQuizComplete} 
                   />
-                )}
-              </div>
-
-              {/* Right Column: Supplementary / Transcript */}
-              <div className="hidden lg:flex flex-col bg-black/20 rounded-xl p-4 border border-accent/20">
-                 {state.subState === 'video' && <Transcript />}
-              </div>
+                </div>
+              )}
             </>
           )}
+
         </div>
       </main>
     </div>
