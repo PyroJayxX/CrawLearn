@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Coiny&display=swap');
 
 @theme {
   --color-background: #10374d;

@@ -1,4 +1,3 @@
-export type SectionId = 'ch1' | 'ch2' | 'ch3' | 'final' | 'faq';
 export type SubState = 'video' | 'quiz';
 
 export interface Question {
@@ -9,18 +8,24 @@ export interface Question {
 }
 
 export interface SectionConfig {
-  id: SectionId;
+  id: string;
   title: string;
   hasVideo: boolean;
-  quizQuestions?: Question[];
   passingScore?: number;
-  prerequisite?: SectionId;
+  questions?: Question[];
 }
 
-// Our application state
+export interface ModuleConfig {
+  id: string;
+  title: string;
+  sections: SectionConfig[];
+}
+
 export interface LearningState {
-  currentSection: SectionId;
-  subState: SubState; 
-  unlockedSections: Set<SectionId>;
-  quizScores: Record<SectionId, number>; // e.g., { 'ch1': 4, 'ch2': 5 }
+  currentModuleId: string;
+  currentSectionId: string;
+  subState: SubState;
+  unlockedSections: Record<string, Set<string>>;
+  quizScores: Record<string, Record<string, number>>;
+  completedModules: Set<string>;
 }
