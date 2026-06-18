@@ -1,2 +1,1 @@
-# CrawLearn
-Interactive micro-learning platform converting complex curriculum frameworks into digital learning experiences.
+Interactive micro-learning platform converting complex insurance curriculum frameworks into digital learning experiences.
