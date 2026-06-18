@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import VideoLesson from '../content/VideoLesson';
 import InteractiveTranscript from '../content/Transcript';
 import LessonInfoCard from './LessonInfoCard';
+import { FAQItem } from '../shared/FAQPanel';
 import { parseSrt } from '../utils/ParseSRT';
 import { TranscriptLine } from '../content/Transcript';
 
@@ -19,6 +20,7 @@ const LESSON_DATA: Record<string, {
   duration: string;
   topics: { icon: string; label: string }[];
   description: string;
+  faqs: FAQItem[];
 }> = {
   ch1: {
     videoUrl: 'https://www.youtube.com/watch?v=_H01KLkpzFU',
@@ -31,6 +33,11 @@ const LESSON_DATA: Record<string, {
     topics: [
       { icon: '◈', label: 'Understanding Atomic Design hierarchy' },
       { icon: '⬡', label: 'Centralized vs Decentralized state' },
+    ],
+    faqs: [
+      { id: 'ch1-faq-1', question: 'How do I progress to the next chapter?', answer: 'You must complete the current chapter\'s video lesson and score at least 3 out of 5 on the subsequent quiz to unlock the next chapter.' },
+      { id: 'ch1-faq-2', question: 'Can I retake a quiz?', answer: 'Yes! If you do not achieve the passing score, you can retake the quiz as many times as needed.' },
+      { id: 'ch1-faq-3', question: 'Is my progress saved?', answer: 'Progress is saved locally for this active session. In a full production app, this would sync with a backend database.' },
     ],
   },
   ch2: {
@@ -45,6 +52,10 @@ const LESSON_DATA: Record<string, {
       { icon: '◈', label: 'Component composition strategies' },
       { icon: '⬡', label: 'Props vs Context trade-offs' },
     ],
+    faqs: [
+      { id: 'ch2-faq-1', question: 'What is component composition?', answer: 'Component composition is the practice of combining smaller, focused components to build more complex UI — favoring it over inheritance.' },
+      { id: 'ch2-faq-2', question: 'When should I use Context over props?', answer: 'Use Context for truly global state like theme or auth. For everything else, prefer props to keep data flow explicit and components reusable.' },
+    ],
   },
   ch3: {
     videoUrl: 'https://www.youtube.com/watch?v=YRgSUywizZs',
@@ -57,6 +68,10 @@ const LESSON_DATA: Record<string, {
     topics: [
       { icon: '◈', label: 'Reducers and action patterns' },
       { icon: '⬡', label: 'Async state and side effects' },
+    ],
+    faqs: [
+      { id: 'ch3-faq-1', question: 'When should I use a reducer?', answer: 'Reach for a reducer when state transitions are complex, involve multiple sub-values, or when the next state depends on the previous one in non-trivial ways.' },
+      { id: 'ch3-faq-2', question: 'How do I handle async actions?', answer: 'Use middleware like Redux Thunk or Saga for complex async flows, or handle async directly in your components with useEffect and local loading state.' },
     ],
   },
 };
@@ -104,6 +119,7 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
           duration={currentLesson.duration}
           description={currentLesson.description}
           topics={currentLesson.topics}
+          faqs={currentLesson.faqs}
           onContinue={onComplete}
         />
       </div>

@@ -1,3 +1,5 @@
+import FAQPanel, { FAQItem } from '../shared/FAQPanel';
+
 interface Topic {
   icon: string;
   label: string;
@@ -9,6 +11,7 @@ interface LessonInfoCardProps {
   duration: string;
   description: string;
   topics: Topic[];
+  faqs?: FAQItem[];
   onContinue: () => void;
 }
 
@@ -18,6 +21,7 @@ export default function LessonInfoCard({
   duration,
   description,
   topics,
+  faqs,
   onContinue,
 }: LessonInfoCardProps) {
   return (
@@ -71,6 +75,14 @@ export default function LessonInfoCard({
           </div>
         ))}
       </div>
+
+      {/* FAQs — rendered inline below, only if provided */}
+      {faqs && faqs.length > 0 && (
+        <>
+          <div className="border-t border-gray-100 mt-6" />
+          <FAQPanel faqs={faqs} />
+        </>
+      )}
 
     </div>
   );
