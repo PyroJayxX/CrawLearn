@@ -55,10 +55,6 @@ export default function App() {
   };
 return (
     <div className="h-screen w-screen flex flex-col bg-background text-white overflow-hidden relative">
-      {/* Background Glow Effect */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-accent/20 rounded-full blur-[150px] pointer-events-none -z-10"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-highlight/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-      
       {/* Navigation Header */}
       <header className="flex-none border-b border-accent/30 p-4 relative z-10">
         <ModuleNavigator 
@@ -91,7 +87,6 @@ return (
               )}
             </>
           )}
-
         </div>
       </main>
     </div>
