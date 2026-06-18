@@ -20,11 +20,7 @@ export default function ModuleNavigator({ modules, currentState, onModuleNavigat
     <div className="flex items-center justify-between px-6 py-4">
       {/* Left: Logo + Branding + Module Dropdown */}
       <div className="flex items-center gap-4">
-        <img src="/logo.png" alt="CrawLearn" className="h-10 w-auto flex-none" />
-        <span style={{ fontFamily: 'Coiny' }} className="text-3xl text-highlight tracking-wide">
-          CRAWLEARN
-        </span>
-
+        <img src="/logo_2.png" alt="CrawLearn" className="h-12 w-auto flex-none" />
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(prev => !prev)}
