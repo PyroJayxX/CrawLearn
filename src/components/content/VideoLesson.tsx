@@ -11,7 +11,6 @@ interface VideoLessonProps {
 
 export default function VideoLesson({
   videoUrl,
-  title = 'Current Lesson',
   onVideoComplete,
   onTimeUpdate,
   playerRef
@@ -22,40 +21,33 @@ export default function VideoLesson({
     ref: playerRef,
     src: videoUrl,
     controls: true,
-    width: "100%",
-    height: "100%",
-    className: "absolute top-0 left-0",
+    // Let the wrapper dictate size; ReactPlayer fills it
+    width: '100%',
+    height: '100%',
+    className: 'absolute top-0 left-0',
     onTimeUpdate: (e: any) => {
-      if (onTimeUpdate) onTimeUpdate(e.target.currentTime); // HTMLMediaElement event
+      if (onTimeUpdate) onTimeUpdate(e.target.currentTime);
     },
     onEnded: () => setHasWatched(true),
     config: {
       youtube: {
-        playerVars: {
-          showinfo: 0,
-          rel: 0,
-          modestbranding: 1
-        }
-      }
-    }
+        playerVars: { showinfo: 0, rel: 0, modestbranding: 1 },
+      },
+    },
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className="bg-black/40 border border-accent/20 rounded-xl overflow-hidden aspect-video relative group">
-        <ReactPlayer {...playerProps} />
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-auto pt-4 border-t border-accent/20 gap-4">
-        <h2 className="text-xl md:text-2xl font-medium text-white/90">{title}</h2>
-
-        <button
-          onClick={onVideoComplete}
-          disabled={!hasWatched}
-          className="w-full md:w-auto px-6 py-3 bg-accent text-background font-bold rounded-lg hover:bg-highlight disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
-        >
-          Continue to Quiz
-        </button>
+    // flex-col, fills parent height from LessonContainer
+    <div className="flex flex-col gap-4 h-full">
+      {/* 
+        aspect-video keeps the 16:9 ratio.
+        flex-1 + min-h-0 makes it grow to fill available space in the flex column
+        without overflowing — the key fix for "video not taking full space".
+      */}
+      <div className="relative w-full flex-1 min-h-0 bg-black rounded-xl overflow-hidden">
+        <div className="absolute inset-0">
+          <ReactPlayer {...playerProps} />
+        </div>
       </div>
     </div>
   );

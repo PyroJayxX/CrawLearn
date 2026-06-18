@@ -9,11 +9,10 @@ export interface TranscriptLine {
 
 interface TranscriptProps {
   lines?: TranscriptLine[];
-  currentTime?: number; // Synced with the video player's current time
+  currentTime?: number;
   onSeek?: (seconds: number) => void;
 }
 
-// Mock Data - Typically fetched alongside the video URL
 const MOCK_LINES: TranscriptLine[] = [
   { id: 't1', timeLabel: '0:00', seconds: 0, text: 'Welcome to this CrawLearn module.' },
   { id: 't2', timeLabel: '0:15', seconds: 15, text: 'Today, we are going to dive into frontend architecture.' },
@@ -22,20 +21,17 @@ const MOCK_LINES: TranscriptLine[] = [
   { id: 't5', timeLabel: '1:45', seconds: 105, text: 'This keeps our application predictable and easy to debug.' },
 ];
 
-export default function InteractiveTranscript({ 
-  lines = MOCK_LINES, 
-  currentTime = 0, 
-  onSeek 
+export default function InteractiveTranscript({
+  lines = MOCK_LINES,
+  currentTime = 0,
+  onSeek,
 }: TranscriptProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Determine the active line based on the video's current time
-  // Reverses the array to find the most recent timestamp passed
   const activeLineIndex = lines.reduce((latestIdx, line, idx) => {
     return currentTime >= line.seconds ? idx : latestIdx;
   }, 0);
 
-  // Optional: Auto-scroll to the active line (useful for long videos)
   useEffect(() => {
     if (containerRef.current) {
       const activeElement = containerRef.current.children[activeLineIndex] as HTMLElement;
@@ -47,43 +43,65 @@ export default function InteractiveTranscript({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex justify-between items-center mb-4 px-2 text-accent text-sm font-semibold tracking-wider flex-none">
-        <span>TRANSCRIPT</span>
+
+      {/* ── Header: label + search + options ── */}
+      <div className="flex items-center justify-between mb-4 flex-none">
+        <span className="text-xs font-bold tracking-widest uppercase text-gray-500">Transcript</span>
+        <div className="flex items-center gap-1">
+          {/* Search icon */}
+          <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Search transcript">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+            </svg>
+          </button>
+          {/* More options */}
+          <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Options">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" />
+            </svg>
+          </button>
+        </div>
       </div>
-      
-      {/* Scrollable Container */}
-      <div 
+
+      {/* ── Scrollable transcript lines ── */}
+      <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar"
+        className="flex-1 overflow-y-auto space-y-1.5 custom-scrollbar"
       >
         {lines.map((line, idx) => {
           const isActive = idx === activeLineIndex;
-
           return (
             <button
               key={line.id}
-              onClick={() => onSeek && onSeek(line.seconds)}
-              className={`
-                w-full text-left p-3 rounded-lg flex gap-4 transition-colors duration-200 group focus:outline-none
-                ${isActive 
-                  ? 'bg-accent/20 border border-accent/40 text-white' 
-                  : 'bg-transparent border border-transparent text-gray-400 hover:bg-black/20 hover:text-gray-200'
-                }
-              `}
+              onClick={() => onSeek?.(line.seconds)}
+              className={`w-full text-left px-3 py-3 rounded-lg flex gap-3 transition-colors duration-200 group focus:outline-none
+                ${isActive
+                  ? 'bg-accent/15 border border-accent/30'
+                  : 'border border-transparent hover:bg-gray-50'}`}
             >
-              <span className={`
-                font-mono text-sm mt-0.5 flex-none
-                ${isActive ? 'text-highlight' : 'text-accent/60 group-hover:text-accent'}
-              `}>
+              <span className={`font-mono text-xs mt-0.5 flex-none w-8
+                ${isActive ? 'text-accent font-bold' : 'text-gray-400 group-hover:text-accent/70'}`}>
                 {line.timeLabel}
               </span>
-              <span className="leading-relaxed text-sm md:text-base">
+              <span className={`leading-relaxed text-sm
+                ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 group-hover:text-gray-700'}`}>
                 {line.text}
               </span>
             </button>
           );
         })}
       </div>
+
+      {/* ── Footer: Download Notes ── */}
+      <div className="pt-3 mt-2 border-t border-gray-100 flex-none">
+        <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+          </svg>
+          Download Notes (PDF)
+        </button>
+      </div>
+
     </div>
   );
 }

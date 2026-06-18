@@ -1,15 +1,16 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Coiny&display=swap');
 
 @theme {
   --color-background: #10374d;
   --color-accent: #3c99aa;
   --color-highlight: #a9feed;
+  --color-surface: #ffffff;
+  --color-thumb-hover: #3c9aac;
 }
 
 :root {
-  background-color: var(--color-background);
-  color: white;
+  background-color: var(--color-surface);
+  color: #1a1a1a;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -26,5 +27,5 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-highlight);
+  background: var(--color-thumb-hover);
 }

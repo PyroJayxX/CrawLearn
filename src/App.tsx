@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { LearningState, ModuleConfig } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
+import CourseSidebar from './components/layout/CourseSidebar';
 import QuizSection from './components/assessment/QuizSection';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
@@ -17,7 +18,6 @@ const COURSE_CONFIG: ModuleConfig[] = [
       { id: 'faq', title: 'FAQs', hasVideo: false },
     ],
   },
-  // Modules 2–10 — locked until module1 is completed
   ...Array.from({ length: 9 }, (_, i) => ({
     id: `module${i + 2}`,
     title: `Module ${i + 2}`,
@@ -34,7 +34,6 @@ const buildInitialState = (): LearningState => {
   COURSE_CONFIG.forEach(mod => {
     unlockedSections[mod.id] = new Set([mod.sections[0].id, 'faq']);
   });
-
   return {
     currentModuleId: 'module1',
     currentSectionId: 'ch1',
@@ -47,6 +46,8 @@ const buildInitialState = (): LearningState => {
 
 export default function App() {
   const [state, setState] = useState<LearningState>(buildInitialState);
+  // sidebarCollapsed lives here so main margin stays in sync
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -56,22 +57,13 @@ export default function App() {
     currentModule?.sections.find(s => s.id === state.currentSectionId),
   [currentModule, state.currentSectionId]);
 
-  const unlockedForModule = state.unlockedSections[state.currentModuleId] ?? new Set();
-
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
     if (!mod) return;
-
-    // Module 1 always accessible; others need previous module completed
     const moduleIndex = COURSE_CONFIG.findIndex(m => m.id === moduleId);
     const prevModule = COURSE_CONFIG[moduleIndex - 1];
     const isUnlocked = moduleIndex === 0 || state.completedModules.has(prevModule?.id);
-
-    if (!isUnlocked) {
-      alert(`Complete ${prevModule.title} to unlock this module.`);
-      return;
-    }
-
+    if (!isUnlocked) return;
     setState(prev => ({
       ...prev,
       currentModuleId: moduleId,
@@ -81,7 +73,8 @@ export default function App() {
   };
 
   const handleSectionNavigate = (sectionId: string) => {
-    if (unlockedForModule.has(sectionId)) {
+    const unlocked = state.unlockedSections[state.currentModuleId] ?? new Set();
+    if (unlocked.has(sectionId)) {
       setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
     }
   };
@@ -90,25 +83,17 @@ export default function App() {
     const { currentModuleId, currentSectionId, quizScores } = state;
     const section = currentModule?.sections.find(s => s.id === currentSectionId);
     if (!section) return;
-
     const moduleScores = { ...(quizScores[currentModuleId] ?? {}), [currentSectionId]: score };
     const newUnlocked = new Set(state.unlockedSections[currentModuleId]);
     const newCompletedModules = new Set(state.completedModules);
-
     const passed = section.passingScore !== undefined && score >= section.passingScore;
-
     if (passed) {
       const sections = currentModule!.sections;
       const currentIndex = sections.findIndex(s => s.id === currentSectionId);
       const next = sections[currentIndex + 1];
       if (next) newUnlocked.add(next.id);
-
-      // If final assessment passed, mark module complete
-      if (currentSectionId === 'final') {
-        newCompletedModules.add(currentModuleId);
-      }
+      if (currentSectionId === 'final') newCompletedModules.add(currentModuleId);
     }
-
     setState(prev => ({
       ...prev,
       quizScores: { ...prev.quizScores, [currentModuleId]: moduleScores },
@@ -118,40 +103,52 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-background text-white overflow-hidden relative">
-    <header className="flex-none border-b border-accent/30 relative z-50 isolate">
+    <div className="h-screen w-screen flex flex-col overflow-hidden">
+      {/* Navbar */}
+      <header className="flex-none h-18 bg-background border-b border-white/5 relative z-50">
         <ModuleNavigator
           modules={COURSE_CONFIG}
           currentState={state}
           onModuleNavigate={handleModuleNavigate}
-          onSectionNavigate={handleSectionNavigate}
         />
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center relative z-10 custom-scrollbar">
-        <div className="w-full max-w-[95rem] px-4">
-          {currentSection?.id === 'faq' ? (
-            <FAQPanel />
-          ) : (
-            <>
-              {state.subState === 'video' && currentSection?.hasVideo ? (
-                <LessonContainer
-                  lessonId={state.currentSectionId}
-                  onComplete={() => setState(prev => ({ ...prev, subState: 'quiz' }))}
-                />
-              ) : (
-                <div className="max-w-3xl mx-auto">
-                  <QuizSection
-                    sectionId={state.currentSectionId}
-                    questions={currentSection?.questions ?? []}
-                    onComplete={handleQuizComplete}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar — notifies App when collapsed so main margin stays in sync */}
+        <CourseSidebar
+          modules={COURSE_CONFIG}
+          currentState={state}
+          collapsed={sidebarCollapsed}
+          onCollapsedChange={setSidebarCollapsed}
+          onSectionNavigate={handleSectionNavigate}
+        />
+
+        {/* Main content — margin driven by lifted collapsed state */}
+          <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
+          <div className="mx-auto py-6 px-6 md:py-8 md:px-20">
+            {currentSection?.id === 'faq' ? (
+              <FAQPanel />
+            ) : (
+              <>
+                {state.subState === 'video' && currentSection?.hasVideo ? (
+                  <LessonContainer
+                    lessonId={state.currentSectionId}
+                    onComplete={() => setState(prev => ({ ...prev, subState: 'quiz' }))}
                   />
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </main>
+                ) : (
+                  <div className="max-w-3xl mx-auto">
+                    <QuizSection
+                      sectionId={state.currentSectionId}
+                      questions={currentSection?.questions ?? []}
+                      onComplete={handleQuizComplete}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

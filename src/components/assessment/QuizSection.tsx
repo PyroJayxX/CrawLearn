@@ -14,8 +14,9 @@ export default function QuizSection({ sectionId, questions, onComplete }: QuizPr
 
   if (questions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20 text-accent">
-        <p className="text-lg font-medium">No questions available for this section yet.</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        {/* was text-accent — too light on white bg; use a readable gray instead */}
+        <p className="text-lg font-medium text-gray-600">No questions available for this section yet.</p>
       </div>
     );
   }
@@ -40,8 +41,11 @@ export default function QuizSection({ sectionId, questions, onComplete }: QuizPr
 
   return (
     <div className="flex flex-col gap-6 h-full justify-center">
-      <div className="flex justify-between items-center text-accent text-sm font-semibold tracking-wider">
-        <span>QUESTION {currentIdx + 1} OF {questions.length}</span>
+      {/* Question counter — was text-accent (too light on white), now a readable muted label */}
+      <div className="flex justify-between items-center">
+        <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
+          Question {currentIdx + 1} of {questions.length}
+        </span>
       </div>
 
       <QuestionCard
@@ -50,13 +54,20 @@ export default function QuizSection({ sectionId, questions, onComplete }: QuizPr
         onSelect={handleSelect}
       />
 
-      <button
-        onClick={handleNext}
-        disabled={answers[currentIdx] === undefined}
-        className="mt-8 self-end px-8 py-3 bg-accent text-background font-bold rounded-lg hover:bg-highlight disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {currentIdx === questions.length - 1 ? 'Submit Assessment' : 'Next Question'}
-      </button>
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={handleNext}
+          disabled={answers[currentIdx] === undefined}
+          className="
+            px-8 py-3 rounded-lg font-bold text-sm transition-colors duration-200
+            bg-accent text-white
+            hover:bg-accent/80
+            disabled:opacity-40 disabled:cursor-not-allowed
+          "
+        >
+          {currentIdx === questions.length - 1 ? 'Submit Assessment' : 'Next Question →'}
+        </button>
+      </div>
     </div>
   );
 }
