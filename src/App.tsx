@@ -52,26 +52,34 @@ const buildInitialState = (): LearningState => {
   COURSE_CONFIG.forEach(mod => {
     unlockedSections[mod.id] = new Set(mod.sections.map(s => s.id));
   });
-  // Hydrate quiz scores from localStorage
+
   const saved = loadScores();
   const quizScores: Record<string, Record<string, number>> = {};
   Object.entries(saved).forEach(([modId, sections]) => {
     quizScores[modId] = sections;
   });
+
   return {
     currentModuleId: 'module1',
     currentSectionId: 'ch1',
     subState: 'video',
     unlockedSections,
     quizScores,
-    completedModules: new Set(COURSE_CONFIG.map(m => m.id)),
+    // Only mark a module completed if its final quiz score meets the passing score
+    completedModules: new Set(
+      COURSE_CONFIG.filter(mod => {
+        const finalSection = mod.sections.find(s => s.id === 'final');
+        if (!finalSection?.passingScore) return false;
+        const score = saved[mod.id]?.['final'] ?? 0;
+        return score >= finalSection.passingScore;
+      }).map(m => m.id)
+    ),
   };
 };
 
 export default function App() {
   const [state, setState] = useState<LearningState>(buildInitialState);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // Show results screen after final is submitted
   const [showResults, setShowResults] = useState(false);
 
   const currentModule = useMemo(() =>
@@ -116,27 +124,30 @@ export default function App() {
     const moduleScores = { ...(quizScores[currentModuleId] ?? {}), [currentSectionId]: score };
     const updatedScores = { ...quizScores, [currentModuleId]: moduleScores };
 
-    // Persist to localStorage
     const allSaved = loadScores();
     allSaved[currentModuleId] = moduleScores;
     saveScores(allSaved);
 
-    setState(prev => ({ ...prev, quizScores: updatedScores }));
-
+    // If the final was just passed, mark this module complete
+    const newCompletedModules = new Set(state.completedModules);
     if (currentSectionId === 'final') {
-      // Show results screen instead of advancing
+      const finalSection = currentModule?.sections.find(s => s.id === 'final');
+      if (finalSection?.passingScore && score >= finalSection.passingScore) {
+        newCompletedModules.add(currentModuleId);
+      }
+      setState(prev => ({ ...prev, quizScores: updatedScores, completedModules: newCompletedModules }));
       setShowResults(true);
     } else if (nextSection) {
       setState(prev => ({
         ...prev,
         quizScores: updatedScores,
+        completedModules: newCompletedModules,
         currentSectionId: nextSection.id,
         subState: 'video',
       }));
     }
   };
 
-  // Gather per-section scores for the results screen
   const moduleScores = state.quizScores[state.currentModuleId] ?? {};
 
   return (
