@@ -1,43 +1,47 @@
 1
-00:00:00,080 --> 00:00:05,759
-Hey everyone, my name is Crawley and welcome to module one.
+00:00:00,080 --> 00:00:15,120
+Hey everyone, my name is Crawley and welcome to module one. Let's be entirely honest. When most people hear the word insurance, their brains immediately picture dense stacks of dry legal paperwork.
 
 2
-00:00:05,759 --> 00:00:21,520
-Let's be entirely honest. When most people hear the word insurance, their brains immediately picture dense stacks of dry legal paperwork. But insurance isn't just modern red tape. It is an epic centuries old story of human community survival.
+00:00:15,120 --> 00:00:40,800
+But insurance isn't just modern red tape. It is an epic centuries old story of human community survival. In this session, we are turning back the clock to explore the history of insurance, uncover core definitions, map out the characteristics of insurable risks, look at contract structures, and break down the six general principles that keep the modern financial world spinning.
 
 3
-00:00:21,520 --> 00:00:40,800
-In this session, we are turning back the clock to explore the history of insurance, uncover core definitions, map out the characteristics of insurable risks, look at contract structures, and break down the six general principles that keep the modern financial world spinning.
+00:00:40,800 --> 00:01:10,799
+Let's jump into the time machine. Our first destination is ancient Babylon around 1700 BC under the rule of King Hammurabi. Inside the famous code of Hammurabi, we find the earliest documented roots of a collective community safety net. The laws dictated that if a robber was not caught, the local community held a structural obligation to step in and fully compensate the victim for whatever had been lost.
 
 4
-00:00:40,800 --> 00:00:52,239
-Let's jump into the time machine. Our first destination is ancient Babylon around 1700 BC under the rule of King Hammurabi.
+00:01:10,799 --> 00:01:22,240
+Furthermore, if a citizen was kidnapped, the community was legally bound to pay exactly one min of silver to their family as a ransom.
 
 5
-00:00:52,239 --> 00:01:10,799
-Inside the famous Code of Hammurabi, we find the earliest documented roots of a collective community safety net. The laws dictated that if a robber was not caught, the local community held a structural obligation to step in and fully compensate the victim for whatever had been lost.
+00:01:22,240 --> 00:01:48,640
+Centuries later, the structural forerunners of modern commercial insurance shifted to Italy. Maritime merchants needed a smart way to protect dangerous sea voyages, leading to two ancestral credit tools. the bottom rebond which served as a financial security agreement using the physical hull or vessel of the ship as collateral e and respondentia which secured loans using the commercial cargo carried inside the ship.
 
 6
-00:01:10,799 --> 00:01:22,240
-Furthermore, if a citizen was kidnapped, the community was legally bound to pay exactly one min of silver to their family as ransom.
+00:01:48,640 --> 00:02:20,239
+While Europe was developing commercial bonds, rich systems of mutual protection were evolving right here in the Philippines. Long before modern corporations arrived, our communities relied on deep cultural safety nets. First is Paloagan, a highly popular local pooling of money scheme that acts as a homegrown mutual fund. It remains incredibly popular across rural regions where members regularly pay daily, weekly, or monthly contributions to a designated collector.
 
 7
-00:01:22,240 --> 00:01:40,800
-Centuries later, the structural forerunners of modern commercial insurance shifted to Italy. Maritime merchants needed a smart way to protect dangerous sea voyages, leading to early financial instruments like bottomry bonds and respondentia.
+00:02:20,239 --> 00:02:42,720
+We also rely on the Bayanihun system, our foundational cultural paradigm of collective community support and shared neighborhood labor. And finally, Abaloy, a dedicated community collection, donation, or help fund that serves as an almsshare or offering to ease a family's financial burden during collective affairs or times of grief.
 
 8
-00:01:40,800 --> 00:02:04,799
-While Europe was developing commercial bonds, systems of mutual protection were evolving in the Philippines. These included paluwagan as a local pooling system, bayanihan as community cooperation, and abuloy as collective financial support during hardship.
+00:02:42,720 --> 00:03:28,879
+Now, let's head over to London in the year 1689. A man named Edward Lloyd opened a humble coffee shop that quickly became the central meeting place for maritime sailors, merchants, and ship owners. Over hot cups of coffee, these individuals negotiated business deals and informal marine insurance agreements. That tiny coffee shop eventually evolved into Lloyds of London. Today, it is the world's absolute leading market for specialist insurance. But remember this vital detail for your upcoming quiz. Lloyds is not an insurance company. Instead, it functions as a structured association of private individuals who step forward to accept and underwrite risks.
 
 9
-00:02:04,799 --> 00:02:25,200
-In 1689 London, Edward Lloyd’s coffee house became a meeting point for merchants and shipowners negotiating maritime insurance agreements. This later evolved into Lloyd’s of London, which is not a single insurance company but a marketplace of underwriters.
+00:03:28,879 --> 00:03:53,280
+The formal timeline of insurance in the Philippines kicked off in March 1829 when Lloyds of London officially appointed Stretchham Murray and Company as its first local representative. 10 years later in 1839, Russell and Sturgis was designated by the Union Insurance Society of Canton as active agents in Manila.
 
 10
-00:02:25,200 --> 00:02:55,520
-The insurance industry in the Philippines formally expanded through colonial trade links and institutions, beginning in the 19th century with early foreign agencies and later local companies such as non-life and life insurers established in the early 1900s.
+00:03:53,280 --> 00:04:22,000
+Moving to 1898, Sunlife of Canada formally established its local presence. Then came our major domestic corporate milestones. In 1906, Yakong Llin Fire and Marine Insurance Company was founded as our very first domestic non-life insurance company. And in 1910, Insular Life Insurance Company Limited was established, making history as the first domestic life insurance company.
 
 11
-00:02:55,520 --> 00:03:20,000
-Today, insurance is supported by organizations like professional associations and actuarial societies, which help stabilize the industry and support risk pooling, credit systems, and national economic resilience.
+00:04:22,000 --> 00:04:55,520
+Today these corporate frameworks are supported by core local organizations like PYRA, PLIA, the Philippine Insurers Club, Philishurers, the Actuarial Society of the Philippines and Sound. All of them work to protect the immense social value of insurance which optimizes our factors of production, stabilizes businesses through indemnification, provides a solid foundation for our credit systems, reduces structural worry, and generates vital capital funds for our national economy.
+
+12
+00:04:55,520 --> 00:05:01,440
+Stick around because in video two we are diving deep into the official playbook of the underwriter.

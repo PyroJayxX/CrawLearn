@@ -1,723 +1,203 @@
 1
-00:00:00,160 --> 00:00:02,800
-order in the court. An insurance policy
+00:00:00,160 --> 00:00:05,440
+order in the court. An insurance policy isn't just a basic corporate receipt.
 
 2
-00:00:02,800 --> 00:00:05,440
-isn't just a basic corporate receipt. It
+00:00:05,440 --> 00:00:18,880
+It is a formal contract defined under article 305 of the new civil code as a meeting of minds where one party binds himself to give something or render a service.
 
 3
-00:00:05,440 --> 00:00:07,839
-is a formal contract defined under
+00:00:18,880 --> 00:00:25,439
+To be legally enforcable, an agreement must stand on four essential elements.
 
 4
-00:00:07,839 --> 00:00:10,880
-article 305 of the new civil code as a
+00:00:25,439 --> 00:00:31,439
+One, agreement consisting of a clear offer by one party and an explicit acceptance by the other.
 
 5
-00:00:10,880 --> 00:00:13,200
-meeting of minds where one party binds
+00:00:31,439 --> 00:00:43,520
+Two, competent parties. The insurer must hold a valid license to do business and the insured cannot be a minor, mentally incompetent, or a defined public enemy.
 
 6
-00:00:13,200 --> 00:00:15,599
-himself to give something or render a
+00:00:43,520 --> 00:00:52,160
+Three, legal purpose. The contract cannot run contrary to law, morals, or public interest.
 
 7
-00:00:15,599 --> 00:00:18,880
-service. To be legally enforcable, an
+00:00:52,160 --> 00:00:56,960
+Four, consideration. the premium payment value exchanged for the assumption of loss.
 
 8
-00:00:18,880 --> 00:00:21,199
-agreement must stand on four essential
+00:00:56,960 --> 00:01:04,159
+If an agreement violates these pillars, it drops into one of four defective categories.
 
 9
-00:00:21,199 --> 00:00:25,439
-elements. One, agreement consisting of a
+00:01:04,159 --> 00:01:12,799
+Reissible contracts are technically valid but can be legally set aside because they cause distinct economic damage or involve concealment or misrepresentation.
 
 10
-00:00:25,439 --> 00:00:28,400
-clear offer by one party and an explicit
+00:01:12,799 --> 00:01:20,720
+Voidable contracts appear valid on the surface but hold a structural legal flaw like an agreement signed by a minor.
 
 11
-00:00:28,400 --> 00:00:31,439
-acceptance by the other. Two, competent
+00:01:20,720 --> 00:01:30,960
+Uninforcable contracts occur when an individual executes an agreement completely lacking the legal authority to do so.
 
 12
-00:00:31,439 --> 00:00:34,559
-parties. The insurer must hold a valid
+00:01:30,960 --> 00:01:44,799
+Void or inexistent contracts have a purpose completely contrary to law, morals, or public policy, like a contract protecting an illegal drug supply. They have zero lawful objective and are void from day one.
 
 13
-00:00:34,559 --> 00:00:36,960
-license to do business and the insured
+00:01:44,799 --> 00:01:58,079
+Section two of the new insurance code formally defines our subject as an agreement to indemnify another against loss, damage, or liability arising from an unknown or contingent event.
 
 14
-00:00:36,960 --> 00:00:39,840
-cannot be a minor, mentally incompetent,
+00:01:58,079 --> 00:02:05,920
+When you open up a physical insurance policy, you will find six standard highly structured components.
 
 15
-00:00:39,840 --> 00:00:43,520
-or a defined public enemy. Three, legal
+00:02:05,920 --> 00:02:13,040
+First is the preamble, which states the core purpose of the contract, identifies the two parties, and declares that the premium must be fully paid.
 
 16
-00:00:43,520 --> 00:00:46,079
-purpose. The contract cannot run
+00:02:13,040 --> 00:02:25,920
+Second is the insuring clause also known as the operative clause which outlines the insurer's formal agreement to pay if the loss occurs during the period of insurance due to a covered peril.
 
 17
-00:00:46,079 --> 00:00:48,719
-contrary to law, morals, or public
+00:02:25,920 --> 00:02:33,599
+Third is the attestation clause which officially confirms that the insurer has authenticated the policy by signature.
 
 18
-00:00:48,719 --> 00:00:52,160
-interest. Four, consideration. the
+00:02:33,599 --> 00:02:44,239
+Fourth is the policy schedule which logs all user specific metrics like your name, address, terms, premium rates and the description or location of the risk.
 
 19
-00:00:52,160 --> 00:00:54,399
-premium payment value exchanged for the
+00:02:44,239 --> 00:02:52,480
+Fifth are the conditions defining the strict operational rights, exclusions and claim duties of both parties.
 
 20
-00:00:54,399 --> 00:00:56,960
-assumption of loss. If an agreement
+00:02:52,480 --> 00:03:02,319
+And sixth are endorsements which are separate attached documents used to modify the base policy's original terms, conditions, or scope.
 
 21
-00:00:56,960 --> 00:00:59,359
-violates these pillars, it drops into
+00:03:02,319 --> 00:03:15,120
+Oh, and keep an eye out for a cover note. These are crucial temporary contracts issued to provide coverage for a maximum period of 60 days pending the formal issuance of the final policy document.
 
 22
-00:00:59,359 --> 00:01:01,920
-one of four defective categories.
+00:03:15,120 --> 00:03:20,480
+When a legal dispute over text language arises, courts use strict rules of construction.
 
 23
-00:01:01,920 --> 00:01:04,159
-Reissible contracts are technically
+00:03:20,480 --> 00:03:30,400
+Phrasiology must be interpreted based on its plain, ordinary, and popular sense, though strict technical meanings are applied to technical terms.
 
 24
-00:01:04,159 --> 00:01:06,560
-valid but can be legally set aside
+00:03:30,400 --> 00:03:42,080
+If a clause is genuinely ambiguous, it is always construed strictly against the insurer and liberally in favor of the insured because the client had zero say in writing the text.
 
 25
-00:01:06,560 --> 00:01:08,799
-because they cause distinct economic
+00:03:42,080 --> 00:03:52,000
+And if the preprinted terms contradict a handwritten or typed edition, the written portion always wins because it captures the true immediate intention of the contract.
 
 26
-00:01:08,799 --> 00:01:11,040
-damage or involve concealment or
+00:03:52,000 --> 00:03:57,519
+This is because insurance contracts possess unique structural qualities.
 
 27
-00:01:11,040 --> 00:01:12,799
-misrepresentation.
+00:03:57,519 --> 00:04:05,360
+They are aliatory meaning the outcome hinges entirely on chance or an uncertain event.
 
 28
-00:01:12,799 --> 00:01:15,360
-Voidable contracts appear valid on the
+00:04:05,360 --> 00:04:09,920
+They are contracts of adhesion because the insured must accept the text as written by the company.
 
 29
-00:01:15,360 --> 00:01:18,240
-surface but hold a structural legal flaw
+00:04:09,920 --> 00:04:17,280
+They are personal meaning the contract is tied explicitly to the specific character and credit of the owner.
 
 30
-00:01:18,240 --> 00:01:20,720
-like an agreement signed by a minor.
+00:04:17,280 --> 00:04:22,320
+If ownership of the property changes, the insurance does not automatically pass to the new owner.
 
 31
-00:01:20,720 --> 00:01:23,439
-Uninforcable contracts occur when an
+00:04:22,320 --> 00:04:31,120
+They are unilateral, meaning only the insurer makes a legally enforcable promise to pay for losses after the premium is received.
 
 32
-00:01:23,439 --> 00:01:25,439
-individual executes an agreement
+00:04:31,120 --> 00:04:38,639
+And they are conditional because the insured must satisfy specific requirements before collecting a dime.
 
 33
-00:01:25,439 --> 00:01:27,280
-completely lacking the legal authority
+00:04:38,639 --> 00:04:50,320
+Finally, let's step up to the bench and look at the six general principles of insurance that govern every single claim evaluation.
 
 34
-00:01:27,280 --> 00:01:30,960
-to do so. Void or inexistent contracts
+00:04:50,320 --> 00:05:01,600
+Principle one is utmost good faith. Both parties must completely disclose all material facts that would influence risk decisions or premium pricing.
 
 35
-00:01:30,960 --> 00:01:33,600
-have a purpose completely contrary to
+00:05:01,600 --> 00:05:12,479
+Breaking this via concealment, neglecting to communicate a material fact or misrepresentation where facts failed to match assertions renders the contract resessible.
 
 36
-00:01:33,600 --> 00:01:36,720
-law, morals, or public policy, like a
+00:05:12,479 --> 00:05:25,199
+Principle two is insurable interest. You must have a legal relation to the subject matter such that you suffer financially if it is damaged and benefit from its safety.
 
 37
-00:01:36,720 --> 00:01:38,799
-contract protecting an illegal drug
+00:05:25,199 --> 00:05:36,320
+For property insurance, this interest must exist when the insurance takes effect and when the loss occurs. For life insurance, it must exist only when the insurance takes effect.
 
 38
-00:01:38,799 --> 00:01:41,600
-supply. They have zero lawful objective
+00:05:36,320 --> 00:05:50,240
+Principle three is indemnity. This ensures an insured is compensated for actual losses sustained and placed back into the exact same financial position occupied right before the disaster.
 
 39
-00:01:41,600 --> 00:01:44,799
-and are void from day one. Section two
+00:05:50,240 --> 00:05:58,720
+You are never allowed to profit from insurance. Life and personal accident insurance are the explicit exceptions here.
 
 40
-00:01:44,799 --> 00:01:46,880
-of the new insurance code formally
+00:05:58,720 --> 00:06:08,880
+Indemnity can be delivered via monetary payment, reinstatement, repair min or article replacement.
 
 41
-00:01:46,880 --> 00:01:49,200
-defines our subject as an agreement to
+00:06:08,880 --> 00:06:13,199
+Principle four is subregation. A direct corlary to indemnity.
 
 42
-00:01:49,200 --> 00:01:52,320
-indemnify another against loss, damage,
+00:06:13,199 --> 00:06:25,280
+It allows the insurer to stand in the shoes of the insured and pursue legal remedies or third-party recoveries against a negligent party who caused the accident, but only up to the exact amount paid out on the claim.
 
 43
-00:01:52,320 --> 00:01:55,439
-or liability arising from an unknown or
+00:06:25,280 --> 00:06:31,360
+This prevents the insured from recovering twice and profiting.
 
 44
-00:01:55,439 --> 00:01:58,079
-contingent event. When you open up a
+00:06:31,360 --> 00:06:39,440
+Principle five is contribution. This applies when there is double insurance, meaning multiple policies cover the same interest, matter, and peril.
 
 45
-00:01:58,079 --> 00:02:00,640
-physical insurance policy, you will find
+00:06:39,440 --> 00:06:41,919
+Insurers pay proportionately to the loss.
 
 46
-00:02:00,640 --> 00:02:02,799
-six standard highly structured
+00:06:41,919 --> 00:06:58,319
+If a policy carries a standard contribution clause, the insured losses the power to arbitrarily pick one company to pay the whole amount. All insurers pay their ratable proportion.
 
 47
-00:02:02,799 --> 00:02:05,920
-components. First is the preamble, which
+00:06:58,319 --> 00:07:09,919
+Principle six is proximate cause. This is the active efficient cause that sets a seamless chain of events in motion, bringing about a loss without the intervention of any force started from a new independent source.
 
 48
-00:02:05,920 --> 00:02:08,399
-states the core purpose of the contract,
+00:07:09,919 --> 00:07:18,080
+Proximity is judged entirely by its operational effectiveness, not by which event was closest in time to the accident.
 
 49
-00:02:08,399 --> 00:02:10,479
-identifies the two parties, and declares
+00:07:18,080 --> 00:07:34,560
+All of these parameters are governed by Republic Act number 10,67, otherwise known as the Insurance Code of 2013, which gives the insurance commissioner full authority to regulate companies, agents, and brokers alike.
 
 50
-00:02:10,479 --> 00:02:13,040
-that the premium must be fully paid.
+00:07:34,560 --> 00:07:39,199
+That wraps up our masterclass text transcript for module 1.
 
 51
-00:02:13,040 --> 00:02:15,840
-Second is the insuring clause also known
-
-52
-00:02:15,840 --> 00:02:18,239
-as the operative clause which outlines
-
-53
-00:02:18,239 --> 00:02:20,879
-the insurer's formal agreement to pay if
-
-54
-00:02:20,879 --> 00:02:22,879
-the loss occurs during the period of
-
-55
-00:02:22,879 --> 00:02:25,920
-insurance due to a covered peril. Third
-
-56
-00:02:25,920 --> 00:02:28,160
-is the attestation clause which
-
-57
-00:02:28,160 --> 00:02:30,720
-officially confirms that the insurer has
-
-58
-00:02:30,720 --> 00:02:33,599
-authenticated the policy by signature.
-
-59
-00:02:33,599 --> 00:02:36,560
-Fourth is the policy schedule which logs
-
-60
-00:02:36,560 --> 00:02:38,800
-all user specific metrics like your
-
-61
-00:02:38,800 --> 00:02:41,599
-name, address, terms, premium rates and
-
-62
-00:02:41,599 --> 00:02:44,239
-the description or location of the risk.
-
-63
-00:02:44,239 --> 00:02:46,800
-Fifth are the conditions defining the
-
-64
-00:02:46,800 --> 00:02:49,599
-strict operational rights, exclusions
-
-65
-00:02:49,599 --> 00:02:52,480
-and claim duties of both parties. And
-
-66
-00:02:52,480 --> 00:02:54,480
-sixth are endorsements which are
-
-67
-00:02:54,480 --> 00:02:56,560
-separate attached documents used to
-
-68
-00:02:56,560 --> 00:02:59,200
-modify the base policy's original terms,
-
-69
-00:02:59,200 --> 00:03:02,319
-conditions, or scope. Oh, and keep an
-
-70
-00:03:02,319 --> 00:03:04,159
-eye out for a cover note. These are
-
-71
-00:03:04,159 --> 00:03:06,720
-crucial temporary contracts issued to
-
-72
-00:03:06,720 --> 00:03:09,280
-provide coverage for a maximum period of
-
-73
-00:03:09,280 --> 00:03:12,080
-60 days pending the formal issuance of
-
-74
-00:03:12,080 --> 00:03:15,120
-the final policy document. When a legal
-
-75
-00:03:15,120 --> 00:03:17,599
-dispute over text language arises,
-
-76
-00:03:17,599 --> 00:03:20,480
-courts use strict rules of construction.
-
-77
-00:03:20,480 --> 00:03:22,879
-Phrasiology must be interpreted based on
-
-78
-00:03:22,879 --> 00:03:25,840
-its plain, ordinary, and popular sense,
-
-79
-00:03:25,840 --> 00:03:27,599
-though strict technical meanings are
-
-80
-00:03:27,599 --> 00:03:30,400
-applied to technical terms. If a clause
-
-81
-00:03:30,400 --> 00:03:33,200
-is genuinely ambiguous, it is always
-
-82
-00:03:33,200 --> 00:03:35,280
-construed strictly against the insurer
-
-83
-00:03:35,280 --> 00:03:37,680
-and liberally in favor of the insured
-
-84
-00:03:37,680 --> 00:03:39,760
-because the client had zero say in
-
-85
-00:03:39,760 --> 00:03:42,080
-writing the text. And if the preprinted
-
-86
-00:03:42,080 --> 00:03:44,480
-terms contradict a handwritten or typed
-
-87
-00:03:44,480 --> 00:03:47,040
-edition, the written portion always wins
-
-88
-00:03:47,040 --> 00:03:49,599
-because it captures the true immediate
-
-89
-00:03:49,599 --> 00:03:52,000
-intention of the contract. This is
-
-90
-00:03:52,000 --> 00:03:54,560
-because insurance contracts possess
-
-91
-00:03:54,560 --> 00:03:57,519
-unique structural qualities. They are
-
-92
-00:03:57,519 --> 00:04:00,080
-aliatory meaning the outcome hinges
-
-93
-00:04:00,080 --> 00:04:02,480
-entirely on chance or an uncertain
-
-94
-00:04:02,480 --> 00:04:05,360
-event. They are contracts of adhesion
-
-95
-00:04:05,360 --> 00:04:07,760
-because the insured must accept the text
-
-96
-00:04:07,760 --> 00:04:09,920
-as written by the company. They are
-
-97
-00:04:09,920 --> 00:04:12,400
-personal meaning the contract is tied
-
-98
-00:04:12,400 --> 00:04:14,879
-explicitly to the specific character and
-
-99
-00:04:14,879 --> 00:04:17,280
-credit of the owner. If ownership of the
-
-100
-00:04:17,280 --> 00:04:19,759
-property changes, the insurance does not
-
-101
-00:04:19,759 --> 00:04:22,320
-automatically pass to the new owner.
-
-102
-00:04:22,320 --> 00:04:24,720
-They are unilateral, meaning only the
-
-103
-00:04:24,720 --> 00:04:26,960
-insurer makes a legally enforcable
-
-104
-00:04:26,960 --> 00:04:29,120
-promise to pay for losses after the
-
-105
-00:04:29,120 --> 00:04:31,120
-premium is received. And they are
-
-106
-00:04:31,120 --> 00:04:33,440
-conditional because the insured must
-
-107
-00:04:33,440 --> 00:04:36,080
-satisfy specific requirements before
-
-108
-00:04:36,080 --> 00:04:38,639
-collecting a dime.
-
-109
-00:04:38,639 --> 00:04:41,280
-Finally, let's step up to the bench and
-
-110
-00:04:41,280 --> 00:04:43,840
-look at the six general principles of
-
-111
-00:04:43,840 --> 00:04:46,400
-insurance that govern every single claim
-
-112
-00:04:46,400 --> 00:04:50,320
-evaluation. Principle one is utmost good
-
-113
-00:04:50,320 --> 00:04:53,520
-faith. Both parties must completely
-
-114
-00:04:53,520 --> 00:04:55,759
-disclose all material facts that would
-
-115
-00:04:55,759 --> 00:04:58,400
-influence risk decisions or premium
-
-116
-00:04:58,400 --> 00:05:01,600
-pricing. Breaking this via concealment,
-
-117
-00:05:01,600 --> 00:05:03,680
-neglecting to communicate a material
-
-118
-00:05:03,680 --> 00:05:06,720
-fact or misrepresentation where facts
-
-119
-00:05:06,720 --> 00:05:09,520
-failed to match assertions renders the
-
-120
-00:05:09,520 --> 00:05:12,479
-contract resessible. Principle two is
-
-121
-00:05:12,479 --> 00:05:15,120
-insurable interest. You must have a
-
-122
-00:05:15,120 --> 00:05:17,360
-legal relation to the subject matter
-
-123
-00:05:17,360 --> 00:05:19,840
-such that you suffer financially if it
-
-124
-00:05:19,840 --> 00:05:22,639
-is damaged and benefit from its safety.
-
-125
-00:05:22,639 --> 00:05:25,199
-For property insurance, this interest
-
-126
-00:05:25,199 --> 00:05:27,600
-must exist when the insurance takes
-
-127
-00:05:27,600 --> 00:05:30,639
-effect and when the loss occurs. For
-
-128
-00:05:30,639 --> 00:05:33,759
-life insurance, it must exist only when
-
-129
-00:05:33,759 --> 00:05:36,320
-the insurance takes effect. Principle
-
-130
-00:05:36,320 --> 00:05:38,880
-three is indemnity. This ensures an
-
-131
-00:05:38,880 --> 00:05:42,000
-insured is compensated for actual losses
-
-132
-00:05:42,000 --> 00:05:44,880
-sustained and placed back into the exact
-
-133
-00:05:44,880 --> 00:05:47,840
-same financial position occupied right
-
-134
-00:05:47,840 --> 00:05:50,240
-before the disaster. You are never
-
-135
-00:05:50,240 --> 00:05:53,199
-allowed to profit from insurance. Life
-
-136
-00:05:53,199 --> 00:05:55,759
-and personal accident insurance are the
-
-137
-00:05:55,759 --> 00:05:58,720
-explicit exceptions here. Indemnity can
-
-138
-00:05:58,720 --> 00:06:01,120
-be delivered via monetary payment,
-
-139
-00:06:01,120 --> 00:06:03,680
-reinstatement, repair min or article
-
-140
-00:06:03,680 --> 00:06:05,360
-replacement.
-
-141
-00:06:05,360 --> 00:06:08,880
-Principle four is subregation. A direct
-
-142
-00:06:08,880 --> 00:06:11,199
-corlary to indemnity. It allows the
-
-143
-00:06:11,199 --> 00:06:13,199
-insurer to stand in the shoes of the
-
-144
-00:06:13,199 --> 00:06:16,000
-insured and pursue legal remedies or
-
-145
-00:06:16,000 --> 00:06:18,000
-third-party recoveries against a
-
-146
-00:06:18,000 --> 00:06:20,319
-negligent party who caused the accident,
-
-147
-00:06:20,319 --> 00:06:22,720
-but only up to the exact amount paid out
-
-148
-00:06:22,720 --> 00:06:25,280
-on the claim. This prevents the insured
-
-149
-00:06:25,280 --> 00:06:28,080
-from recovering twice and profiting.
-
-150
-00:06:28,080 --> 00:06:31,360
-Principle five is contribution. This
-
-151
-00:06:31,360 --> 00:06:33,680
-applies when there is double insurance,
-
-152
-00:06:33,680 --> 00:06:36,240
-meaning multiple policies cover the same
-
-153
-00:06:36,240 --> 00:06:39,440
-interest, matter, and peril. Insurers
-
-154
-00:06:39,440 --> 00:06:41,919
-pay proportionately to the loss. If a
-
-155
-00:06:41,919 --> 00:06:44,160
-policy carries a standard contribution
-
-156
-00:06:44,160 --> 00:06:46,880
-clause, the insured losses the power to
-
-157
-00:06:46,880 --> 00:06:49,759
-arbitrarily pick one company to pay the
-
-158
-00:06:49,759 --> 00:06:52,319
-whole amount. All insurers pay their
-
-159
-00:06:52,319 --> 00:06:54,400
-ratable proportion.
-
-160
-00:06:54,400 --> 00:06:58,319
-Principle six is proximate cause. This
-
-161
-00:06:58,319 --> 00:07:00,800
-is the active efficient cause that sets
-
-162
-00:07:00,800 --> 00:07:03,199
-a seamless chain of events in motion,
-
-163
-00:07:03,199 --> 00:07:05,039
-bringing about a loss without the
-
-164
-00:07:05,039 --> 00:07:07,199
-intervention of any force started from a
-
-165
-00:07:07,199 --> 00:07:09,919
-new independent source. Proximity is
-
-166
-00:07:09,919 --> 00:07:12,560
-judged entirely by its operational
-
-167
-00:07:12,560 --> 00:07:15,280
-effectiveness, not by which event was
-
-168
-00:07:15,280 --> 00:07:18,080
-closest in time to the accident. All of
-
-169
-00:07:18,080 --> 00:07:19,919
-these parameters are governed by
-
-170
-00:07:19,919 --> 00:07:23,199
-Republic Act number 10,67,
-
-171
-00:07:23,199 --> 00:07:25,680
-otherwise known as the Insurance Code of
-
-172
-00:07:25,680 --> 00:07:28,080
-2013, which gives the insurance
-
-173
-00:07:28,080 --> 00:07:30,400
-commissioner full authority to regulate
-
-174
-00:07:30,400 --> 00:07:32,639
-companies, agents, and brokers alike.
-
-175
-00:07:32,639 --> 00:07:34,560
-That wraps up our masterclass text
-
-176
-00:07:34,560 --> 00:07:37,039
-transcript for module 1. You are now
-
-177
-00:07:37,039 --> 00:07:39,199
-fully armed with the knowledge. Scroll
-
-178
-00:07:39,199 --> 00:07:41,680
-directly down to interact with our FAQ
-
-179
-00:07:41,680 --> 00:07:44,000
-component and challenge the interactive
-
-180
-00:07:44,000 --> 00:07:45,919
-module quiz widget to lock in your
-
-181
-00:07:45,919 --> 00:07:49,599
-score. See you in the next module.
+00:07:39,199 --> 00:07:49,599
+You are now fully armed with the knowledge. Scroll directly down to interact with our FAQ component and challenge the interactive module quiz widget to lock in your score. See you in the next module.
