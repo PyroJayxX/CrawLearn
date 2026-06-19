@@ -181,7 +181,15 @@ export default function App() {
                 {state.subState === 'video' && currentSection?.hasVideo ? (
                   <LessonContainer
                     lessonId={state.currentSectionId}
-                    onComplete={() => setState(prev => ({ ...prev, subState: 'quiz' }))}
+                    onComplete={() => {
+                      const quizSectionId = `${state.currentSectionId}-quiz`;
+                      const hasQuizSection = currentModule?.sections.some(s => s.id === quizSectionId);
+                      if (hasQuizSection) {
+                        setState(prev => ({ ...prev, currentSectionId: quizSectionId, subState: 'quiz' }));
+                      } else {
+                        setState(prev => ({ ...prev, subState: 'quiz' }));
+                      }
+                    }}
                   />
                 ) : (
                   <div className="max-w-3xl mx-auto">
