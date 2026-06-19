@@ -3,53 +3,76 @@ import { LearningState, ModuleConfig } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
 import CourseSidebar from './components/layout/CourseSidebar';
 import QuizSection from './components/assessment/QuizSection';
+import ModuleResults from './components/assessment/ModuleResults';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
+import { ch1Questions, ch2Questions, ch3Questions, finalQuestions } from './data/Module1Questions';
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
     id: 'module1',
     title: 'Module 1',
     sections: [
-      { id: 'ch1',       title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: [] },
-      { id: 'ch1-quiz',  title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: [] },
-      { id: 'ch2',       title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: [] },
-      { id: 'ch2-quiz',  title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: [] },
-      { id: 'ch3',       title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: [] },
-      { id: 'ch3-quiz',  title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: [] },
-      { id: 'final',     title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: [] },
-    ]
+      { id: 'ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: ch1Questions },
+      { id: 'ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: ch1Questions },
+      { id: 'ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: ch2Questions },
+      { id: 'ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: ch2Questions },
+      { id: 'ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: ch3Questions },
+      { id: 'ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: ch3Questions },
+      { id: 'final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: finalQuestions, questionCount: 15 },
+    ],
   },
   ...Array.from({ length: 9 }, (_, i) => ({
     id: `module${i + 2}`,
     title: `Module ${i + 2}`,
     sections: [
-      { id: 'ch1', title: 'Chapter 1', hasVideo: true, passingScore: 3, questions: [] },
+      { id: 'ch1',   title: 'Chapter 1',       hasVideo: true,  passingScore: 3, questions: [] },
       { id: 'final', title: 'Final Assessment', hasVideo: false, passingScore: 5, questions: [] },
-      { id: 'faq', title: 'FAQs', hasVideo: false },
+      { id: 'faq',   title: 'FAQs',             hasVideo: false },
     ],
   })),
 ];
 
+const LS_KEY = 'crawlearn_scores';
+
+function loadScores(): Record<string, Record<string, number>> {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveScores(scores: Record<string, Record<string, number>>) {
+  localStorage.setItem(LS_KEY, JSON.stringify(scores));
+}
+
 const buildInitialState = (): LearningState => {
   const unlockedSections: Record<string, Set<string>> = {};
   COURSE_CONFIG.forEach(mod => {
-    unlockedSections[mod.id] = new Set([mod.sections[0].id, 'faq']);
+    unlockedSections[mod.id] = new Set(mod.sections.map(s => s.id));
+  });
+  // Hydrate quiz scores from localStorage
+  const saved = loadScores();
+  const quizScores: Record<string, Record<string, number>> = {};
+  Object.entries(saved).forEach(([modId, sections]) => {
+    quizScores[modId] = sections;
   });
   return {
     currentModuleId: 'module1',
     currentSectionId: 'ch1',
     subState: 'video',
     unlockedSections,
-    quizScores: {},
-    completedModules: new Set(),
+    quizScores,
+    completedModules: new Set(COURSE_CONFIG.map(m => m.id)),
   };
 };
 
 export default function App() {
   const [state, setState] = useState<LearningState>(buildInitialState);
-  // sidebarCollapsed lives here so main margin stays in sync
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Show results screen after final is submitted
+  const [showResults, setShowResults] = useState(false);
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -59,13 +82,22 @@ export default function App() {
     currentModule?.sections.find(s => s.id === state.currentSectionId),
   [currentModule, state.currentSectionId]);
 
+  const nextSection = useMemo(() => {
+    const sections = (currentModule?.sections ?? []).filter(s => s.id !== 'faq');
+    const idx = sections.findIndex(s => s.id === state.currentSectionId);
+    return idx >= 0 && idx < sections.length - 1 ? sections[idx + 1] : null;
+  }, [currentModule, state.currentSectionId]);
+
+  const nextSectionTitle = useMemo(() => {
+    if (!nextSection) return undefined;
+    if (nextSection.id === 'final') return 'Final Assessment';
+    return nextSection.title;
+  }, [nextSection]);
+
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
     if (!mod) return;
-    const moduleIndex = COURSE_CONFIG.findIndex(m => m.id === moduleId);
-    const prevModule = COURSE_CONFIG[moduleIndex - 1];
-    const isUnlocked = moduleIndex === 0 || state.completedModules.has(prevModule?.id);
-    if (!isUnlocked) return;
+    setShowResults(false);
     setState(prev => ({
       ...prev,
       currentModuleId: moduleId,
@@ -75,38 +107,40 @@ export default function App() {
   };
 
   const handleSectionNavigate = (sectionId: string) => {
-    const unlocked = state.unlockedSections[state.currentModuleId] ?? new Set();
-    if (unlocked.has(sectionId)) {
-      setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
-    }
+    setShowResults(false);
+    setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
   };
 
   const handleQuizComplete = (score: number) => {
     const { currentModuleId, currentSectionId, quizScores } = state;
-    const section = currentModule?.sections.find(s => s.id === currentSectionId);
-    if (!section) return;
     const moduleScores = { ...(quizScores[currentModuleId] ?? {}), [currentSectionId]: score };
-    const newUnlocked = new Set(state.unlockedSections[currentModuleId]);
-    const newCompletedModules = new Set(state.completedModules);
-    const passed = section.passingScore !== undefined && score >= section.passingScore;
-    if (passed) {
-      const sections = currentModule!.sections;
-      const currentIndex = sections.findIndex(s => s.id === currentSectionId);
-      const next = sections[currentIndex + 1];
-      if (next) newUnlocked.add(next.id);
-      if (currentSectionId === 'final') newCompletedModules.add(currentModuleId);
+    const updatedScores = { ...quizScores, [currentModuleId]: moduleScores };
+
+    // Persist to localStorage
+    const allSaved = loadScores();
+    allSaved[currentModuleId] = moduleScores;
+    saveScores(allSaved);
+
+    setState(prev => ({ ...prev, quizScores: updatedScores }));
+
+    if (currentSectionId === 'final') {
+      // Show results screen instead of advancing
+      setShowResults(true);
+    } else if (nextSection) {
+      setState(prev => ({
+        ...prev,
+        quizScores: updatedScores,
+        currentSectionId: nextSection.id,
+        subState: 'video',
+      }));
     }
-    setState(prev => ({
-      ...prev,
-      quizScores: { ...prev.quizScores, [currentModuleId]: moduleScores },
-      unlockedSections: { ...prev.unlockedSections, [currentModuleId]: newUnlocked },
-      completedModules: newCompletedModules,
-    }));
   };
+
+  // Gather per-section scores for the results screen
+  const moduleScores = state.quizScores[state.currentModuleId] ?? {};
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
-      {/* Navbar */}
       <header className="flex-none h-18 bg-background border-b border-white/5 relative z-50">
         <ModuleNavigator
           modules={COURSE_CONFIG}
@@ -116,7 +150,6 @@ export default function App() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — notifies App when collapsed so main margin stays in sync */}
         <CourseSidebar
           modules={COURSE_CONFIG}
           currentState={state}
@@ -125,10 +158,23 @@ export default function App() {
           onSectionNavigate={handleSectionNavigate}
         />
 
-        {/* Main content — margin driven by lifted collapsed state */}
-          <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
+        <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
           <div className="mx-auto py-6 px-6 md:py-8 md:px-20">
-            {currentSection?.id === 'faq' ? (
+            {showResults ? (
+              <ModuleResults
+                moduleTitle="Module 1"
+                scores={{
+                  'Quiz 1':           { score: moduleScores['ch1-quiz'] ?? 0, total: ch1Questions.length },
+                  'Quiz 2':           { score: moduleScores['ch2-quiz'] ?? 0, total: ch2Questions.length },
+                  'Quiz 3':           { score: moduleScores['ch3-quiz'] ?? 0, total: ch3Questions.length },
+                  'Final Assessment': { score: moduleScores['final']    ?? 0, total: finalQuestions.length },
+                }}
+                onReviewModule={() => {
+                  setShowResults(false);
+                  setState(prev => ({ ...prev, currentSectionId: 'ch1', subState: 'video' }));
+                }}
+              />
+            ) : currentSection?.id === 'faq' ? (
               <FAQPanel />
             ) : (
               <>
@@ -142,6 +188,7 @@ export default function App() {
                     <QuizSection
                       sectionId={state.currentSectionId}
                       questions={currentSection?.questions ?? []}
+                      nextSectionTitle={nextSectionTitle}
                       onComplete={handleQuizComplete}
                     />
                   </div>
