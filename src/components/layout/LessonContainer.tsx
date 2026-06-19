@@ -28,7 +28,7 @@ const LESSON_DATA: Record<string, {
     title: 'Chapter 1',
     subtitle: 'Core Module • Part 1',
     tag: 'CORE MODULE • PART 1',
-    duration: 'Duration 5:00 minutes',
+    duration: 'Duration 5:00',
     description: 'In this section, we dive deep into the fundamental patterns that define scalable web applications. We\'ll explore how component-driven design synergizes with state management to create fluid, high-performance user interfaces.',
     topics: [
       { icon: '◈', label: 'Understanding Atomic Design hierarchy' },
@@ -46,7 +46,7 @@ const LESSON_DATA: Record<string, {
     title: 'Chapter 2',
     subtitle: 'Core Module • Part 2',
     tag: 'CORE MODULE • PART 2',
-    duration: 'Duration: 5:28 minutes',
+    duration: 'Duration: 5:28',
     description: 'Explore component-driven design patterns and how they shape modern frontend development. Learn to build reusable, composable UI elements that scale.',
     topics: [
       { icon: '◈', label: 'Component composition strategies' },
@@ -63,7 +63,7 @@ const LESSON_DATA: Record<string, {
     title: 'Chapter 3',
     subtitle: 'Core Module • Part 3',
     tag: 'CORE MODULE • PART 3',
-    duration: 'Duration: 7:47 minutess',
+    duration: 'Duration: 7:47s',
     description: 'Advanced state management patterns for complex applications. Understand when to reach for global state and how to keep it predictable.',
     topics: [
       { icon: '◈', label: 'Reducers and action patterns' },
