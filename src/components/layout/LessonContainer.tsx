@@ -28,7 +28,7 @@ const LESSON_DATA: Record<string, {
     title: 'Chapter 1',
     subtitle: 'Core Module • Part 1',
     tag: 'CORE MODULE • PART 1',
-    duration: '15 mins of video content remaining',
+    duration: 'Duration 5:00 minutes',
     description: 'In this section, we dive deep into the fundamental patterns that define scalable web applications. We\'ll explore how component-driven design synergizes with state management to create fluid, high-performance user interfaces.',
     topics: [
       { icon: '◈', label: 'Understanding Atomic Design hierarchy' },
@@ -46,7 +46,7 @@ const LESSON_DATA: Record<string, {
     title: 'Chapter 2',
     subtitle: 'Core Module • Part 2',
     tag: 'CORE MODULE • PART 2',
-    duration: '20 mins of video content remaining',
+    duration: 'Duration: 5:28 minutes',
     description: 'Explore component-driven design patterns and how they shape modern frontend development. Learn to build reusable, composable UI elements that scale.',
     topics: [
       { icon: '◈', label: 'Component composition strategies' },
@@ -63,7 +63,7 @@ const LESSON_DATA: Record<string, {
     title: 'Chapter 3',
     subtitle: 'Core Module • Part 3',
     tag: 'CORE MODULE • PART 3',
-    duration: '22 mins of video content remaining',
+    duration: 'Duration: 7:47 minutess',
     description: 'Advanced state management patterns for complex applications. Understand when to reach for global state and how to keep it predictable.',
     topics: [
       { icon: '◈', label: 'Reducers and action patterns' },
@@ -99,7 +99,6 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   return (
     <div className="flex gap-6 w-full" style={{ minHeight: 'calc(100vh - 72px - 80px)' }}>
 
-      {/* ── Left column: Video + info card ── */}
       <div className="flex flex-col flex-[7] min-w-0 gap-5">
 
         {/* Video player */}
@@ -112,7 +111,6 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
           />
         </div>
 
-        {/* ── Info card ── */}
         <LessonInfoCard
           tag={currentLesson.tag}
           title={currentLesson.title}
@@ -124,7 +122,6 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
         />
       </div>
 
-      {/* ── Right column: Transcript ── */}
       <div
         className="hidden lg:flex flex-col flex-[3] min-w-0 bg-white rounded-xl p-5 border border-gray-200 overflow-hidden"
         style={{ maxHeight: 'calc(100vh - 72px - 80px)', position: 'sticky', top: 0 }}

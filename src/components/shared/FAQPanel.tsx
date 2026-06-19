@@ -7,7 +7,7 @@ export interface FAQItem {
 }
 
 interface FAQPanelProps {
-  faqs: FAQItem[];
+  faqs?: FAQItem[];
 }
 
 export default function FAQPanel({ faqs }: FAQPanelProps) {

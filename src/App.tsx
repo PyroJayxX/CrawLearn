@@ -11,12 +11,14 @@ const COURSE_CONFIG: ModuleConfig[] = [
     id: 'module1',
     title: 'Module 1',
     sections: [
-      { id: 'ch1', title: 'Chapter 1', hasVideo: true, passingScore: 3, questions: [] },
-      { id: 'ch2', title: 'Chapter 2', hasVideo: true, passingScore: 3, questions: [] },
-      { id: 'ch3', title: 'Chapter 3', hasVideo: true, passingScore: 3, questions: [] },
-      { id: 'final', title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: [] },
-      { id: 'faq', title: 'FAQs', hasVideo: false },
-    ],
+      { id: 'ch1',       title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: [] },
+      { id: 'ch1-quiz',  title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: [] },
+      { id: 'ch2',       title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: [] },
+      { id: 'ch2-quiz',  title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: [] },
+      { id: 'ch3',       title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: [] },
+      { id: 'ch3-quiz',  title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: [] },
+      { id: 'final',     title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: [] },
+    ]
   },
   ...Array.from({ length: 9 }, (_, i) => ({
     id: `module${i + 2}`,
