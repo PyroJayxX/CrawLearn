@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import VideoLesson from '../content/VideoLesson';
 import InteractiveTranscript from '../content/Transcript';
 import LessonInfoCard from './LessonInfoCard';
+import CrawleyWidget from './CrawleyWidget';
 import { parseSrt } from '../utils/ParseSRT';
 import { TranscriptLine } from '../content/Transcript';
 import { LESSON_DATA } from '../../data/LessonData';
@@ -32,42 +33,47 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   if (!currentLesson) return <div className="text-gray-500 p-8">Lesson data not found.</div>;
 
   return (
-    <div className="flex gap-6 w-full" style={{ minHeight: 'calc(100vh - 72px - 80px)' }}>
+    <>
+      <div className="flex gap-6 w-full" style={{ minHeight: 'calc(100vh - 72px - 80px)' }}>
 
-      {/* Left column: video + info card */}
-      <div className="flex flex-col flex-[7] min-w-0 gap-5">
-        <div className="w-full aspect-video bg-black rounded-xl overflow-hidden flex-none">
-          <VideoLesson
-            playerRef={handlePlayerRef}
-            videoUrl={currentLesson.videoUrl}
-            onTimeUpdate={setCurrentTime}
-            onVideoComplete={onComplete}
+        {/* Left column: video + info card */}
+        <div className="flex flex-col flex-[7] min-w-0 gap-5">
+          <div className="w-full aspect-video bg-black rounded-xl overflow-hidden flex-none">
+            <VideoLesson
+              playerRef={handlePlayerRef}
+              videoUrl={currentLesson.videoUrl}
+              onTimeUpdate={setCurrentTime}
+              onVideoComplete={onComplete}
+            />
+          </div>
+
+          <LessonInfoCard
+            tag={currentLesson.tag}
+            title={currentLesson.title}
+            duration={currentLesson.duration}
+            description={currentLesson.description}
+            topics={currentLesson.topics}
+            faqs={currentLesson.faqs}
+            onContinue={onComplete}
           />
         </div>
 
-        <LessonInfoCard
-          tag={currentLesson.tag}
-          title={currentLesson.title}
-          duration={currentLesson.duration}
-          description={currentLesson.description}
-          topics={currentLesson.topics}
-          faqs={currentLesson.faqs}
-          onContinue={onComplete}
-        />
+        {/* Right column: transcript */}
+        <div
+          className="hidden lg:flex flex-col flex-[3] min-w-0 bg-white rounded-xl p-5 border border-gray-200 overflow-hidden sticky top-0"
+          style={{ maxHeight: 'calc(100vh - 72px - 80px)' }}
+        >
+          <InteractiveTranscript
+            lines={transcriptLines}
+            currentTime={currentTime}
+            onSeek={handleSeek}
+          />
+        </div>
+
       </div>
 
-      {/* Right column: transcript */}
-      <div
-        className="hidden lg:flex flex-col flex-[3] min-w-0 bg-white rounded-xl p-5 border border-gray-200 overflow-hidden sticky top-0"
-        style={{ maxHeight: 'calc(100vh - 72px - 80px)' }}
-      >
-        <InteractiveTranscript
-          lines={transcriptLines}
-          currentTime={currentTime}
-          onSeek={handleSeek}
-        />
-      </div>
-
-    </div>
+      {/* Crawley AI widget — rendered outside the layout flow so it stays fixed bottom-right */}
+      <CrawleyWidget lessonId={lessonId} transcriptLines={transcriptLines} />
+    </>
   );
 }
