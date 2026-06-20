@@ -11,7 +11,8 @@ export interface SectionConfig {
   id: string;
   title: string;
   hasVideo: boolean;
-  passingScore?: number;
+  passingScore?: number;   
+  questionCount?: number;  
   questions?: Question[];
 }
 

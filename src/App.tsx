@@ -7,6 +7,7 @@ import ModuleResults from './components/assessment/ModuleResults';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
 import { ch1Questions, ch2Questions, ch3Questions, finalQuestions } from './data/Module1Questions';
+import AuthScreen from './components/auth/AuthScreen';
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
@@ -78,6 +79,7 @@ const buildInitialState = (): LearningState => {
 };
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [state, setState] = useState<LearningState>(buildInitialState);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -149,6 +151,10 @@ export default function App() {
   };
 
   const moduleScores = state.quizScores[state.currentModuleId] ?? {};
+
+  if (!isLoggedIn) {
+    return <AuthScreen onSuccess={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
