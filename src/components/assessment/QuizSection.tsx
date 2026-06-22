@@ -17,9 +17,9 @@ export default function QuizSection({
   previousAttempts = 0,
   onComplete,
 }: QuizProps) {
-  const [currentIdx, setCurrentIdx]   = useState(0);
-  const [answers, setAnswers]         = useState<Record<number, number>>({});
-  const [finalScore, setFinalScore]   = useState<number | undefined>(undefined);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [answers, setAnswers]       = useState<Record<number, number>>({});
+  const [finalScore, setFinalScore] = useState<number | undefined>(undefined);
 
   const isFinal      = sectionId === 'final';
   const showAnswers  = isFinal && previousAttempts >= 3;
@@ -32,7 +32,10 @@ export default function QuizSection({
   const isLastQuestion = currentIdx === questions.length - 1;
 
   const hasFailed = finalScore !== undefined && finalScore < passingScore;
-  const hasPassed = finalScore !== undefined && finalScore >= passingScore;
+
+  // Progress: count answered questions; if current is answered count it too
+  const answeredCount  = Object.keys(answers).length;
+  const progressPct    = Math.round((answeredCount / questions.length) * 100);
 
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== undefined) return;
@@ -58,7 +61,7 @@ export default function QuizSection({
     setCurrentIdx(0);
     setAnswers({});
     setFinalScore(undefined);
-    onComplete(finalScore!); // still saves the failed score to DB
+    onComplete(finalScore!);
   };
 
   const lastButtonLabel = isFinal
@@ -101,7 +104,7 @@ export default function QuizSection({
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full justify-center">
+    <div className="flex flex-col gap-4 h-full justify-center">
 
       {/* ── Attempt banner (final assessment only) ── */}
       {isFinal && (
@@ -135,13 +138,13 @@ export default function QuizSection({
         </div>
       )}
 
-      {/* ── Question counter (regular quizzes) ── */}
-      {!isFinal && (
+      {/* ── Question counter + progress bar ── */}
+      <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
           <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
-            Question {currentIdx + 1} of {questions.length}
+            {isFinal ? `Question ${currentIdx + 1} of ${questions.length}` : `Question ${currentIdx + 1} of ${questions.length}`}
           </span>
-          {selectedIndex !== undefined && (
+          {!isFinal && selectedIndex !== undefined && (
             <span className={`text-xs font-semibold ${
               selectedIndex === currentQ.correctIndex ? 'text-green-600' : 'text-red-500'
             }`}>
@@ -149,7 +152,15 @@ export default function QuizSection({
             </span>
           )}
         </div>
-      )}
+
+        {/* Progress bar */}
+        <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out bg-accent"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+      </div>
 
       <QuestionCard
         key={currentIdx}
