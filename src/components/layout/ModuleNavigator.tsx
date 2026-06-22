@@ -6,27 +6,20 @@ interface NavProps {
   currentState:     LearningState;
   onModuleNavigate: (moduleId: string) => void;
   onSignOut:        () => void;
-  /** Full name or email from session — shown in the header */
   userName?:        string;
 }
 
-/** "John Doe" → "JD",  "john@email.com" → "JO" */
 function getInitials(name?: string): string {
   if (!name) return '?';
   const parts = name.includes('@')
-    ? [name.split('@')[0]]   // use the local part of the email
+    ? [name.split('@')[0]]
     : name.trim().split(' ');
-  return parts
-    .slice(0, 2)
-    .map(p => p[0]?.toUpperCase() ?? '')
-    .join('');
+  return parts.slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('');
 }
 
-/** Truncate long names/emails for the header */
 function getDisplayName(name?: string): string {
   if (!name) return 'Account';
   if (name.length <= 20) return name.toUpperCase();
-  // For emails, show just the local part
   return (name.includes('@') ? name.split('@')[0] : name).toUpperCase();
 }
 
@@ -37,7 +30,7 @@ export default function ModuleNavigator({
   onSignOut,
   userName,
 }: NavProps) {
-  const { currentModuleId, completedModules } = currentState;
+  const { currentModuleId, completedModules, quizScores } = currentState;
   const currentModule = modules.find(m => m.id === currentModuleId);
 
   const [userMenuOpen,   setUserMenuOpen]   = useState(false);
@@ -54,6 +47,17 @@ export default function ModuleNavigator({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // ── Progress calculation ───────────────────────────────────────────────────
+  const moduleScores = quizScores[currentModuleId] ?? {};
+  const gradeableSections = (currentModule?.sections ?? []).filter(
+    s => !s.hasVideo && s.id !== 'faq' && s.passingScore !== undefined
+  );
+  const passedCount = gradeableSections.filter(
+    s => (moduleScores[s.id] ?? -1) >= (s.passingScore ?? Infinity)
+  ).length;
+  const totalCount  = gradeableSections.length;
+  const progressPct = totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : 0;
+
   const initials    = getInitials(userName);
   const displayName = getDisplayName(userName);
 
@@ -68,14 +72,15 @@ export default function ModuleNavigator({
   ];
 
   return (
-    <div className="flex items-center justify-between px-6 h-full">
+    <div className="flex items-center justify-between px-6 h-full gap-6">
 
-      {/* ── Left: Logo + Module selector ── */}
+      {/* ── Left: Logo + Module selector + Progress ── */}
       <div className="flex items-center gap-5 flex-none">
         <img src="/logo_2.png" alt="CrawLearn" className="h-9 w-auto" />
 
         <div className="w-px h-5 bg-white/10" />
 
+        {/* Module selector */}
         <div className="relative" ref={moduleMenuRef}>
           <button
             onClick={() => setModuleMenuOpen(prev => !prev)}
@@ -88,7 +93,9 @@ export default function ModuleNavigator({
             </div>
 
             <div className="flex flex-col leading-none">
-              <span className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Course</span>
+              <span className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">
+                Course
+              </span>
               <span className="text-white text-sm font-semibold mt-0.5">
                 {currentModule?.title ?? '—'}
               </span>
@@ -105,9 +112,9 @@ export default function ModuleNavigator({
           {moduleMenuOpen && (
             <div className="absolute top-full left-0 mt-3 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden py-1 max-h-80 overflow-y-auto custom-scrollbar">
               {modules.map((mod, index) => {
-                const prevMod    = modules[index - 1];
-                const isUnlocked = index === 0 || completedModules.has(prevMod?.id);
-                const isActive   = mod.id === currentModuleId;
+                const prevMod     = modules[index - 1];
+                const isUnlocked  = index === 0 || completedModules.has(prevMod?.id);
+                const isActive    = mod.id === currentModuleId;
                 const isCompleted = completedModules.has(mod.id);
                 return (
                   <button
@@ -136,6 +143,25 @@ export default function ModuleNavigator({
               })}
             </div>
           )}
+        </div>
+
+        <div className="w-px h-5 bg-white/10" />
+
+        {/* ── Progress ── */}
+        <div className="flex flex-col gap-1.5 w-72">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Progress</span>
+            <span className="text-[10px] font-bold text-white">{progressPct}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${progressPct}%`,
+                background: '#a9feed',
+              }}
+            />
+          </div>
         </div>
       </div>
 
