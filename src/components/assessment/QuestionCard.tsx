@@ -6,7 +6,9 @@ interface CardProps {
   selectedIndex?: number;
   isFinal?:       boolean;
   showAnswers?:   boolean;
+  nextLabel:      string;
   onSelect:       (index: number) => void;
+  onNext:         () => void;
 }
 
 export default function QuestionCard({
@@ -14,11 +16,14 @@ export default function QuestionCard({
   selectedIndex,
   isFinal = false,
   showAnswers = false,
+  nextLabel,
   onSelect,
+  onNext,
 }: CardProps) {
   const [pendingIndex, setPendingIndex] = useState<number | undefined>(undefined);
 
   const isCommitted = selectedIndex !== undefined;
+  const isCorrect   = selectedIndex === question.correctIndex;
 
   const getOptionStyle = (idx: number) => {
     if (showAnswers) {
@@ -31,7 +36,6 @@ export default function QuestionCard({
       return 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed';
     }
 
-    // ── Committed (after Submit Answer) ────────────────────────────────────
     if (isCommitted) {
       if (isFinal) {
         if (idx === selectedIndex) return 'border-accent bg-accent/10 text-accent font-semibold';
@@ -46,14 +50,11 @@ export default function QuestionCard({
       return 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed';
     }
 
-    // ── Pending selection (before Submit Answer) ───────────────────────────
     if (pendingIndex === idx)
       return 'border-accent bg-accent/10 text-accent font-semibold ring-2 ring-accent/30';
 
     return 'border-gray-200 hover:border-accent/50 hover:bg-gray-50 text-gray-800 bg-white';
   };
-
-  const isCorrect = selectedIndex === question.correctIndex;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
@@ -83,23 +84,6 @@ export default function QuestionCard({
         ))}
       </div>
 
-      {/* ── Submit Answer button (pre-commit) ── */}
-      {!isCommitted && (
-        <div className="mt-5 flex justify-end">
-          <button
-            onClick={() => {
-              if (pendingIndex === undefined) return;
-              onSelect(pendingIndex);
-            }}
-            disabled={pendingIndex === undefined}
-            className="px-6 py-2.5 rounded-lg font-semibold text-sm bg-accent text-white
-              hover:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            Submit Answer
-          </button>
-        </div>
-      )}
-
       {/* ── Feedback (post-commit, regular quiz only) ── */}
       {isCommitted && !isFinal && !showAnswers && (
         <div className={`mt-5 rounded-lg px-4 py-3 text-sm border
@@ -112,6 +96,31 @@ export default function QuestionCard({
           incididunt ut labore et dolore magna aliqua.
         </div>
       )}
+
+      {/* ── Single action button ── */}
+      <div className="mt-5 flex justify-end">
+        {!isCommitted ? (
+          <button
+            onClick={() => {
+              if (pendingIndex === undefined) return;
+              onSelect(pendingIndex);
+            }}
+            disabled={pendingIndex === undefined}
+            className="px-6 py-2.5 rounded-lg font-semibold text-sm bg-accent text-white
+              hover:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            Submit Answer
+          </button>
+        ) : (
+          <button
+            onClick={onNext}
+            className="px-6 py-2.5 rounded-lg font-semibold text-sm bg-accent text-white
+              hover:bg-accent/80 transition-colors"
+          >
+            {nextLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

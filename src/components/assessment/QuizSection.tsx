@@ -117,12 +117,14 @@ export default function QuizSection({
       )}
 
       <QuestionCard
-        key={currentIdx}          
+        key={currentIdx}
         question={currentQ}
         selectedIndex={selectedIndex}
         isFinal={isFinal}
         showAnswers={showAnswers}
+        nextLabel={isLastQuestion ? lastButtonLabel : 'Next Question →'}
         onSelect={handleSelect}
+        onNext={handleNext}
       />
 
       <div className="flex justify-end mt-4">
