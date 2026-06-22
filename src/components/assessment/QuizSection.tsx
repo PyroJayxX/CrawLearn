@@ -32,36 +32,42 @@ export default function QuizSection({
   const isLastQuestion = currentIdx === questions.length - 1;
 
   const hasFailed = finalScore !== undefined && finalScore < passingScore;
+  const hasPassed = finalScore !== undefined && finalScore >= passingScore;
 
-  // Progress: count answered questions; if current is answered count it too
-  const answeredCount  = Object.keys(answers).length;
-  const progressPct    = Math.round((answeredCount / questions.length) * 100);
+  const answeredCount = Object.keys(answers).length;
+  const progressPct   = Math.round((answeredCount / questions.length) * 100);
+
+  const computeScore = (finalAnswers: Record<number, number>) => {
+    let score = 0;
+    questions.forEach((q, idx) => {
+      if (finalAnswers[idx] === q.correctIndex) score++;
+    });
+    return score;
+  };
 
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== undefined) return;
-    setAnswers(prev => ({ ...prev, [currentIdx]: optionIndex }));
+    const newAnswers = { ...answers, [currentIdx]: optionIndex };
+    setAnswers(newAnswers);
+
+    // On last question, immediately evaluate after answer is committed
+    if (isLastQuestion) {
+      const score = computeScore(newAnswers);
+      setFinalScore(score);
+    }
   };
 
   const handleNext = () => {
     if (!isLastQuestion) {
       setCurrentIdx(prev => prev + 1);
-      return;
     }
-    let score = 0;
-    questions.forEach((q, idx) => {
-      if (answers[idx] === q.correctIndex) score++;
-    });
-    setFinalScore(score);
-    if (score >= passingScore) {
-      onComplete(score);
-    }
+    // Last question is handled in handleSelect — nothing to do here
   };
 
   const handleRetry = () => {
     setCurrentIdx(0);
     setAnswers({});
     setFinalScore(undefined);
-    onComplete(finalScore!);
   };
 
   const lastButtonLabel = isFinal
@@ -78,6 +84,7 @@ export default function QuizSection({
     );
   }
 
+  // ── Failed screen ──────────────────────────────────────────────────────────
   if (hasFailed) {
     return (
       <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
@@ -99,6 +106,33 @@ export default function QuizSection({
         >
           Try Again
         </button>
+      </div>
+    );
+  }
+
+  // ── Passed screen ──────────────────────────────────────────────────────────
+  if (hasPassed) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
+        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Passed!</h2>
+          <p className="text-gray-500 text-sm">
+            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>. Great work!
+          </p>
+        </div>
+        {nextSectionTitle && (
+          <button
+            onClick={() => onComplete(finalScore!)}
+            className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors"
+          >
+            Proceed to {nextSectionTitle} →
+          </button>
+        )}
       </div>
     );
   }
@@ -142,7 +176,7 @@ export default function QuizSection({
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
           <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
-            {isFinal ? `Question ${currentIdx + 1} of ${questions.length}` : `Question ${currentIdx + 1} of ${questions.length}`}
+            Question {currentIdx + 1} of {questions.length}
           </span>
           {!isFinal && selectedIndex !== undefined && (
             <span className={`text-xs font-semibold ${
