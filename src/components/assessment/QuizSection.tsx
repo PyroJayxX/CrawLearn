@@ -17,18 +17,22 @@ export default function QuizSection({
   previousAttempts = 0,
   onComplete,
 }: QuizProps) {
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers]       = useState<Record<number, number>>({});
+  const [currentIdx, setCurrentIdx]   = useState(0);
+  const [answers, setAnswers]         = useState<Record<number, number>>({});
+  const [finalScore, setFinalScore]   = useState<number | undefined>(undefined);
 
   const isFinal      = sectionId === 'final';
   const showAnswers  = isFinal && previousAttempts >= 3;
-  const currentTry   = previousAttempts + 1;   // 1-based, for display
+  const currentTry   = previousAttempts + 1;
   const triesLeft    = Math.max(0, 3 - previousAttempts);
+  const passingScore = isFinal ? 12 : 3;
 
   const currentQ       = questions[currentIdx];
   const selectedIndex  = answers[currentIdx];
   const isLastQuestion = currentIdx === questions.length - 1;
-  const canProceed     = selectedIndex !== undefined;
+
+  const hasFailed = finalScore !== undefined && finalScore < passingScore;
+  const hasPassed = finalScore !== undefined && finalScore >= passingScore;
 
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== undefined) return;
@@ -44,7 +48,17 @@ export default function QuizSection({
     questions.forEach((q, idx) => {
       if (answers[idx] === q.correctIndex) score++;
     });
-    onComplete(score);
+    setFinalScore(score);
+    if (score >= passingScore) {
+      onComplete(score);
+    }
+  };
+
+  const handleRetry = () => {
+    setCurrentIdx(0);
+    setAnswers({});
+    setFinalScore(undefined);
+    onComplete(finalScore!); // still saves the failed score to DB
   };
 
   const lastButtonLabel = isFinal
@@ -57,6 +71,31 @@ export default function QuizSection({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
         <p className="text-lg font-medium text-gray-600">No questions available for this section yet.</p>
+      </div>
+    );
+  }
+
+  if (hasFailed) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
+        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Failed</h2>
+          <p className="text-gray-500 text-sm">
+            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>.
+            You need at least <span className="font-semibold text-gray-700">{passingScore}</span> to pass.
+          </p>
+        </div>
+        <button
+          onClick={handleRetry}
+          className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
@@ -81,9 +120,7 @@ export default function QuizSection({
             ) : (
               <>
                 <span className="text-blue-500">📋</span>
-                <span className="font-semibold text-blue-700">
-                  Try {currentTry} of 3
-                </span>
+                <span className="font-semibold text-blue-700">Try {currentTry} of 3</span>
                 {triesLeft > 0 && (
                   <span className="text-blue-500/70 text-xs">
                     · Answers revealed after {triesLeft} more failed {triesLeft === 1 ? 'attempt' : 'attempts'}
@@ -92,8 +129,6 @@ export default function QuizSection({
               </>
             )}
           </div>
-
-          {/* Question counter */}
           <span className="text-xs font-bold tracking-widest uppercase text-gray-400">
             {currentIdx + 1} / {questions.length}
           </span>
