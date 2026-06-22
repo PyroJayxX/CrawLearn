@@ -1,4 +1,4 @@
-import { LearningState, ModuleConfig } from '../../types';
+import { LearningState, ModuleConfig, SectionConfig } from '../../types';
 
 interface CourseSidebarProps {
   modules: ModuleConfig[];
@@ -9,6 +9,50 @@ interface CourseSidebarProps {
   sectionDurations?: Record<string, string>;
 }
 
+/**
+ * Computes which sections are unlocked based on quiz scores.
+ * Rules:
+ *  - First section is always unlocked.
+ *  - A chapter quiz unlocks as soon as its preceding video section is unlocked
+ *    (the app auto-navigates there after the video anyway).
+ *  - A chapter video unlocks only after the preceding quiz is passed.
+ *  - The final assessment unlocks only after the preceding quiz is passed.
+ */
+function computeUnlocked(
+  sections: SectionConfig[],
+  quizScores: Record<string, number>
+): Set<string> {
+  const unlocked = new Set<string>();
+
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+
+    if (i === 0) {
+      unlocked.add(section.id);
+      continue;
+    }
+
+    const prev = sections[i - 1];
+
+    if (section.id === 'final') {
+      // Final only unlocks when the preceding quiz is passed
+      const score  = quizScores[prev.id] ?? -1;
+      const passed = prev.passingScore !== undefined && score >= prev.passingScore;
+      if (passed) unlocked.add(section.id);
+    } else if (!section.hasVideo) {
+      // Regular chapter quiz: unlocks when its video section is unlocked
+      if (unlocked.has(prev.id)) unlocked.add(section.id);
+    } else {
+      // Next chapter video: unlocks when preceding quiz is passed
+      const score  = quizScores[prev.id] ?? -1;
+      const passed = prev.passingScore !== undefined && score >= prev.passingScore;
+      if (passed) unlocked.add(section.id);
+    }
+  }
+
+  return unlocked;
+}
+
 export default function CourseSidebar({
   modules,
   currentState,
@@ -17,12 +61,15 @@ export default function CourseSidebar({
   onSectionNavigate,
   sectionDurations = {},
 }: CourseSidebarProps) {
-  const { currentModuleId, currentSectionId, unlockedSections, quizScores } = currentState;
+  const { currentModuleId, currentSectionId, quizScores } = currentState;
   const currentModule = modules.find(m => m.id === currentModuleId);
 
   const sectionsForModule = (currentModule?.sections ?? []).filter(s => s.id !== 'faq');
-  const unlockedForModule = unlockedSections[currentModuleId] ?? new Set();
-  const chapterSections = sectionsForModule.filter(s => s.hasVideo);
+  const moduleQuizScores  = quizScores[currentModuleId] ?? {};
+  const chapterSections   = sectionsForModule.filter(s => s.hasVideo);
+
+  // Derived — no longer read from state
+  const unlockedForModule = computeUnlocked(sectionsForModule, moduleQuizScores);
 
   return (
     <aside
@@ -57,13 +104,13 @@ export default function CourseSidebar({
       {/* ── Section list ── */}
       <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
         {sectionsForModule.map((section) => {
-          const isUnlocked = unlockedForModule.has(section.id);
-          const isActive = section.id === currentSectionId;
-          const sectionScore = quizScores[currentModuleId]?.[section.id] ?? 0;
+          const isUnlocked  = unlockedForModule.has(section.id);
+          const isActive    = section.id === currentSectionId;
+          const sectionScore = moduleQuizScores[section.id] ?? 0;
           const isCompleted = section.passingScore !== undefined && sectionScore >= section.passingScore;
-          const isFinal = section.id === 'final';
-          const chapterNum = chapterSections.indexOf(section) + 1;
-          const duration = sectionDurations[section.id];
+          const isFinal     = section.id === 'final';
+          const chapterNum  = chapterSections.indexOf(section) + 1;
+          const duration    = sectionDurations[section.id];
           const questionCount = section.questionCount ?? section.questions?.length ?? 0;
 
           // ── Collapsed icon view ──
@@ -101,7 +148,6 @@ export default function CourseSidebar({
           }
 
           // ── Expanded row view ──
-          // All rows share the same width and padding — only bg/text/border change for active
           return (
             <div key={section.id} className="px-3 py-0.5">
               <button
@@ -119,17 +165,14 @@ export default function CourseSidebar({
                   ${isActive ? 'bg-highlight/20' : isCompleted ? 'bg-accent/15' : isUnlocked ? 'bg-gray-200' : 'bg-gray-100'}`}
                 >
                   {isActive && section.hasVideo ? (
-                    // Play icon — only for active video sections
                     <svg className="w-3 h-3 text-highlight ml-0.5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M5 3l14 9-14 9V3z" />
                     </svg>
                   ) : isActive && isFinal ? (
-                    // Star icon — active final assessment
                     <svg className="w-3 h-3 text-highlight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                     </svg>
                   ) : isActive ? (
-                    // Pencil icon — active quiz section
                     <svg className="w-3 h-3 text-highlight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>

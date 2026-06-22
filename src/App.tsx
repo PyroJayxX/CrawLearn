@@ -12,8 +12,6 @@ import { ch1Questions, ch2Questions, ch3Questions, finalQuestions } from './data
 import { supabase } from './lib/supabase';
 import { loadUserProgress, saveQuizScore, saveVideoComplete } from './lib/db';
 
-// ─── Course config ─────────────────────────────────────────────────────────────
-
 const COURSE_CONFIG: ModuleConfig[] = [
   {
     id: 'module1',
@@ -39,8 +37,6 @@ const COURSE_CONFIG: ModuleConfig[] = [
   })),
 ];
 
-// ─── Default state (before DB loads) ──────────────────────────────────────────
-
 function buildDefaultState(): LearningState {
   const unlockedSections: Record<string, Set<string>> = {};
   COURSE_CONFIG.forEach(mod => {
@@ -56,7 +52,6 @@ function buildDefaultState(): LearningState {
   };
 }
 
-// ─── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [session, setSession]               = useState<Session | null>(null);
@@ -68,7 +63,6 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showResults, setShowResults]   = useState(false);
 
-  // ── 1. Restore session on mount, listen for auth changes ──────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -82,7 +76,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── 2. Load progress whenever we get a session ────────────────────────────
   useEffect(() => {
     if (!session) return;
 
@@ -96,7 +89,6 @@ export default function App() {
       .finally(() => setProgressLoading(false));
   }, [session]);
 
-  // ── Derived state ─────────────────────────────────────────────────────────
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -121,8 +113,6 @@ export default function App() {
   // How many times has the current section's final been attempted?
   const currentFinalAttempts = sectionAttempts[state.currentModuleId]?.['final'] ?? 0;
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
-
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
     if (!mod) return;
@@ -139,13 +129,12 @@ export default function App() {
     setShowResults(false);
     setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
   };
-
+    
   const handleQuizComplete = async (score: number) => {
     const { currentModuleId, currentSectionId } = state;
     const passingScore = currentSection?.passingScore ?? 0;
     const previousAttempts = sectionAttempts[currentModuleId]?.[currentSectionId] ?? 0;
 
-    // ── Optimistic local update ──────────────────────────────────────────────
     const updatedQuizScores = {
       ...state.quizScores,
       [currentModuleId]: {
@@ -173,7 +162,6 @@ export default function App() {
     }));
     setSectionAttempts(updatedAttempts);
 
-    // ── Persist to Supabase ──────────────────────────────────────────────────
     if (session) {
       try {
         await saveQuizScore({
@@ -186,23 +174,24 @@ export default function App() {
         });
       } catch (err) {
         console.error('Failed to save quiz score:', err);
-        // Score is still saved locally — user won't lose progress this session.
-        // On next login loadUserProgress will reflect the last successful save.
       }
     }
 
-    // ── Navigate ─────────────────────────────────────────────────────────────
     if (currentSectionId === 'final') {
       setState(prev => ({ ...prev, completedModules: newCompletedModules }));
       setShowResults(true);
-    } else if (nextSection) {
-      setState(prev => ({
-        ...prev,
-        quizScores:       updatedQuizScores,
-        completedModules: newCompletedModules,
-        currentSectionId: nextSection.id,
-        subState:         'video',
-      }));
+    } else {
+      const passed = score >= passingScore;
+      if (passed && nextSection) {
+        setState(prev => ({
+          ...prev,
+          quizScores:       updatedQuizScores,
+          completedModules: newCompletedModules,
+          currentSectionId: nextSection.id,
+          subState:         'video',
+        }));
+      }
+      // If failed: stay on current section — user sees their score and retries
     }
   };
 
@@ -226,7 +215,6 @@ export default function App() {
     setShowResults(false);
   };
 
-  // ── Auth / loading gates ───────────────────────────────────────────────────
 
   if (sessionLoading) {
     return (
@@ -247,8 +235,6 @@ export default function App() {
       </div>
     );
   }
-
-  // ── Render ─────────────────────────────────────────────────────────────────
 
   const moduleScores = state.quizScores[state.currentModuleId] ?? {};
 
