@@ -126,20 +126,6 @@ export default function QuizSection({
         onSelect={handleSelect}
         onNext={handleNext}
       />
-
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={handleNext}
-          disabled={!canProceed}
-          className="
-            px-8 py-3 rounded-lg font-bold text-sm transition-colors duration-200
-            bg-accent text-white hover:bg-accent/80
-            disabled:opacity-40 disabled:cursor-not-allowed
-          "
-        >
-          {isLastQuestion ? lastButtonLabel : 'Next Question →'}
-        </button>
-      </div>
     </div>
   );
 }
