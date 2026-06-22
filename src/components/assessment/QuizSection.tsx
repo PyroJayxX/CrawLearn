@@ -3,21 +3,38 @@ import QuestionCard from './QuestionCard';
 import { Question } from '../../types';
 
 interface QuizProps {
-  sectionId: string;
-  questions: Question[];
+  sectionId:        string;
+  questions:        Question[];
   nextSectionTitle?: string;
+  /**
+   * Number of attempts already recorded in the DB for this section.
+   * Used by the final assessment to reveal answers on attempt 4+.
+   * Pass 0 (or omit) for regular quizzes.
+   */
+  previousAttempts?: number;
   onComplete: (score: number) => void;
 }
 
-export default function QuizSection({ sectionId, questions, nextSectionTitle, onComplete }: QuizProps) {
+export default function QuizSection({
+  sectionId,
+  questions,
+  nextSectionTitle,
+  previousAttempts = 0,
+  onComplete,
+}: QuizProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers]       = useState<Record<number, number>>({});
 
   const isFinal = sectionId === 'final';
-  const currentQ = questions[currentIdx];
+
+  // Reveal answers on the 4th attempt (previousAttempts === 3 means 3 already
+  // done, this is attempt #4).
+  const showAnswers = isFinal && previousAttempts >= 3;
+
+  const currentQ      = questions[currentIdx];
   const selectedIndex = answers[currentIdx];
   const isLastQuestion = currentIdx === questions.length - 1;
-  const canProceed = selectedIndex !== undefined;
+  const canProceed    = selectedIndex !== undefined;
 
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== undefined) return; // locked after first pick
@@ -45,28 +62,50 @@ export default function QuizSection({ sectionId, questions, nextSectionTitle, on
   if (questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <p className="text-lg font-medium text-gray-600">No questions available for this section yet.</p>
+        <p className="text-lg font-medium text-gray-600">
+          No questions available for this section yet.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-6 h-full justify-center">
-      <div className="flex justify-between items-center">
-        <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
-          Question {currentIdx + 1} of {questions.length}
-        </span>
-        {!isFinal && selectedIndex !== undefined && (
-          <span className={`text-xs font-semibold ${selectedIndex === currentQ.correctIndex ? 'text-green-600' : 'text-red-500'}`}>
-            {selectedIndex === currentQ.correctIndex ? 'Correct!' : 'Incorrect'}
+      {/* Attempt counter for final */}
+      {isFinal && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
+            Question {currentIdx + 1} of {questions.length}
           </span>
-        )}
-      </div>
+          <span className="text-xs font-medium text-gray-400">
+            Attempt {previousAttempts + 1} of 3
+            {previousAttempts >= 3 && (
+              <span className="ml-2 text-amber-600 font-semibold">· Answers revealed</span>
+            )}
+          </span>
+        </div>
+      )}
+
+      {!isFinal && (
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
+            Question {currentIdx + 1} of {questions.length}
+          </span>
+          {selectedIndex !== undefined && (
+            <span className={`text-xs font-semibold ${
+              selectedIndex === currentQ.correctIndex ? 'text-green-600' : 'text-red-500'
+            }`}>
+              {selectedIndex === currentQ.correctIndex ? 'Correct!' : 'Incorrect'}
+            </span>
+          )}
+        </div>
+      )}
 
       <QuestionCard
         question={currentQ}
         selectedIndex={selectedIndex}
         isFinal={isFinal}
+        showAnswers={showAnswers}
         onSelect={handleSelect}
       />
 
@@ -76,8 +115,7 @@ export default function QuizSection({ sectionId, questions, nextSectionTitle, on
           disabled={!canProceed}
           className="
             px-8 py-3 rounded-lg font-bold text-sm transition-colors duration-200
-            bg-accent text-white
-            hover:bg-accent/80
+            bg-accent text-white hover:bg-accent/80
             disabled:opacity-40 disabled:cursor-not-allowed
           "
         >

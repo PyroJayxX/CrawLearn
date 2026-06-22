@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Session } from '@supabase/supabase-js';
 import { LearningState, ModuleConfig } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
 import CourseSidebar from './components/layout/CourseSidebar';
@@ -6,8 +7,12 @@ import QuizSection from './components/assessment/QuizSection';
 import ModuleResults from './components/assessment/ModuleResults';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
-import { ch1Questions, ch2Questions, ch3Questions, finalQuestions } from './data/Module1Questions';
 import AuthScreen from './components/auth/AuthScreen';
+import { ch1Questions, ch2Questions, ch3Questions, finalQuestions } from './data/Module1Questions';
+import { supabase } from './lib/supabase';
+import { loadUserProgress, saveQuizScore, saveVideoComplete } from './lib/db';
+
+// ─── Course config ─────────────────────────────────────────────────────────────
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
@@ -34,55 +39,64 @@ const COURSE_CONFIG: ModuleConfig[] = [
   })),
 ];
 
-const LS_KEY = 'crawlearn_scores';
+// ─── Default state (before DB loads) ──────────────────────────────────────────
 
-function loadScores(): Record<string, Record<string, number>> {
-  try {
-    return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
-}
-
-function saveScores(scores: Record<string, Record<string, number>>) {
-  localStorage.setItem(LS_KEY, JSON.stringify(scores));
-}
-
-const buildInitialState = (): LearningState => {
+function buildDefaultState(): LearningState {
   const unlockedSections: Record<string, Set<string>> = {};
   COURSE_CONFIG.forEach(mod => {
     unlockedSections[mod.id] = new Set(mod.sections.map(s => s.id));
   });
-
-  const saved = loadScores();
-  const quizScores: Record<string, Record<string, number>> = {};
-  Object.entries(saved).forEach(([modId, sections]) => {
-    quizScores[modId] = sections;
-  });
-
   return {
-    currentModuleId: 'module1',
+    currentModuleId:  'module1',
     currentSectionId: 'ch1',
-    subState: 'video',
+    subState:         'video',
     unlockedSections,
-    quizScores,
-    // Only mark a module completed if its final quiz score meets the passing score
-    completedModules: new Set(
-      COURSE_CONFIG.filter(mod => {
-        const finalSection = mod.sections.find(s => s.id === 'final');
-        if (!finalSection?.passingScore) return false;
-        const score = saved[mod.id]?.['final'] ?? 0;
-        return score >= finalSection.passingScore;
-      }).map(m => m.id)
-    ),
+    quizScores:       {},
+    completedModules: new Set(),
   };
-};
+}
+
+// ─── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
-  const [state, setState] = useState<LearningState>(buildInitialState);
+  const [session, setSession]               = useState<Session | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [progressLoading, setProgressLoading] = useState(false);
+
+  const [state, setState]               = useState<LearningState>(buildDefaultState);
+  const [sectionAttempts, setSectionAttempts] = useState<Record<string, Record<string, number>>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults]   = useState(false);
+
+  // ── 1. Restore session on mount, listen for auth changes ──────────────────
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setSessionLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ── 2. Load progress whenever we get a session ────────────────────────────
+  useEffect(() => {
+    if (!session) return;
+
+    setProgressLoading(true);
+    loadUserProgress(session.user.id)
+      .then(({ quizScores, completedModules, attempts }) => {
+        setState(prev => ({ ...prev, quizScores, completedModules }));
+        setSectionAttempts(attempts);
+      })
+      .catch(err => console.error('Failed to load progress:', err))
+      .finally(() => setProgressLoading(false));
+  }, [session]);
+
+  // ── Derived state ─────────────────────────────────────────────────────────
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -104,15 +118,20 @@ export default function App() {
     return nextSection.title;
   }, [nextSection]);
 
+  // How many times has the current section's final been attempted?
+  const currentFinalAttempts = sectionAttempts[state.currentModuleId]?.['final'] ?? 0;
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
     if (!mod) return;
     setShowResults(false);
     setState(prev => ({
       ...prev,
-      currentModuleId: moduleId,
+      currentModuleId:  moduleId,
       currentSectionId: mod.sections[0].id,
-      subState: 'video',
+      subState:         'video',
     }));
   };
 
@@ -121,40 +140,117 @@ export default function App() {
     setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
   };
 
-  const handleQuizComplete = (score: number) => {
-    const { currentModuleId, currentSectionId, quizScores } = state;
-    const moduleScores = { ...(quizScores[currentModuleId] ?? {}), [currentSectionId]: score };
-    const updatedScores = { ...quizScores, [currentModuleId]: moduleScores };
+  const handleQuizComplete = async (score: number) => {
+    const { currentModuleId, currentSectionId } = state;
+    const passingScore = currentSection?.passingScore ?? 0;
+    const previousAttempts = sectionAttempts[currentModuleId]?.[currentSectionId] ?? 0;
 
-    const allSaved = loadScores();
-    allSaved[currentModuleId] = moduleScores;
-    saveScores(allSaved);
+    // ── Optimistic local update ──────────────────────────────────────────────
+    const updatedQuizScores = {
+      ...state.quizScores,
+      [currentModuleId]: {
+        ...(state.quizScores[currentModuleId] ?? {}),
+        [currentSectionId]: score,
+      },
+    };
+    const updatedAttempts = {
+      ...sectionAttempts,
+      [currentModuleId]: {
+        ...(sectionAttempts[currentModuleId] ?? {}),
+        [currentSectionId]: previousAttempts + 1,
+      },
+    };
 
-    // If the final was just passed, mark this module complete
     const newCompletedModules = new Set(state.completedModules);
-    if (currentSectionId === 'final') {
-      const finalSection = currentModule?.sections.find(s => s.id === 'final');
-      if (finalSection?.passingScore && score >= finalSection.passingScore) {
-        newCompletedModules.add(currentModuleId);
+    if (currentSectionId === 'final' && score >= passingScore) {
+      newCompletedModules.add(currentModuleId);
+    }
+
+    setState(prev => ({
+      ...prev,
+      quizScores:       updatedQuizScores,
+      completedModules: newCompletedModules,
+    }));
+    setSectionAttempts(updatedAttempts);
+
+    // ── Persist to Supabase ──────────────────────────────────────────────────
+    if (session) {
+      try {
+        await saveQuizScore({
+          userId:           session.user.id,
+          moduleId:         currentModuleId,
+          sectionId:        currentSectionId,
+          score,
+          passingScore,
+          previousAttempts,
+        });
+      } catch (err) {
+        console.error('Failed to save quiz score:', err);
+        // Score is still saved locally — user won't lose progress this session.
+        // On next login loadUserProgress will reflect the last successful save.
       }
-      setState(prev => ({ ...prev, quizScores: updatedScores, completedModules: newCompletedModules }));
+    }
+
+    // ── Navigate ─────────────────────────────────────────────────────────────
+    if (currentSectionId === 'final') {
+      setState(prev => ({ ...prev, completedModules: newCompletedModules }));
       setShowResults(true);
     } else if (nextSection) {
       setState(prev => ({
         ...prev,
-        quizScores: updatedScores,
+        quizScores:       updatedQuizScores,
         completedModules: newCompletedModules,
         currentSectionId: nextSection.id,
-        subState: 'video',
+        subState:         'video',
       }));
     }
   };
 
-  const moduleScores = state.quizScores[state.currentModuleId] ?? {};
+  const handleVideoComplete = async (lessonId: string) => {
+    if (session) {
+      await saveVideoComplete(session.user.id, state.currentModuleId, lessonId);
+    }
+    const quizSectionId  = `${lessonId}-quiz`;
+    const hasQuizSection = currentModule?.sections.some(s => s.id === quizSectionId);
+    if (hasQuizSection) {
+      setState(prev => ({ ...prev, currentSectionId: quizSectionId, subState: 'quiz' }));
+    } else {
+      setState(prev => ({ ...prev, subState: 'quiz' }));
+    }
+  };
 
-  if (!isLoggedIn) {
-    return <AuthScreen onSuccess={() => setIsLoggedIn(true)} />;
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setState(buildDefaultState());
+    setSectionAttempts({});
+    setShowResults(false);
+  };
+
+  // ── Auth / loading gates ───────────────────────────────────────────────────
+
+  if (sessionLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#f6f8fa]">
+        <span className="text-sm text-gray-400">Loading…</span>
+      </div>
+    );
   }
+
+  if (!session) {
+    return <AuthScreen onSuccess={() => { /* session update handled by onAuthStateChange */ }} />;
+  }
+
+  if (progressLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#f6f8fa]">
+        <span className="text-sm text-gray-400">Loading your progress…</span>
+      </div>
+    );
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  const moduleScores = state.quizScores[state.currentModuleId] ?? {};
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
@@ -163,6 +259,11 @@ export default function App() {
           modules={COURSE_CONFIG}
           currentState={state}
           onModuleNavigate={handleModuleNavigate}
+          onSignOut={handleSignOut}
+          userName={
+            session.user.user_metadata?.full_name as string | undefined
+            ?? session.user.email
+          }
         />
       </header>
 
@@ -198,15 +299,7 @@ export default function App() {
                 {state.subState === 'video' && currentSection?.hasVideo ? (
                   <LessonContainer
                     lessonId={state.currentSectionId}
-                    onComplete={() => {
-                      const quizSectionId = `${state.currentSectionId}-quiz`;
-                      const hasQuizSection = currentModule?.sections.some(s => s.id === quizSectionId);
-                      if (hasQuizSection) {
-                        setState(prev => ({ ...prev, currentSectionId: quizSectionId, subState: 'quiz' }));
-                      } else {
-                        setState(prev => ({ ...prev, subState: 'quiz' }));
-                      }
-                    }}
+                    onComplete={() => handleVideoComplete(state.currentSectionId)}
                   />
                 ) : (
                   <div className="max-w-3xl mx-auto">
@@ -214,6 +307,9 @@ export default function App() {
                       sectionId={state.currentSectionId}
                       questions={currentSection?.questions ?? []}
                       nextSectionTitle={nextSectionTitle}
+                      previousAttempts={
+                        state.currentSectionId === 'final' ? currentFinalAttempts : 0
+                      }
                       onComplete={handleQuizComplete}
                     />
                   </div>
