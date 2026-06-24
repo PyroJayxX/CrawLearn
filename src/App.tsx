@@ -33,12 +33,12 @@ const COURSE_CONFIG: ModuleConfig[] = [
     id: 'module2',
     title: 'Module 2',
     sections: [
-      { id: 'mod2_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod2Ch1Questions },
-      { id: 'mod2_ch1-quiz', title: 'Quiz 1',          hasVideo: false, passingScore: 3,  questions: mod2Ch1Questions },
-      { id: 'mod2_ch2',      title: 'Chapter 2',       hasVideo: true,  passingScore: 3,  questions: mod2Ch2Questions },
-      { id: 'mod2_ch2-quiz', title: 'Quiz 2',          hasVideo: false, passingScore: 3,  questions: mod2Ch2Questions },
-      { id: 'mod2_ch3',      title: 'Chapter 3',       hasVideo: true,  passingScore: 3,  questions: mod2Ch3Questions },
-      { id: 'mod2_ch3-quiz', title: 'Quiz 3',          hasVideo: false, passingScore: 3,  questions: mod2Ch3Questions },
+      { id: 'mod2_ch1',      title: 'Chapter 1',        hasVideo: true,  passingScore: 3,  questions: mod2Ch1Questions },
+      { id: 'mod2_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod2Ch1Questions },
+      { id: 'mod2_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod2Ch2Questions },
+      { id: 'mod2_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod2Ch2Questions },
+      { id: 'mod2_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod2Ch3Questions },
+      { id: 'mod2_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod2Ch3Questions },
       { id: 'mod2_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod2FinalQuestions, questionCount: 15 },
     ],
   },
@@ -78,13 +78,18 @@ export default function App() {
   const [session,         setSession]         = useState<Session | null>(null);
   const [sessionLoading,  setSessionLoading]  = useState(true);
   const [progressLoading, setProgressLoading] = useState(false);
+  const [minLoadDone,     setMinLoadDone]     = useState(false);
 
   const [state,            setState]            = useState<LearningState>(buildDefaultState);
   const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showResults,      setShowResults]      = useState(false);
 
-  // ── 1. Restore session on mount ───────────────────────────────────────────
+  useEffect(() => {
+    const t = setTimeout(() => setMinLoadDone(true), 1500);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -96,7 +101,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── 2. Load progress when session is ready ────────────────────────────────
   useEffect(() => {
     if (!session) return;
     setProgressLoading(true);
@@ -108,8 +112,6 @@ export default function App() {
       .catch(err => console.error('Failed to load progress:', err))
       .finally(() => setProgressLoading(false));
   }, [session]);
-
-  // ── Derived ───────────────────────────────────────────────────────────────
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -240,23 +242,29 @@ export default function App() {
 
   // ── Auth / loading gates ───────────────────────────────────────────────────
 
-  if (sessionLoading) {
+  const isLoading = sessionLoading || progressLoading || !minLoadDone;
+
+  if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#f6f8fa]">
-        <span className="text-sm text-gray-400">Loading…</span>
+      <div className="flex h-screen flex-col items-center justify-center gap-6 bg-background">
+        <img src="/logo_2.png" alt="CrawLearn" className="h-12 w-auto opacity-90" />
+        <div className="flex items-center gap-2">
+          {[0, 150, 300].map((delay, i) => (
+            <span
+              key={i}
+              className="w-2 h-2 rounded-full bg-highlight animate-bounce"
+              style={{ animationDelay: `${delay}ms` }}
+            />
+          ))}
+        </div>
+        <p className="text-xs uppercase tracking-widest text-white/30 font-semibold">
+          {sessionLoading ? 'Starting up…' : 'Loading your progress…'}
+        </p>
       </div>
     );
   }
 
   if (!session) return <AuthScreen onSuccess={() => {}} />;
-
-  if (progressLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#f6f8fa]">
-        <span className="text-sm text-gray-400">Loading your progress…</span>
-      </div>
-    );
-  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -264,9 +272,7 @@ export default function App() {
   const currentModuleIndex = COURSE_CONFIG.findIndex(m => m.id === state.currentModuleId);
   const nextModule         = COURSE_CONFIG[currentModuleIndex + 1] ?? null;
   const finalPassed        = state.completedModules.has(state.currentModuleId);
-
-  // Final attempts: keyed by currentSectionId (which is the actual final id e.g. 'mod2_final')
-  const isFinalSection = state.currentSectionId.endsWith('final');
+  const isFinalSection     = state.currentSectionId.endsWith('final');
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
