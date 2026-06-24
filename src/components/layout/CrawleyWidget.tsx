@@ -10,7 +10,6 @@ function buildSystemPrompt(lessonId: string, transcriptLines: { timeLabel: strin
   const lesson = LESSON_DATA[lessonId];
   const lessonTitle = lesson?.title ?? 'this lesson';
   const lessonTag = lesson?.tag ?? '';
-
   const transcriptText = transcriptLines.length > 0
     ? transcriptLines.map(l => `[${l.timeLabel}] ${l.text}`).join('\n')
     : '(No transcript available for this lesson.)';
@@ -44,9 +43,7 @@ async function fetchCrawleyResponse(
   transcriptLines: { timeLabel: string; text: string }[]
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    return 'Crawley is not configured yet. Add VITE_GEMINI_API_KEY to your .env file and restart the dev server.';
-  }
+  if (!apiKey) return 'Crawley is not configured yet. Add VITE_GEMINI_API_KEY to your .env file and restart the dev server.';
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -85,11 +82,11 @@ interface Message {
 }
 
 export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [typingId, setTypingId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([{
+  const [isOpen,      setIsOpen]      = useState(false);
+  const [inputValue,  setInputValue]  = useState('');
+  const [isLoading,   setIsLoading]   = useState(false);
+  const [typingId,    setTypingId]    = useState<string | null>(null);
+  const [messages,    setMessages]    = useState<Message[]>([{
     id: 'welcome',
     role: 'assistant',
     text: "Hi, I'm Crawley! Ask me anything about the current lesson.",
@@ -99,14 +96,12 @@ export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidg
 
   const messageAreaRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll
   useEffect(() => {
     if (!isOpen) return;
     const el = messageAreaRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, isOpen]);
 
-  // Typewriter
   useEffect(() => {
     if (!typingId) return;
     const msg = messages.find(m => m.id === typingId);
@@ -169,7 +164,6 @@ export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidg
           aria-label="Open Crawley AI"
           className="flex items-center gap-2 px-4 py-3 bg-background text-highlight rounded-full shadow-xl hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-200 font-bold text-sm"
         >
-          {/* Crab-ish icon */}
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
             <path d="M12 13c-2.5 0-4.5-1.8-4.5-4S9.5 5 12 5s4.5 1.8 4.5 4-2 4-4.5 4z" fill="currentColor" opacity=".9"/>
             <path d="M8 13.5c-1.5 1-3 .5-3.5-.5M16 13.5c1.5 1 3 .5 3.5-.5M9 16c-.5 1.5-2 2-3 1.5M15 16c.5 1.5 2 2 3 1.5M10 17.5c0 1.5-1 2.5-2 2.5M14 17.5c0 1.5 1 2.5 2 2.5"
@@ -181,10 +175,13 @@ export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidg
         </button>
       )}
 
-      {/* Chat window */}
+      {/* Chat window — fixed height always, scrollable messages */}
       {isOpen && (
-        <div className="w-[340px] max-h-[520px] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden animate-[slideUp_0.2s_ease]">
-
+        <div className="
+          flex flex-col bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden
+          w-[calc(100vw-48px)] sm:w-[340px]
+          h-[480px]
+        ">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-background flex-none">
             <div className="flex items-center gap-2.5">
@@ -213,10 +210,10 @@ export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidg
             <span className="text-[11px] font-semibold text-accent truncate">{lessonTitle}</span>
           </div>
 
-          {/* Messages */}
+          {/* Messages — flex-1 so it fills remaining space */}
           <div
             ref={messageAreaRef}
-            className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2.5 custom-scrollbar"
+            className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2.5 custom-scrollbar min-h-0"
           >
             {messages.map(msg => (
               <div
@@ -234,15 +231,10 @@ export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidg
               </div>
             ))}
 
-            {/* Thinking dots */}
             {isLoading && (
               <div className="self-start flex items-center gap-1 px-4 py-3 bg-accent/8 border border-accent/15 rounded-xl rounded-bl-sm">
                 {[0, 200, 400].map((delay, i) => (
-                  <span
-                    key={i}
-                    className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce"
-                    style={{ animationDelay: `${delay}ms` }}
-                  />
+                  <span key={i} className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: `${delay}ms` }} />
                 ))}
               </div>
             )}
@@ -269,7 +261,6 @@ export default function CrawleyWidget({ lessonId, transcriptLines }: CrawleyWidg
               </svg>
             </button>
           </div>
-
         </div>
       )}
     </div>

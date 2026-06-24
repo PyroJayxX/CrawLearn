@@ -13,9 +13,10 @@ interface LessonContainerProps {
 }
 
 export default function LessonContainer({ lessonId, onComplete }: LessonContainerProps) {
-  const playerRef   = useRef<any>(null);
-  const [currentTime,     setCurrentTime]     = useState(0);
-  const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
+  const playerRef             = useRef<any>(null);
+  const [currentTime,         setCurrentTime]         = useState(0);
+  const [transcriptLines,     setTranscriptLines]     = useState<TranscriptLine[]>([]);
+  const [showTranscriptMobile, setShowTranscriptMobile] = useState(false);
 
   const currentLesson = LESSON_DATA[lessonId];
 
@@ -31,7 +32,6 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   const handlePlayerRef = (player: any) => { playerRef.current = player; };
   const handleSeek      = (seconds: number) => { if (playerRef.current) playerRef.current.currentTime = seconds; };
 
-  // ── Coming soon ───────────────────────────────────────────────────────────
   if (!currentLesson) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-32 text-center">
@@ -48,10 +48,12 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
 
   return (
     <>
-      <div className="flex gap-6 w-full" style={{ minHeight: 'calc(100vh - 72px - 80px)' }}>
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full">
 
-        {/* Left column: video + info card */}
-        <div className="flex flex-col flex-[7] min-w-0 gap-5">
+        {/* Left column: video + transcript toggle (mobile) + info card */}
+        <div className="flex flex-col flex-[7] min-w-0 gap-4 lg:gap-5">
+
+          {/* Video */}
           <div className="w-full aspect-video bg-black rounded-xl overflow-hidden flex-none">
             <VideoLesson
               playerRef={handlePlayerRef}
@@ -61,18 +63,62 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
             />
           </div>
 
-          <LessonInfoCard
-            tag={currentLesson.tag}
-            title={currentLesson.title}
-            duration={currentLesson.duration}
-            description={currentLesson.description}
-            topics={currentLesson.topics}
-            faqs={currentLesson.faqs}
-            onContinue={onComplete}
-          />
+          {/* Mobile transcript toggle tab */}
+          <div className="lg:hidden flex rounded-xl overflow-hidden border border-gray-200 bg-white">
+            <button
+              onClick={() => setShowTranscriptMobile(false)}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors
+                ${!showTranscriptMobile ? 'bg-background text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              Lesson Info
+            </button>
+            <button
+              onClick={() => setShowTranscriptMobile(true)}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors
+                ${showTranscriptMobile ? 'bg-background text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              Transcript
+            </button>
+          </div>
+
+          {/* Mobile: show either info card or transcript based on toggle */}
+          <div className="lg:hidden">
+            {showTranscriptMobile ? (
+              <div className="bg-white rounded-xl p-5 border border-gray-200" style={{ minHeight: '400px' }}>
+                <InteractiveTranscript
+                  lines={transcriptLines}
+                  currentTime={currentTime}
+                  onSeek={handleSeek}
+                />
+              </div>
+            ) : (
+              <LessonInfoCard
+                tag={currentLesson.tag}
+                title={currentLesson.title}
+                duration={currentLesson.duration}
+                description={currentLesson.description}
+                topics={currentLesson.topics}
+                faqs={currentLesson.faqs}
+                onContinue={onComplete}
+              />
+            )}
+          </div>
+
+          {/* Desktop: always show info card */}
+          <div className="hidden lg:block">
+            <LessonInfoCard
+              tag={currentLesson.tag}
+              title={currentLesson.title}
+              duration={currentLesson.duration}
+              description={currentLesson.description}
+              topics={currentLesson.topics}
+              faqs={currentLesson.faqs}
+              onContinue={onComplete}
+            />
+          </div>
         </div>
 
-        {/* Right column: transcript */}
+        {/* Right column: transcript — desktop only, sticky */}
         <div
           className="hidden lg:flex flex-col flex-[3] min-w-0 bg-white rounded-xl p-5 border border-gray-200 overflow-hidden sticky top-0"
           style={{ maxHeight: 'calc(100vh - 72px - 80px)' }}
