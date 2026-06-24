@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { LearningState, ModuleConfig } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
@@ -55,8 +55,6 @@ const COURSE_CONFIG: ModuleConfig[] = [
   }),
 ];
 
-// ─── Default state ─────────────────────────────────────────────────────────────
-
 function buildDefaultState(): LearningState {
   const unlockedSections: Record<string, Set<string>> = {};
   COURSE_CONFIG.forEach(mod => {
@@ -72,13 +70,12 @@ function buildDefaultState(): LearningState {
   };
 }
 
-// ─── App ───────────────────────────────────────────────────────────────────────
-
 export default function App() {
   const [session,         setSession]         = useState<Session | null>(null);
   const [sessionLoading,  setSessionLoading]  = useState(true);
   const [progressLoading, setProgressLoading] = useState(false);
   const [minLoadDone,     setMinLoadDone]     = useState(false);
+  const hasLoadedOnce                         = useRef(false);
 
   const [state,            setState]            = useState<LearningState>(buildDefaultState);
   const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
@@ -86,7 +83,7 @@ export default function App() {
   const [showResults,      setShowResults]      = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setMinLoadDone(true), 1500);
+    const t = setTimeout(() => setMinLoadDone(true), 800);
     return () => clearTimeout(t);
   }, []);
 
@@ -103,6 +100,8 @@ export default function App() {
 
   useEffect(() => {
     if (!session) return;
+    if (hasLoadedOnce.current) return;
+    hasLoadedOnce.current = true;
     setProgressLoading(true);
     loadUserProgress(session.user.id)
       .then(({ quizScores, completedModules, attempts }) => {
@@ -112,6 +111,7 @@ export default function App() {
       .catch(err => console.error('Failed to load progress:', err))
       .finally(() => setProgressLoading(false));
   }, [session]);
+
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -135,8 +135,6 @@ export default function App() {
 
   const currentFinalAttempts =
     sectionAttempts[state.currentModuleId]?.[state.currentSectionId] ?? 0;
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
@@ -235,6 +233,7 @@ export default function App() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    hasLoadedOnce.current = false;
     setState(buildDefaultState());
     setSectionAttempts({});
     setShowResults(false);
