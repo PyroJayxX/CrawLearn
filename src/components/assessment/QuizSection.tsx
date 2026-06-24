@@ -7,9 +7,67 @@ interface QuizProps {
   questions:         Question[];
   nextSectionTitle?: string;
   previousAttempts?: number;
-  alreadyPassed?:    boolean;   // ← add
+  alreadyPassed?:    boolean;
   onComplete:        (score: number) => void;
   onProceed?:        () => void;
+}
+
+// Caterpillar progress — hollow circles, filled as questions are answered
+function CaterpillarProgress({ total, answered, current }: { total: number; answered: number; current: number }) {
+  // Cap display at 15 segments to avoid overflow; for longer quizzes show ratio text
+  const displayMax = 15;
+  const show = total <= displayMax;
+
+  if (!show) {
+    // Fallback: compact bar for very long quizzes (final 15q)
+    const pct = Math.round((answered / total) * 100);
+    return (
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden relative">
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out bg-accent"
+            style={{ width: `${pct}%` }}
+          />
+          {/* Caterpillar head at the progress tip */}
+          {pct > 0 && (
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-accent bg-white flex items-center justify-center transition-all duration-500"
+              style={{ left: `${pct}%` }}
+            >
+              <div className="w-1 h-1 rounded-full bg-accent" />
+            </div>
+          )}
+        </div>
+        <span className="text-xs font-bold text-gray-500 flex-none">{answered}/{total}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {Array.from({ length: total }).map((_, i) => {
+        const isDone    = i < answered;
+        const isCurrent = i === current;
+        return (
+          <div
+            key={i}
+            className={`rounded-full border-2 transition-all duration-300 flex items-center justify-center
+              ${isDone
+                ? 'border-accent bg-accent'
+                : isCurrent
+                ? 'border-accent bg-white scale-110'
+                : 'border-gray-300 bg-white'}`}
+            style={{ width: 14, height: 14 }}
+          >
+            {/* Eye dot on current segment (caterpillar head) */}
+            {isCurrent && !isDone && (
+              <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function QuizSection({
@@ -26,8 +84,8 @@ export default function QuizSection({
   const [submitted,  setSubmitted]  = useState(false);
   const [finalScore, setFinalScore] = useState<number>(0);
 
-const isFinal = sectionId === 'final' || sectionId.endsWith('_final');
-const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
+  const isFinal      = sectionId === 'final' || sectionId.endsWith('_final');
+  const showAnswers  = isFinal && (previousAttempts >= 3 || alreadyPassed);
   const currentTry   = previousAttempts + 1;
   const triesLeft    = Math.max(0, 3 - previousAttempts);
   const passingScore = isFinal ? 12 : 3;
@@ -40,7 +98,6 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
   const hasPassed = submitted && finalScore >= passingScore;
 
   const answeredCount = Object.keys(answers).length;
-  const progressPct   = Math.round((answeredCount / questions.length) * 100);
 
   const computeScore = (finalAnswers: Record<number, number>) => {
     let score = 0;
@@ -50,21 +107,14 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
     return score;
   };
 
-  // Step 1: user picks and submits an answer — just records it, no navigation
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== undefined) return;
     setAnswers(prev => ({ ...prev, [currentIdx]: optionIndex }));
   };
 
-  // Step 2: user clicks Next / Submit Assessment after seeing feedback
   const handleNext = () => {
     if (isLastQuestion) {
-      // Compute score from all answers including the current one
-      const finalAnswers = { ...answers };
-      // answers state may not have updated yet for current question if handleSelect
-      // and handleNext fire in the same tick — but they can't: handleNext only
-      // appears after isCommitted (selectedIndex !== undefined), so answers is set.
-      const score = computeScore(finalAnswers);
+      const score = computeScore({ ...answers });
       setFinalScore(score);
       setSubmitted(true);
       onComplete(score);
@@ -94,7 +144,7 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
     );
   }
 
-  // ── Failed screen ────────────────────────────────────────────────────────
+  // ── Failed ───────────────────────────────────────────────────────────────
   if (hasFailed) {
     return (
       <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
@@ -104,9 +154,7 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {isFinal ? 'Assessment Failed' : 'Quiz Failed'}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{isFinal ? 'Assessment Failed' : 'Quiz Failed'}</h2>
           <p className="text-gray-500 text-sm">
             You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>.{' '}
             You need at least <span className="font-semibold text-gray-700">{passingScore}</span> to pass.
@@ -117,17 +165,14 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
             </p>
           )}
         </div>
-        <button
-          onClick={handleRetry}
-          className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors"
-        >
+        <button onClick={handleRetry} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors">
           Try Again
         </button>
       </div>
     );
   }
 
-  // ── Passed screen ────────────────────────────────────────────────────────
+  // ── Passed ───────────────────────────────────────────────────────────────
   if (hasPassed) {
     return (
       <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
@@ -137,29 +182,22 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {isFinal ? 'Assessment Passed!' : 'Quiz Passed!'}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{isFinal ? 'Assessment Passed!' : 'Quiz Passed!'}</h2>
           <p className="text-gray-500 text-sm">
             You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>. Great work!
           </p>
         </div>
         {!isFinal && nextSectionTitle && (
-          <button
-            onClick={onProceed}
-            className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors"
-          >
+          <button onClick={onProceed} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors">
             Proceed to {nextSectionTitle} →
           </button>
         )}
-        {isFinal && (
-          <p className="text-xs text-gray-400">Loading your results…</p>
-        )}
+        {isFinal && <p className="text-xs text-gray-400">Loading your results…</p>}
       </div>
     );
   }
 
-  // ── Quiz in progress ─────────────────────────────────────────────────────
+  // ── In progress ──────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-4 h-full justify-center">
 
@@ -193,26 +231,23 @@ const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
         </div>
       )}
 
-      {/* Progress */}
+      {/* Progress — caterpillar */}
       <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-1">
           <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
             Question {currentIdx + 1} of {questions.length}
           </span>
           {!isFinal && selectedIndex !== undefined && (
-            <span className={`text-xs font-semibold ${
-              selectedIndex === currentQ.correctIndex ? 'text-green-600' : 'text-red-500'
-            }`}>
+            <span className={`text-xs font-semibold ${selectedIndex === currentQ.correctIndex ? 'text-green-600' : 'text-red-500'}`}>
               {selectedIndex === currentQ.correctIndex ? 'Correct!' : 'Incorrect'}
             </span>
           )}
         </div>
-        <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500 ease-out bg-accent"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
+        <CaterpillarProgress
+          total={questions.length}
+          answered={answeredCount}
+          current={currentIdx}
+        />
       </div>
 
       <QuestionCard
