@@ -241,7 +241,7 @@ export default function App() {
 
   // ── Auth / loading gates ───────────────────────────────────────────────────
 
-  const isLoading = sessionLoading || progressLoading || !minLoadDone;
+  const isLoading = sessionLoading || !minLoadDone;
 
   if (isLoading) {
     return (
