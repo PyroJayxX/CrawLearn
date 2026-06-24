@@ -63,12 +63,6 @@ export default function QuestionCard({
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-      {showAnswers && isCommitted && (
-        <p className="mb-4 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Answer reveal active — correct answers are highlighted.
-        </p>
-      )}
-
       <h3 className="text-xl md:text-2xl font-medium mb-6 leading-relaxed text-gray-900">
         {question.text}
       </h3>
@@ -88,19 +82,6 @@ export default function QuestionCard({
           </button>
         ))}
       </div>
-
-      {/* ── Feedback (post-commit, regular quiz only) ── */}
-      {isCommitted && !isFinal && !showAnswers && (
-        <div className={`mt-5 rounded-lg px-4 py-3 text-sm border
-          ${isCorrect
-            ? 'bg-green-50 border-green-200 text-green-800'
-            : 'bg-red-50 border-red-200 text-red-800'}`}
-        >
-          <span className="font-bold">{isCorrect ? 'Correct!' : 'Incorrect.'}</span>{' '}
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua.
-        </div>
-      )}
 
       {/* ── Single action button ── */}
       <div className="mt-5 flex justify-end">

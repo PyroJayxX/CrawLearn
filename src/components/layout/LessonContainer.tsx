@@ -13,15 +13,14 @@ interface LessonContainerProps {
 }
 
 export default function LessonContainer({ lessonId, onComplete }: LessonContainerProps) {
-  const playerRef    = useRef<any>(null);
-  const [currentTime,      setCurrentTime]      = useState(0);
-  const [transcriptLines,  setTranscriptLines]  = useState<TranscriptLine[]>([]);
+  const playerRef   = useRef<any>(null);
+  const [currentTime,     setCurrentTime]     = useState(0);
+  const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
 
   const currentLesson = LESSON_DATA[lessonId];
 
   useEffect(() => {
     if (!currentLesson) return;
-    // Derive transcript folder from lessonId prefix
     const folder = lessonId.startsWith('mod2_') ? 'module2' : 'module1';
     fetch(`/transcripts/${folder}/${currentLesson.srtFile}.srt`)
       .then(res => res.text())
@@ -32,7 +31,20 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   const handlePlayerRef = (player: any) => { playerRef.current = player; };
   const handleSeek      = (seconds: number) => { if (playerRef.current) playerRef.current.currentTime = seconds; };
 
-  if (!currentLesson) return <div className="text-gray-500 p-8">Lesson data not found for: {lessonId}</div>;
+  // ── Coming soon ───────────────────────────────────────────────────────────
+  if (!currentLesson) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-32 text-center">
+        <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+          <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-700">Coming Soon</h3>
+        <p className="text-sm text-gray-400 max-w-xs">This lesson is still being prepared. Check back later.</p>
+      </div>
+    );
+  }
 
   return (
     <>

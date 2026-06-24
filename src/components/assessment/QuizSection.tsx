@@ -7,6 +7,7 @@ interface QuizProps {
   questions:         Question[];
   nextSectionTitle?: string;
   previousAttempts?: number;
+  alreadyPassed?:    boolean;   // ← add
   onComplete:        (score: number) => void;
   onProceed?:        () => void;
 }
@@ -16,6 +17,7 @@ export default function QuizSection({
   questions,
   nextSectionTitle,
   previousAttempts = 0,
+  alreadyPassed = false,
   onComplete,
   onProceed,
 }: QuizProps) {
@@ -24,8 +26,8 @@ export default function QuizSection({
   const [submitted,  setSubmitted]  = useState(false);
   const [finalScore, setFinalScore] = useState<number>(0);
 
-  const isFinal      = sectionId === 'final';
-  const showAnswers  = isFinal && previousAttempts >= 3;
+const isFinal = sectionId === 'final' || sectionId.endsWith('_final');
+const showAnswers = isFinal && (previousAttempts >= 3 || alreadyPassed);
   const currentTry   = previousAttempts + 1;
   const triesLeft    = Math.max(0, 3 - previousAttempts);
   const passingScore = isFinal ? 12 : 3;
@@ -162,7 +164,7 @@ export default function QuizSection({
     <div className="flex flex-col gap-4 h-full justify-center">
 
       {/* Attempt banner (final only) */}
-      {isFinal && (
+      {isFinal && !alreadyPassed && (
         <div className={`flex items-center justify-between rounded-xl px-4 py-3 border text-sm
           ${showAnswers ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}
         >
