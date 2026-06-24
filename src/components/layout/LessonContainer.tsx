@@ -8,29 +8,31 @@ import { TranscriptLine } from '../content/Transcript';
 import { LESSON_DATA } from '../../data/LessonData';
 
 interface LessonContainerProps {
-  lessonId: string;
+  lessonId:   string;
   onComplete: () => void;
 }
 
 export default function LessonContainer({ lessonId, onComplete }: LessonContainerProps) {
-  const playerRef = useRef<any>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
+  const playerRef    = useRef<any>(null);
+  const [currentTime,      setCurrentTime]      = useState(0);
+  const [transcriptLines,  setTranscriptLines]  = useState<TranscriptLine[]>([]);
 
   const currentLesson = LESSON_DATA[lessonId];
 
   useEffect(() => {
     if (!currentLesson) return;
-    fetch(`/transcripts/module1/${currentLesson.srtFile}.srt`)
+    // Derive transcript folder from lessonId prefix
+    const folder = lessonId.startsWith('mod2_') ? 'module2' : 'module1';
+    fetch(`/transcripts/${folder}/${currentLesson.srtFile}.srt`)
       .then(res => res.text())
       .then(raw => setTranscriptLines(parseSrt(raw)))
       .catch(() => setTranscriptLines([]));
-  }, [lessonId]);
+  }, [lessonId, currentLesson]);
 
   const handlePlayerRef = (player: any) => { playerRef.current = player; };
-  const handleSeek = (seconds: number) => { if (playerRef.current) playerRef.current.currentTime = seconds; };
+  const handleSeek      = (seconds: number) => { if (playerRef.current) playerRef.current.currentTime = seconds; };
 
-  if (!currentLesson) return <div className="text-gray-500 p-8">Lesson data not found.</div>;
+  if (!currentLesson) return <div className="text-gray-500 p-8">Lesson data not found for: {lessonId}</div>;
 
   return (
     <>
@@ -72,7 +74,6 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
 
       </div>
 
-      {/* Crawley AI widget — rendered outside the layout flow so it stays fixed bottom-right */}
       <CrawleyWidget lessonId={lessonId} transcriptLines={transcriptLines} />
     </>
   );

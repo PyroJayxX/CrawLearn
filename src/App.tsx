@@ -8,38 +8,51 @@ import ModuleResults from './components/assessment/ModuleResults';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
 import AuthScreen from './components/auth/AuthScreen';
-import { ch1Questions, ch2Questions, ch3Questions, finalQuestions } from './data/Module1Questions';
+import {
+  ch1Questions, ch2Questions, ch3Questions, finalQuestions,
+  mod2Ch1Questions, mod2Ch2Questions, mod2Ch3Questions, mod2FinalQuestions,
+} from './data/Module1Questions';
 import { supabase } from './lib/supabase';
 import { loadUserProgress, saveQuizScore, saveVideoComplete } from './lib/db';
-
-// ─── Course config ─────────────────────────────────────────────────────────────
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
     id: 'module1',
     title: 'Module 1',
     sections: [
-      { id: 'ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: ch1Questions },
-      { id: 'ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: ch1Questions },
-      { id: 'ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: ch2Questions },
-      { id: 'ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: ch2Questions },
-      { id: 'ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: ch3Questions },
-      { id: 'ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: ch3Questions },
-      { id: 'final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: finalQuestions, questionCount: 15 },
+      { id: 'ch1',      title: 'Chapter 1',        hasVideo: true,  passingScore: 3,  questions: ch1Questions },
+      { id: 'ch1-quiz', title: 'Quiz 1',            hasVideo: false, passingScore: 3,  questions: ch1Questions },
+      { id: 'ch2',      title: 'Chapter 2',         hasVideo: true,  passingScore: 3,  questions: ch2Questions },
+      { id: 'ch2-quiz', title: 'Quiz 2',            hasVideo: false, passingScore: 3,  questions: ch2Questions },
+      { id: 'ch3',      title: 'Chapter 3',         hasVideo: true,  passingScore: 3,  questions: ch3Questions },
+      { id: 'ch3-quiz', title: 'Quiz 3',            hasVideo: false, passingScore: 3,  questions: ch3Questions },
+      { id: 'final',    title: 'Final Assessment',  hasVideo: false, passingScore: 12, questions: finalQuestions, questionCount: 15 },
     ],
   },
-  ...Array.from({ length: 9 }, (_, i) => ({
-    id: `module${i + 2}`,
-    title: `Module ${i + 2}`,
+  {
+    id: 'module2',
+    title: 'Module 2',
     sections: [
-      { id: 'ch1',   title: 'Chapter 1',       hasVideo: true,  passingScore: 3, questions: [] },
-      { id: 'final', title: 'Final Assessment', hasVideo: false, passingScore: 5, questions: [] },
-      { id: 'faq',   title: 'FAQs',             hasVideo: false },
+      { id: 'mod2_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod2Ch1Questions },
+      { id: 'mod2_ch1-quiz', title: 'Quiz 1',          hasVideo: false, passingScore: 3,  questions: mod2Ch1Questions },
+      { id: 'mod2_ch2',      title: 'Chapter 2',       hasVideo: true,  passingScore: 3,  questions: mod2Ch2Questions },
+      { id: 'mod2_ch2-quiz', title: 'Quiz 2',          hasVideo: false, passingScore: 3,  questions: mod2Ch2Questions },
+      { id: 'mod2_ch3',      title: 'Chapter 3',       hasVideo: true,  passingScore: 3,  questions: mod2Ch3Questions },
+      { id: 'mod2_ch3-quiz', title: 'Quiz 3',          hasVideo: false, passingScore: 3,  questions: mod2Ch3Questions },
+      { id: 'final',         title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod2FinalQuestions, questionCount: 15 },
+    ],
+  },
+  ...Array.from({ length: 8 }, (_, i) => ({
+    id: `module${i + 3}`,
+    title: `Module ${i + 3}`,
+    sections: [
+      { id: 'ch1',   title: 'Chapter 1',        hasVideo: true,  passingScore: 3, questions: [] },
+      { id: 'final', title: 'Final Assessment',  hasVideo: false, passingScore: 5, questions: [] },
     ],
   })),
 ];
 
-// ─── Default state ─────────────────────────────────────────────────────────────
+// ─── Default state ──────────────────────────────────────────────────────────
 
 function buildDefaultState(): LearningState {
   const unlockedSections: Record<string, Set<string>> = {};
@@ -56,36 +69,33 @@ function buildDefaultState(): LearningState {
   };
 }
 
-// ─── App ───────────────────────────────────────────────────────────────────────
+// ─── App ────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [session, setSession]                   = useState<Session | null>(null);
-  const [sessionLoading, setSessionLoading]     = useState(true);
-  const [progressLoading, setProgressLoading]   = useState(false);
+  const [session,         setSession]         = useState<Session | null>(null);
+  const [sessionLoading,  setSessionLoading]  = useState(true);
+  const [progressLoading, setProgressLoading] = useState(false);
 
-  const [state, setState]                       = useState<LearningState>(buildDefaultState);
-  const [sectionAttempts, setSectionAttempts]   = useState<Record<string, Record<string, number>>>({});
+  const [state,            setState]            = useState<LearningState>(buildDefaultState);
+  const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showResults, setShowResults]           = useState(false);
+  const [showResults,      setShowResults]      = useState(false);
 
-  // ── 1. Restore session on mount ───────────────────────────────────────────
+  // ── 1. Restore session on mount ─────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setSessionLoading(false);
     });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── 2. Load progress on session ───────────────────────────────────────────
+  // ── 2. Load progress when session is ready ──────────────────────────────
   useEffect(() => {
     if (!session) return;
-
     setProgressLoading(true);
     loadUserProgress(session.user.id)
       .then(({ quizScores, completedModules, attempts }) => {
@@ -96,7 +106,7 @@ export default function App() {
       .finally(() => setProgressLoading(false));
   }, [session]);
 
-  // ── Derived state ─────────────────────────────────────────────────────────
+  // ── Derived ─────────────────────────────────────────────────────────────
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -120,7 +130,7 @@ export default function App() {
 
   const currentFinalAttempts = sectionAttempts[state.currentModuleId]?.['final'] ?? 0;
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Handlers ────────────────────────────────────────────────────────────
 
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
@@ -144,9 +154,7 @@ export default function App() {
     const passingScore     = currentSection?.passingScore ?? 0;
     const previousAttempts = sectionAttempts[currentModuleId]?.[currentSectionId] ?? 0;
     const existingScore    = state.quizScores[currentModuleId]?.[currentSectionId] ?? -1;
-
-    // Only persist the better score — never overwrite a pass with a fail
-    const scoreToPersist = Math.max(score, existingScore);
+    const scoreToPersist   = Math.max(score, existingScore);
 
     const updatedQuizScores = {
       ...state.quizScores,
@@ -176,7 +184,7 @@ export default function App() {
     }));
     setSectionAttempts(updatedAttempts);
 
-    // ── Persist to Supabase ──────────────────────────────────────────────────
+    // Persist to Supabase
     if (session) {
       try {
         await saveQuizScore({
@@ -192,22 +200,21 @@ export default function App() {
       }
     }
 
-    // ── Navigate ─────────────────────────────────────────────────────────────
+    // Navigate
     if (currentSectionId === 'final') {
-      setState(prev => ({ ...prev, completedModules: newCompletedModules }));
       setShowResults(true);
-    } else {
-      const passed = scoreToPersist >= passingScore;
-      if (passed && nextSection) {
-        setState(prev => ({
-          ...prev,
-          quizScores:       updatedQuizScores,
-          completedModules: newCompletedModules,
-          currentSectionId: nextSection.id,
-          subState:         'video',
-        }));
-      }
-      // If failed: stay on current section
+    }
+    // For chapter quizzes: do NOT auto-navigate.
+    // The QuizSection passed screen calls onProceed() when the user clicks the button.
+  };
+
+  const handleProceedToNext = () => {
+    if (nextSection) {
+      setState(prev => ({
+        ...prev,
+        currentSectionId: nextSection.id,
+        subState:         'video',
+      }));
     }
   };
 
@@ -231,7 +238,7 @@ export default function App() {
     setShowResults(false);
   };
 
-  // ── Auth / loading gates ───────────────────────────────────────────────────
+  // ── Auth / loading gates ────────────────────────────────────────────────
 
   if (sessionLoading) {
     return (
@@ -241,9 +248,7 @@ export default function App() {
     );
   }
 
-  if (!session) {
-    return <AuthScreen onSuccess={() => {}} />;
-  }
+  if (!session) return <AuthScreen onSuccess={() => {}} />;
 
   if (progressLoading) {
     return (
@@ -253,9 +258,12 @@ export default function App() {
     );
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────
 
-  const moduleScores = state.quizScores[state.currentModuleId] ?? {};
+  const moduleScores         = state.quizScores[state.currentModuleId] ?? {};
+  const currentModuleIndex   = COURSE_CONFIG.findIndex(m => m.id === state.currentModuleId);
+  const nextModule           = COURSE_CONFIG[currentModuleIndex + 1] ?? null;
+  const finalPassed          = state.completedModules.has(state.currentModuleId);
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
@@ -285,17 +293,33 @@ export default function App() {
           <div className="mx-auto py-6 px-6 md:py-8 md:px-10">
             {showResults ? (
               <ModuleResults
-                moduleTitle="Module 1"
-                scores={{
-                  'Quiz 1':           { score: moduleScores['ch1-quiz'] ?? 0, total: ch1Questions.length },
-                  'Quiz 2':           { score: moduleScores['ch2-quiz'] ?? 0, total: ch2Questions.length },
-                  'Quiz 3':           { score: moduleScores['ch3-quiz'] ?? 0, total: ch3Questions.length },
-                  'Final Assessment': { score: moduleScores['final']    ?? 0, total: finalQuestions.length },
-                }}
+                moduleTitle={currentModule?.title ?? 'Module'}
+                scores={
+                  (currentModule?.sections ?? []).reduce((acc, sec) => {
+                    if ((sec.id.endsWith('-quiz') || sec.id === 'final') && (sec.questions?.length ?? 0) > 0) {
+                      acc[sec.title] = {
+                        score:        moduleScores[sec.id] ?? 0,
+                        total:        sec.questions?.length ?? 0,
+                        passingScore: sec.passingScore,
+                      };
+                    }
+                    return acc;
+                  }, {} as Record<string, { score: number; total: number; passingScore?: number }>)
+                }
+                nextModuleTitle={nextModule?.title}
+                nextModuleLocked={!finalPassed}
                 onReviewModule={() => {
                   setShowResults(false);
-                  setState(prev => ({ ...prev, currentSectionId: 'ch1', subState: 'video' }));
+                  setState(prev => ({
+                    ...prev,
+                    currentSectionId: currentModule?.sections[0]?.id ?? 'ch1',
+                    subState: 'video',
+                  }));
                 }}
+                onNextModule={nextModule ? () => {
+                  setShowResults(false);
+                  handleModuleNavigate(nextModule.id);
+                } : undefined}
               />
             ) : currentSection?.id === 'faq' ? (
               <FAQPanel />
@@ -309,6 +333,7 @@ export default function App() {
                 ) : (
                   <div className="max-w-3xl mx-auto">
                     <QuizSection
+                      key={state.currentSectionId}
                       sectionId={state.currentSectionId}
                       questions={currentSection?.questions ?? []}
                       nextSectionTitle={nextSectionTitle}
@@ -316,6 +341,7 @@ export default function App() {
                         state.currentSectionId === 'final' ? currentFinalAttempts : 0
                       }
                       onComplete={handleQuizComplete}
+                      onProceed={handleProceedToNext}
                     />
                   </div>
                 )}

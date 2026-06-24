@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Question } from '../../types';
 
 interface CardProps {
-  question:       Question;
-  selectedIndex?: number;
-  isFinal?:       boolean;
-  showAnswers?:   boolean;
-  nextLabel:      string;
-  onSelect:       (index: number) => void;
-  onNext:         () => void;
+  question:        Question;
+  selectedIndex?:  number;
+  isFinal?:        boolean;
+  showAnswers?:    boolean;
+  isLastQuestion?: boolean;
+  nextLabel:       string;
+  onSelect:        (index: number) => void;
+  onNext:          () => void;
 }
 
 export default function QuestionCard({
@@ -16,6 +17,7 @@ export default function QuestionCard({
   selectedIndex,
   isFinal = false,
   showAnswers = false,
+  isLastQuestion = false,
   nextLabel,
   onSelect,
   onNext,
@@ -26,7 +28,8 @@ export default function QuestionCard({
   const isCorrect   = selectedIndex === question.correctIndex;
 
   const getOptionStyle = (idx: number) => {
-    if (showAnswers) {
+    // ── Answer-reveal mode (final, attempt 4+, only after committed) ────────
+    if (showAnswers && isCommitted) {
       if (idx === question.correctIndex)
         return selectedIndex === idx
           ? 'border-green-500 bg-green-50 text-green-700 font-semibold'
@@ -36,6 +39,7 @@ export default function QuestionCard({
       return 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed';
     }
 
+    // ── Committed (after Submit Answer) ────────────────────────────────────
     if (isCommitted) {
       if (isFinal) {
         if (idx === selectedIndex) return 'border-accent bg-accent/10 text-accent font-semibold';
@@ -50,6 +54,7 @@ export default function QuestionCard({
       return 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed';
     }
 
+    // ── Pending selection (before Submit Answer) ───────────────────────────
     if (pendingIndex === idx)
       return 'border-accent bg-accent/10 text-accent font-semibold ring-2 ring-accent/30';
 
@@ -58,7 +63,7 @@ export default function QuestionCard({
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-      {showAnswers && (
+      {showAnswers && isCommitted && (
         <p className="mb-4 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
           Answer reveal active — correct answers are highlighted.
         </p>

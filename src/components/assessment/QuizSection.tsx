@@ -8,6 +8,7 @@ interface QuizProps {
   nextSectionTitle?: string;
   previousAttempts?: number;
   onComplete:        (score: number) => void;
+  onProceed?:        () => void;
 }
 
 export default function QuizSection({
@@ -16,10 +17,12 @@ export default function QuizSection({
   nextSectionTitle,
   previousAttempts = 0,
   onComplete,
+  onProceed,
 }: QuizProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers]       = useState<Record<number, number>>({});
-  const [finalScore, setFinalScore] = useState<number | undefined>(undefined);
+  const [answers,    setAnswers]    = useState<Record<number, number>>({});
+  const [submitted,  setSubmitted]  = useState(false);
+  const [finalScore, setFinalScore] = useState<number>(0);
 
   const isFinal      = sectionId === 'final';
   const showAnswers  = isFinal && previousAttempts >= 3;
@@ -31,8 +34,8 @@ export default function QuizSection({
   const selectedIndex  = answers[currentIdx];
   const isLastQuestion = currentIdx === questions.length - 1;
 
-  const hasFailed = finalScore !== undefined && finalScore < passingScore;
-  const hasPassed = finalScore !== undefined && finalScore >= passingScore;
+  const hasFailed = submitted && finalScore < passingScore;
+  const hasPassed = submitted && finalScore >= passingScore;
 
   const answeredCount = Object.keys(answers).length;
   const progressPct   = Math.round((answeredCount / questions.length) * 100);
@@ -45,29 +48,34 @@ export default function QuizSection({
     return score;
   };
 
+  // Step 1: user picks and submits an answer — just records it, no navigation
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== undefined) return;
-    const newAnswers = { ...answers, [currentIdx]: optionIndex };
-    setAnswers(newAnswers);
-
-    // On last question, immediately evaluate after answer is committed
-    if (isLastQuestion) {
-      const score = computeScore(newAnswers);
-      setFinalScore(score);
-    }
+    setAnswers(prev => ({ ...prev, [currentIdx]: optionIndex }));
   };
 
+  // Step 2: user clicks Next / Submit Assessment after seeing feedback
   const handleNext = () => {
-    if (!isLastQuestion) {
+    if (isLastQuestion) {
+      // Compute score from all answers including the current one
+      const finalAnswers = { ...answers };
+      // answers state may not have updated yet for current question if handleSelect
+      // and handleNext fire in the same tick — but they can't: handleNext only
+      // appears after isCommitted (selectedIndex !== undefined), so answers is set.
+      const score = computeScore(finalAnswers);
+      setFinalScore(score);
+      setSubmitted(true);
+      onComplete(score);
+    } else {
       setCurrentIdx(prev => prev + 1);
     }
-    // Last question is handled in handleSelect — nothing to do here
   };
 
   const handleRetry = () => {
     setCurrentIdx(0);
     setAnswers({});
-    setFinalScore(undefined);
+    setSubmitted(false);
+    setFinalScore(0);
   };
 
   const lastButtonLabel = isFinal
@@ -84,7 +92,7 @@ export default function QuizSection({
     );
   }
 
-  // ── Failed screen ──────────────────────────────────────────────────────────
+  // ── Failed screen ────────────────────────────────────────────────────────
   if (hasFailed) {
     return (
       <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
@@ -94,11 +102,18 @@ export default function QuizSection({
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Failed</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {isFinal ? 'Assessment Failed' : 'Quiz Failed'}
+          </h2>
           <p className="text-gray-500 text-sm">
-            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>.
+            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>.{' '}
             You need at least <span className="font-semibold text-gray-700">{passingScore}</span> to pass.
           </p>
+          {isFinal && triesLeft > 0 && (
+            <p className="text-xs text-gray-400 mt-2">
+              {triesLeft} {triesLeft === 1 ? 'attempt' : 'attempts'} remaining before answers are revealed.
+            </p>
+          )}
         </div>
         <button
           onClick={handleRetry}
@@ -110,7 +125,7 @@ export default function QuizSection({
     );
   }
 
-  // ── Passed screen ──────────────────────────────────────────────────────────
+  // ── Passed screen ────────────────────────────────────────────────────────
   if (hasPassed) {
     return (
       <div className="flex flex-col items-center justify-center gap-6 py-20 max-w-md mx-auto text-center">
@@ -120,32 +135,36 @@ export default function QuizSection({
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Passed!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {isFinal ? 'Assessment Passed!' : 'Quiz Passed!'}
+          </h2>
           <p className="text-gray-500 text-sm">
             You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>. Great work!
           </p>
         </div>
-        {nextSectionTitle && (
+        {!isFinal && nextSectionTitle && (
           <button
-            onClick={() => onComplete(finalScore!)}
+            onClick={onProceed}
             className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors"
           >
             Proceed to {nextSectionTitle} →
           </button>
         )}
+        {isFinal && (
+          <p className="text-xs text-gray-400">Loading your results…</p>
+        )}
       </div>
     );
   }
 
+  // ── Quiz in progress ─────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-4 h-full justify-center">
 
-      {/* ── Attempt banner (final assessment only) ── */}
+      {/* Attempt banner (final only) */}
       {isFinal && (
         <div className={`flex items-center justify-between rounded-xl px-4 py-3 border text-sm
-          ${showAnswers
-            ? 'bg-amber-50 border-amber-200'
-            : 'bg-blue-50 border-blue-200'}`}
+          ${showAnswers ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}
         >
           <div className="flex items-center gap-2">
             {showAnswers ? (
@@ -172,7 +191,7 @@ export default function QuizSection({
         </div>
       )}
 
-      {/* ── Question counter + progress bar ── */}
+      {/* Progress */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
           <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
@@ -186,8 +205,6 @@ export default function QuizSection({
             </span>
           )}
         </div>
-
-        {/* Progress bar */}
         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500 ease-out bg-accent"
@@ -202,6 +219,7 @@ export default function QuizSection({
         selectedIndex={selectedIndex}
         isFinal={isFinal}
         showAnswers={showAnswers}
+        isLastQuestion={isLastQuestion}
         nextLabel={isLastQuestion ? lastButtonLabel : 'Next Question →'}
         onSelect={handleSelect}
         onNext={handleNext}

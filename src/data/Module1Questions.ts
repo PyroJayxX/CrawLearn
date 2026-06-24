@@ -140,3 +140,184 @@ export const finalQuestions: Question[] = [
   ...ch2Questions,
   ...ch3Questions,
 ];
+
+export const mod2Ch1Questions: Question[] = [
+  {
+    id: 'mod2-ch1-q1',
+    text: 'Engineering Insurance first emerged during the 18th century Industrial Revolution in Great Britain primarily to address what specific hazard?',
+    options: [
+      'The collapse of early steel bridges',
+      'The constant explosion of early steam plants and boilers',
+      'The mechanical failure of diesel locomotives',
+      'Electrical fires in the first manufacturing plants',
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: 'mod2-ch1-q2',
+    text: 'What was the name of the very first company created in 1858 to handle these industrial risks?',
+    options: [
+      'The Steam Boiler Assurance Company',
+      'Lloyd’s Machinery Syndicate',
+      'The Industrial Revolution Casualty Company',
+      'The Great Britain Engineering Assurance Group',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 'mod2-ch1-q3',
+    text: 'In Engineering Insurance, a policy that protects building structures and machinery exclusively while they are being built or installed is classified as:',
+    options: [
+      'A Renewable Class',
+      'A Non-Renewable Class',
+      'A Liability Class',
+      'A Speculative Class',
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: 'mod2-ch1-q4',
+    text: 'When does coverage for a Non-Renewable engineering policy officially terminate?',
+    options: [
+      'Exactly 365 days from the policy inception date.',
+      'When the first piece of machinery is delivered.',
+      'The second the installation, testing, and commissioning are finished and the plant is ready for normal use.',
+      'When the concrete foundation is completely cured.',
+    ],
+    correctIndex: 2,
+  },
+  {
+    id: 'mod2-ch1-q5',
+    text: 'Once a new factory is fully built, accepted by the owner, and the power is switched on, it requires a different policy classification known as:',
+    options: [
+      'Renewable Classes',
+      'Contractors All Risk (CAR)',
+      'Non-Renewable Classes',
+      'Erection All Risk (EAR)',
+    ],
+    correctIndex: 0,
+  },
+];
+
+export const mod2Ch2Questions: Question[] = [
+  {
+    id: 'mod2-ch2-q1',
+    text: 'If you are building a massive infrastructure asset like a hospital, road, or warehouse complex, which policy is specifically designed to cover these structural "Civil Works"?',
+    options: [
+      'EAR (Erection All Risk)',
+      'CAR (Contractors All Risk)',
+      'EEI (Electronic Equipment Insurance)',
+      'TSI (Total Sum Insured)',
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: 'mod2-ch2-q2',
+    text: 'Erection All Risk (EAR) shifts the primary focus of the insurance coverage away from concrete structures and onto:',
+    options: [
+      'Worker liability and safety',
+      'Transportation of raw materials',
+      'Electro-Mechanical works like generators and manufacturing lines',
+      'Digital data storage and servers',
+    ],
+    correctIndex: 2,
+  },
+  {
+    id: 'mod2-ch2-q3',
+    text: 'If you are installing a new automated conveyor system under an EAR policy, how are the minor civil works (like a small concrete mount) required for that installation handled?',
+    options: [
+      'They require a separate CAR policy.',
+      'They are natively and automatically covered by the EAR policy.',
+      'They must be added via a special paid endorsement.',
+      'They are strictly excluded from Engineering Insurance.',
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: 'mod2-ch2-q4',
+    text: 'A critical difference between CAR and EAR is how they handle the high-risk "Testing and Commissioning" phase for new machinery. Which statement is correct?',
+    options: [
+      'Neither policy covers testing and commissioning.',
+      'CAR natively covers it; EAR requires a paid endorsement.',
+      'EAR natively covers it; CAR requires a paid special endorsement.',
+      'Both policies automatically cover it with no additional fees.',
+    ],
+    correctIndex: 2,
+  },
+  {
+    id: 'mod2-ch2-q5',
+    text: 'Both CAR and EAR policies utilize a broad insuring proviso. What is the core standard for a claim to be paid under these policies?',
+    options: [
+      'The loss must be due to a sudden and unforeseen physical event that isn\'t specifically excluded.',
+      'The loss must be strictly weather-related (e.g., floods, typhoons).',
+      'The loss must be caused by a third-party contractor.',
+      'The loss must exceed the gross premium written.',
+    ],
+    correctIndex: 0,
+  },
+];
+
+export const mod2Ch3Questions: Question[] = [
+  {
+    id: 'mod2-ch3-q1',
+    text: 'Why is standard property insurance considered inadequate for protecting a modern corporate control room or server array?',
+    options: [
+      'It does not cover material damage from short-circuits, voltage surges, or operator negligence.',
+      'It cannot be issued for commercial buildings.',
+      'It automatically expires after the building is constructed.',
+      'It only covers minor civil works.',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 'mod2-ch3-q2',
+    text: 'Electronic Equipment Insurance (EEI) operates as what type of policy?',
+    options: [
+      'A non-renewable cover note',
+      'A temporary construction bond',
+      'An annual, renewable "all risks" policy',
+      'A limited liability rider',
+    ],
+    correctIndex: 2,
+  },
+  {
+    id: 'mod2-ch3-q3',
+    text: 'Under an EEI policy, if a power surge physically fries a company\'s server racks and computer frames, which section pays to replace the hardware?',
+    options: [
+      'Section I: Material Damage',
+      'Section II: External Data Media',
+      'Section III: Increased Cost of Working',
+      'Section IV: Testing and Commissioning',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 'mod2-ch3-q4',
+    text: 'If hard drives are destroyed and a company must hire data engineers and spend extra manpower to fully restore the lost client information, which EEI section pays for this exact recovery cost?',
+    options: [
+      'Section I: Material Damage',
+      'Section II: External Data Media',
+      'Section III: Increased Cost of Working',
+      'Section IV: Liability',
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: 'mod2-ch3-q5',
+    text: 'A core server breaks down, threatening to halt business operations entirely. Which EEI section covers the emergency rental fees to hire substitute computer equipment so the business stays online during repairs?',
+    options: [
+      'Section I: Material Damage',
+      'Section II: External Data Media',
+      'Section III: Increased Cost of Working',
+      'Section IV: Business Interruption',
+    ],
+    correctIndex: 2,
+  },
+];
+
+// Module 2 Final assessment: all 15 questions pooled
+export const mod2FinalQuestions: Question[] = [
+  ...mod2Ch1Questions,
+  ...mod2Ch2Questions,
+  ...mod2Ch3Questions,
+];
