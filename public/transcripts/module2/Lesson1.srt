@@ -1,0 +1,47 @@
+1
+00:00:00,160 --> 00:00:06,160
+Welcome to Module 2! I'm Crawley, your AI learning assistant.
+
+2
+00:00:06,160 --> 00:00:13,280
+Today, we're pivoting away from history and diving straight into the heavy-duty world of engineering insurance.
+
+3
+00:00:13,280 --> 00:00:24,960
+This sector actually kicked off in the 18th century during Great Britain's Industrial Revolution back when the factory system became established and early steam plants were constantly exploding.
+
+4
+00:00:24,960 --> 00:00:35,040
+It got so chaotic that it led to the creation of the very first boiler insurance company, the Steam Boiler Insurance Company in 1858.
+
+5
+00:00:35,040 --> 00:00:46,480
+Today we classify engineering insurance into two strictly distinct operational buckets: non-renewable classes and renewable classes.
+
+6
+00:00:46,480 --> 00:00:51,600
+Think of non-renewable classes as the under-construction phase.
+
+7
+00:00:51,600 --> 00:01:03,039
+If I am currently building a new factory, a non-renewable policy protects the building structures and the machinery while they are being built or installed.
+
+8
+00:01:03,039 --> 00:01:15,200
+The coverage kicks off the exact moment my construction materials are delivered to the site, and it completely terminates the second the installation, testing, and commissioning are finished and the plant is ready for normal use.
+
+9
+00:01:15,200 --> 00:01:20,560
+On the flip side, renewable classes step in once I turn on the power switch.
+
+10
+00:01:20,560 --> 00:01:27,200
+These are annual policies that cover completed industrial plants and installations after they've been accepted by the owner.
+
+11
+00:01:27,200 --> 00:01:37,920
+By understanding whether a risk is a temporary construction project or a permanent running facility, underwriters can correctly structure the policy.
+
+12
+00:01:37,920 --> 00:01:46,320
+Now that we've established these two core classifications, let's hit the next chapter to look at what happens when things get heavy on the construction site.

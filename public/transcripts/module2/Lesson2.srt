@@ -1,0 +1,63 @@
+1
+00:00:00,000 --> 00:00:04,360
+All right, Crawley here again. Let's talk about the heavy construction phase.
+
+2
+00:00:04,360 --> 00:00:12,880
+If we are building a massive infrastructure asset, we have to know the difference between CAR and EAR.
+
+3
+00:00:12,880 --> 00:00:18,240
+CAR stands for Contractors All Risk insurance.
+
+4
+00:00:18,240 --> 00:00:28,800
+This policy primarily covers civil works. Think concrete, steel, and physical structures like constructing hospitals, roads, bridges, or warehouse complexes.
+
+5
+00:00:28,800 --> 00:00:37,680
+For CAR, my coverage starts the moment the construction materials are unloaded at the site, and it expires the day the building is taken over or put into service.
+
+6
+00:00:37,680 --> 00:00:42,280
+But what if the project isn't a concrete warehouse shell?
+
+7
+00:00:42,280 --> 00:00:51,200
+What if I am installing the actual machinery inside, like automated conveyor systems, power generators, manufacturing lines, or steam boilers?
+
+8
+00:00:51,200 --> 00:01:00,120
+That requires EAR, Erection All Risk insurance.
+
+9
+00:01:00,120 --> 00:01:05,040
+EAR shifts the primary focus away from the concrete and onto the electromechanical works.
+
+10
+00:01:05,040 --> 00:01:10,480
+And here is the crucial distinction you'll need for the upcoming quiz.
+
+11
+00:01:10,480 --> 00:01:14,600
+EAR automatically covers any minor civil work components needed to install those machines.
+
+12
+00:01:14,600 --> 00:01:25,720
+More importantly, EAR natively provides cover for the high-risk testing and commissioning phase for brand new machinery to ensure they don't explode when first plugged in.
+
+13
+00:01:25,720 --> 00:01:35,480
+A CAR policy can cover electromechanical testing, too, but only if I explicitly pay extra to add it via a special endorsement.
+
+14
+00:01:35,480 --> 00:01:51,640
+Both policies use a broad insuring proviso that protects against sudden and unforeseen physical losses that aren't specifically excluded, like an accidental fire, a landslide, or a worker accidentally dropping a heavy engine component during assembly.
+
+15
+00:01:51,640 --> 00:02:00,000
+Just remember, CAR is for the structural shell, and EAR is for the operational mechanical muscle.
+
+16
+00:02:00,000 --> 00:02:05,840
+Next up, we look at what happens when the building is finished and filled with sensitive silicon.

@@ -101,7 +101,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
   // ── Module 2 ──────────────────────────────────────────────────────────────
   mod2_ch1: {
     videoUrl:    'https://youtu.be/WVNCVY_mgCg',
-    srtFile:     'Mod2Lesson1',
+    srtFile:     'Lesson1',
     tag:         'ENGINEERING • POLICY CLASSES',
     title:       'Two Classes of Engineering Insurance',
     duration:    '01:45',
@@ -127,7 +127,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
 
   mod2_ch2: {
     videoUrl:    'https://youtu.be/B9AIxZOGC4w ',
-    srtFile:     'Mod2Lesson2',
+    srtFile:     'Lesson2',
     tag:         'CONSTRUCTION • RISK PROFILES',
     title:       'CAR vs. EAR',
     duration:    '02:05',
@@ -153,7 +153,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
 
   mod2_ch3: {
     videoUrl:    'https://youtu.be/eukH1QOgsNY ',
-    srtFile:     'Mod2Lesson3',
+    srtFile:     'Lesson3',
     tag:         'TECHNOLOGY • SYSTEM PROTECTION',
     title:       'Electronic Equipment Insurance',
     duration:    '01:50',

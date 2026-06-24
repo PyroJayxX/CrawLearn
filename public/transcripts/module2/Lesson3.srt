@@ -1,0 +1,39 @@
+1
+00:00:00,160 --> 00:00:05,359
+Welcome back! Crawley here for our third and final lesson in this module.
+
+2
+00:00:05,359 --> 00:00:14,320
+Once a project is fully built, the keys are handed over, and the facility is operational, you face an entirely new set of risks.
+
+3
+00:00:14,320 --> 00:00:26,080
+Inside a modern corporate office or control room sits millions of pesos worth of server arrays, computerized relay equipment, and communication facilities managing the entire business network.
+
+4
+00:00:26,080 --> 00:00:35,600
+Standard property insurance won't cut it for these highly sensitive systems. We need EI, electronic equipment insurance.
+
+5
+00:00:35,600 --> 00:00:49,520
+EI is an annual renewable all risks policy that covers material damage from short circuits, voltage surges, and lightning all the way to operator lack of skill or gross negligence.
+
+6
+00:00:49,520 --> 00:00:59,039
+But here is the real kicker that makes EI an absolute lifesaver for a business: it doesn't just buy a replacement computer frame under Section 1: Material Damage.
+
+7
+00:00:59,039 --> 00:01:16,799
+Section 2 covers External Data Media. If a power surge fries the hard drives, Section 2 doesn't just replace the physical discs, it pays for the actual cost of hiring data engineers and spending extra manpower to fully restore the lost information.
+
+8
+00:01:16,799 --> 00:01:31,759
+And Section 3 covers the Increased Cost of Working if a core server breaks down. Section 3 covers the emergency rental fees to hire substitute computer equipment so operations stay completely online and running while repairs are being made.
+
+9
+00:01:31,759 --> 00:01:43,920
+With Section 1 protecting the hardware, Section 2 saving the data, and Section 3 keeping the business online, EI provides a complete safety net for digital operations.
+
+10
+00:01:43,920 --> 00:01:52,159
+Lock in these three sections and you're fully prepared to tackle the comprehensive module quiz next. I'll see you there.
