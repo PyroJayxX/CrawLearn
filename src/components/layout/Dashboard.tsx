@@ -10,7 +10,7 @@ interface DashboardProps {
   onNavigate:   (moduleId: string, sectionId: string) => void;
 }
 
-// MiniMap component
+// ── MiniMap ───────────────────────────────────────────────────────────────────
 
 function MiniMap({
   modules,
@@ -23,7 +23,6 @@ function MiniMap({
 }) {
   const { completedModules, quizScores, currentModuleId, currentSectionId } = currentState;
 
-  // Completed modules start collapsed; in-progress starts expanded
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const s = new Set<string>();
     modules.forEach(mod => {
@@ -52,13 +51,12 @@ function MiniMap({
         const isCurrent  = mod.id === currentModuleId;
         const isOpen     = expanded.has(mod.id);
 
-        const sections      = mod.sections.filter(s => s.id !== 'faq');
-        const moduleScores  = quizScores[mod.id] ?? {};
-        const unlocked      = computeUnlocked(sections, moduleScores);
+        const sections     = mod.sections.filter(s => s.id !== 'faq');
+        const moduleScores = quizScores[mod.id] ?? {};
+        const unlocked     = computeUnlocked(sections, moduleScores);
 
         return (
           <div key={mod.id}>
-            {/* Module row */}
             <button
               onClick={() => isUnlocked && toggle(mod.id)}
               disabled={!isUnlocked}
@@ -69,7 +67,6 @@ function MiniMap({
                   ? 'bg-accent/10'
                   : 'hover:bg-gray-100'}`}
             >
-              {/* Status dot */}
               <span className={`w-4 h-4 rounded-full flex items-center justify-center flex-none
                 ${isDone
                   ? 'bg-accent'
@@ -105,7 +102,6 @@ function MiniMap({
               )}
             </button>
 
-            {/* Section rows */}
             {isOpen && isUnlocked && (
               <div className="ml-5 mb-1 border-l-2 border-gray-100 pl-3 flex flex-col gap-0.5">
                 {sections.map((sec, si) => {
@@ -117,10 +113,9 @@ function MiniMap({
                     && score >= sec.passingScore;
                   const failed            = score !== undefined && !passed && sec.passingScore !== undefined;
 
-                  // Video chapters are green when their following quiz is passed
-                  const nextSec          = sections[si + 1];
-                  const nextScore        = nextSec ? moduleScores[nextSec.id] : undefined;
-                  const videoCompleted   = sec.hasVideo
+                  const nextSec        = sections[si + 1];
+                  const nextScore      = nextSec ? moduleScores[nextSec.id] : undefined;
+                  const videoCompleted = sec.hasVideo
                     && nextSec !== undefined
                     && !nextSec.hasVideo
                     && nextScore !== undefined
@@ -128,10 +123,10 @@ function MiniMap({
                     && nextScore >= nextSec.passingScore;
 
                   let dotColor = 'bg-gray-200';
-                  if (!isSectionUnlocked)           dotColor = 'bg-gray-100';
-                  else if (passed || videoCompleted) dotColor = 'bg-green-400';
-                  else if (failed)                   dotColor = 'bg-red-300';
-                  else if (isSectionActive)          dotColor = 'bg-accent';
+                  if (!isSectionUnlocked)            dotColor = 'bg-gray-100';
+                  else if (passed || videoCompleted)  dotColor = 'bg-green-400';
+                  else if (failed)                    dotColor = 'bg-red-300';
+                  else if (isSectionActive)           dotColor = 'bg-accent';
 
                   return (
                     <button
@@ -168,7 +163,7 @@ function MiniMap({
   );
 }
 
-// StatsDonut component
+// ── StatsDonut ────────────────────────────────────────────────────────────────
 
 function StatsDonut({
   modules,
@@ -183,27 +178,43 @@ function StatsDonut({
     let passed = 0, failed = 0, remaining = 0;
     for (const mod of modules) {
       for (const sec of mod.sections) {
-        if (sec.passingScore === undefined) continue; // skip video/faq sections
+        if (sec.passingScore === undefined) continue;
         const score = quizScores[mod.id]?.[sec.id];
-        if (score === undefined)              remaining++;
-        else if (score >= sec.passingScore)   passed++;
-        else                                  failed++;
+        if (score === undefined)            remaining++;
+        else if (score >= sec.passingScore) passed++;
+        else                                failed++;
       }
     }
     return { passed, failed, remaining, total: passed + failed + remaining };
   }, [modules, quizScores]);
 
+  const hasAnyData = passed > 0 || failed > 0;
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
 
+  // Empty state
+  if (!hasAnyData) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
+        <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+          <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <p className="text-xs text-gray-400 leading-relaxed">
+          Your quiz stats will appear<br />here as you progress.
+        </p>
+      </div>
+    );
+  }
+
   const data = [
-    { name: 'Passed',     value: passed    || 0.001, color: '#3c99aa' },
-    { name: 'Failed',     value: failed    || 0.001, color: '#f87171' },
-    { name: 'Remaining',  value: remaining || 0.001, color: '#e5e7eb' },
+    { name: 'Passed',    value: passed    || 0.001, color: '#3c99aa' },
+    { name: 'Failed',    value: failed    || 0.001, color: '#f87171' },
+    { name: 'Remaining', value: remaining || 0.001, color: '#e5e7eb' },
   ];
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Donut */}
       <div className="relative h-36">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -226,14 +237,12 @@ function StatsDonut({
             />
           </PieChart>
         </ResponsiveContainer>
-        {/* Center label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-2xl font-bold text-gray-900">{pct}%</span>
           <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">done</span>
         </div>
       </div>
 
-      {/* Legend */}
       <div className="flex flex-col gap-2">
         {[
           { label: 'Passed',    value: passed,    color: 'bg-accent' },
@@ -255,16 +264,22 @@ function StatsDonut({
   );
 }
 
-// Dashboard page
+// ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function Dashboard({ modules, currentState, userName, onNavigate }: DashboardProps) {
   const { completedModules, quizScores } = currentState;
+
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   const firstName = useMemo(() => {
     if (!userName) return 'there';
     if (!userName.includes('@')) return userName.split(' ')[0];
     return userName.split('@')[0];
   }, [userName]);
+
+  const hasAnyProgress = useMemo(() =>
+    Object.keys(quizScores).length > 0 || completedModules.size > 0,
+  [quizScores, completedModules]);
 
   const realModules    = modules.filter(m => m.sections.some(s => (s.questions?.length ?? 0) > 0));
   const completedCount = realModules.filter(m => completedModules.has(m.id)).length;
@@ -274,10 +289,7 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
 
   const resumeTarget = useMemo(() => {
     for (const mod of modules) {
-      // Skip completed modules
       if (completedModules.has(mod.id)) continue;
-
-      // Skip locked modules
       const modIdx  = modules.findIndex(m => m.id === mod.id);
       const prevMod = modules[modIdx - 1];
       const isModUnlocked = modIdx === 0 || completedModules.has(prevMod?.id);
@@ -288,9 +300,7 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
 
       for (let i = 0; i < sections.length; i++) {
         const sec = sections[i];
-
         if (sec.hasVideo) {
-          // Video is done when its following quiz has been passed
           const nextSec   = sections[i + 1];
           const nextScore = nextSec ? (moduleScores[nextSec.id] ?? -1) : -1;
           const videoDone = nextSec
@@ -300,7 +310,6 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
           if (!videoDone)
             return { moduleId: mod.id, sectionId: sec.id, moduleTitle: mod.title, sectionTitle: sec.title };
         } else {
-          // Quiz/final: done when passed
           const score  = moduleScores[sec.id] ?? -1;
           const passed = sec.passingScore !== undefined && score >= sec.passingScore;
           if (!passed)
@@ -313,7 +322,7 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
 
   const getModuleStatus = (mod: ModuleConfig): 'completed' | 'in-progress' | 'locked' => {
     if (completedModules.has(mod.id)) return 'completed';
-    const idx  = modules.findIndex(m => m.id === mod.id);
+    const idx = modules.findIndex(m => m.id === mod.id);
     if (idx === 0) return 'in-progress';
     return completedModules.has(modules[idx - 1]?.id) ? 'in-progress' : 'locked';
   };
@@ -336,12 +345,45 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-6">
+
+      {/*  Onboarding banner (new users only)  */}
+      {!hasAnyProgress && !bannerDismissed && (
+        <div className="mb-6 bg-background rounded-2xl px-6 py-5 flex items-start justify-between gap-6">
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-1">Getting started</p>
+              <h2 className="text-lg font-bold text-white">Welcome to CrawLearn!</h2>
+            </div>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Each module starts with a video lesson followed by a short quiz.
+              Pass the quiz to unlock the next chapter, and complete the Final Assessment
+              to move on to the next module.
+            </p>
+            <div className="mt-1">
+              <button
+                onClick={() => onNavigate('module1', 'ch1')}
+                className="px-5 py-2.5 rounded-lg bg-white text-background text-sm font-bold hover:opacity-90 transition-opacity"
+              >
+                Start Module 1 →
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="text-white/30 hover:text-white/60 transition-colors flex-none mt-0.5"
+            aria-label="Dismiss"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-6 items-start">
 
         {/* Stats sidebar */}
         <div className="w-full lg:w-72 flex-none flex flex-col gap-4 lg:sticky lg:top-6">
-
-          {/* Quick stats / donut */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-4">Quiz Stats</p>
             <StatsDonut
@@ -351,7 +393,6 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
             />
           </div>
 
-          {/* Mini-map */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3 px-1">Course Map</p>
             <MiniMap
@@ -390,8 +431,8 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
             </div>
           </div>
 
-          {/* Continue learning */}
-          {resumeTarget && (
+          {/* Continue learning — hidden for new users */}
+          {hasAnyProgress && resumeTarget && (
             <div className="bg-background rounded-2xl px-6 py-5 flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs font-bold tracking-widest uppercase text-white/40">Continue Learning</p>
@@ -498,7 +539,6 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

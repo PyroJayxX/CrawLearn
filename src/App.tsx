@@ -329,7 +329,7 @@ export default function App() {
           onModuleNavigate={handleModuleNavigate}
           onSignOut={handleSignOut}
           onHome={() => { setShowDashboard(true); setShowResults(false); }}
-          userName={userName}
+          userName={session.user.email}
         />
       </header>
 
