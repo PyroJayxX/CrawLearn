@@ -6,6 +6,7 @@ interface NavProps {
   currentState:     LearningState;
   onModuleNavigate: (moduleId: string) => void;
   onSignOut:        () => void;
+  onHome:          () => void;
   userName?:        string;
   onSidebarToggle?: () => void; // triggers mobile drawer
 }
@@ -28,6 +29,7 @@ export default function ModuleNavigator({
   onModuleNavigate,
   onSignOut,
   userName,
+  onHome,
   onSidebarToggle,
 }: NavProps) {
   const { currentModuleId, completedModules, quizScores } = currentState;
@@ -79,7 +81,9 @@ export default function ModuleNavigator({
           </svg>
         </button>
 
-        <img src="/logo_2.png" alt="CrawLearn" className="h-8 md:h-9 w-auto" />
+        <button onClick={onHome} className="flex-none hover:opacity-75 transition-opacity">
+          <img src="/logo_2.png" alt="CrawLearn" className="h-8 md:h-9 w-auto" />
+        </button>
 
         <div className="hidden sm:block w-px h-5 bg-white/10" />
 

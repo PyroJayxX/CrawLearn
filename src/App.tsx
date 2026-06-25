@@ -8,6 +8,7 @@ import ModuleResults from './components/assessment/ModuleResults';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
 import AuthScreen from './components/auth/AuthScreen';
+import Dashboard from './components/layout/Dashboard';
 import {
   ch1Questions, ch2Questions, ch3Questions, finalQuestions,
   mod2Ch1Questions, mod2Ch2Questions, mod2Ch3Questions, mod2FinalQuestions,
@@ -48,8 +49,8 @@ const COURSE_CONFIG: ModuleConfig[] = [
       id: `module${n}`,
       title: `Module ${n}`,
       sections: [
-        { id: `mod${n}_ch1`,   title: 'Chapter 1',       hasVideo: true,  passingScore: 3, questions: [] },
-        { id: `mod${n}_final`, title: 'Final Assessment', hasVideo: false, passingScore: 5, questions: [] },
+        { id: `mod${n}_ch1`,   title: 'Chapter 1',        hasVideo: true,  passingScore: 3, questions: [] },
+        { id: `mod${n}_final`, title: 'Final Assessment',  hasVideo: false, passingScore: 5, questions: [] },
       ],
     };
   }),
@@ -81,6 +82,7 @@ export default function App() {
   const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showResults,      setShowResults]      = useState(false);
+  const [showDashboard,    setShowDashboard]    = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => setMinLoadDone(true), 800);
@@ -112,7 +114,6 @@ export default function App() {
       .finally(() => setProgressLoading(false));
   }, [session]);
 
-
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
   [state.currentModuleId]);
@@ -140,6 +141,7 @@ export default function App() {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
     if (!mod) return;
     setShowResults(false);
+    setShowDashboard(false);
     setState(prev => ({
       ...prev,
       currentModuleId:  moduleId,
@@ -150,7 +152,14 @@ export default function App() {
 
   const handleSectionNavigate = (sectionId: string) => {
     setShowResults(false);
+    setShowDashboard(false);
     setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
+  };
+
+  const handleDashboardNavigate = (moduleId: string, sectionId: string) => {
+    setShowDashboard(false);
+    setShowResults(false);
+    setState(prev => ({ ...prev, currentModuleId: moduleId, currentSectionId: sectionId, subState: 'video' }));
   };
 
   const handleQuizComplete = async (score: number) => {
@@ -237,9 +246,10 @@ export default function App() {
     setState(buildDefaultState());
     setSectionAttempts({});
     setShowResults(false);
+    setShowDashboard(true);
   };
 
-  // ── Auth / loading gates ───────────────────────────────────────────────────
+  // ── Loading / auth gates ───────────────────────────────────────────────────
 
   const isLoading = sessionLoading || !minLoadDone;
 
@@ -281,6 +291,7 @@ export default function App() {
           currentState={state}
           onModuleNavigate={handleModuleNavigate}
           onSignOut={handleSignOut}
+          onHome={() => { setShowDashboard(true); setShowResults(false); }}
           userName={
             session.user.user_metadata?.full_name as string | undefined
             ?? session.user.email
@@ -289,17 +300,29 @@ export default function App() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <CourseSidebar
-          modules={COURSE_CONFIG}
-          currentState={state}
-          collapsed={sidebarCollapsed}
-          onCollapsedChange={setSidebarCollapsed}
-          onSectionNavigate={handleSectionNavigate}
-        />
+        {!showDashboard && (
+          <CourseSidebar
+            modules={COURSE_CONFIG}
+            currentState={state}
+            collapsed={sidebarCollapsed}
+            onCollapsedChange={setSidebarCollapsed}
+            onSectionNavigate={handleSectionNavigate}
+          />
+        )}
 
         <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
           <div className="mx-auto py-6 px-6 md:py-8 md:px-10">
-            {showResults ? (
+            {showDashboard ? (
+              <Dashboard
+                modules={COURSE_CONFIG}
+                currentState={state}
+                userName={
+                  session.user.user_metadata?.full_name as string | undefined
+                  ?? session.user.email
+                }
+                onNavigate={handleDashboardNavigate}
+              />
+            ) : showResults ? (
               <ModuleResults
                 moduleTitle={currentModule?.title ?? 'Module'}
                 scores={
