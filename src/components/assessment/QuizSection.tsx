@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import QuestionCard from './QuestionCard';
 import { Question } from '../../types';
+import { playPass, playFail } from '../../lib/sounds';
 
 interface QuizProps {
   sectionId:         string;
@@ -98,7 +99,6 @@ export default function QuizSection({
   const hasPassed = submitted && finalScore >= passingScore;
 
   const answeredCount = Object.keys(answers).length;
-
   const computeScore = (finalAnswers: Record<number, number>) => {
     let score = 0;
     questions.forEach((q, idx) => {
@@ -143,6 +143,12 @@ export default function QuizSection({
       </div>
     );
   }
+
+  useEffect(() => {
+    if (!submitted) return;
+    hasPassed ? playPass() : playFail();
+  }, [submitted]);
+
 // ── Failed ───────────────────────────────────────────────────────────────
 if (hasFailed) {
   return (
@@ -205,41 +211,19 @@ if (hasPassed) {
     <div className="flex flex-col gap-4 h-full justify-center">
 
       {/* Attempt banner (final only) */}
-      {isFinal && !alreadyPassed && (
-        <div className={`flex items-center justify-between rounded-xl px-4 py-3 border text-sm
-          ${showAnswers ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}
-        >
-          <div className="flex items-center gap-2">
-            {showAnswers ? (
-              <>
-                <span className="text-amber-600">⚠</span>
-                <span className="font-semibold text-amber-700">Answers revealed</span>
-                <span className="text-amber-600/70 text-xs">· You've used all 3 attempts</span>
-              </>
-            ) : (
-              <>
-                <span className="text-blue-500">📋</span>
-                <span className="font-semibold text-blue-700">Try {currentTry} of 3</span>
-                {triesLeft > 0 && (
-                  <span className="text-blue-500/70 text-xs">
-                    · Answers revealed after {triesLeft} more failed {triesLeft === 1 ? 'attempt' : 'attempts'}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-          <span className="text-xs font-bold tracking-widest uppercase text-gray-400">
-            {currentIdx + 1} / {questions.length}
-          </span>
-        </div>
-      )}
-
-      {/* Progress — caterpillar */}
+      {/* Progress header */}
       <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center mb-1">
+        <div className="flex justify-between items-center">
           <span className="text-xs font-bold tracking-widest uppercase text-gray-500">
             Question {currentIdx + 1} of {questions.length}
           </span>
+          {isFinal && !alreadyPassed && (
+            showAnswers ? (
+              <span className="text-xs font-semibold text-amber-600">⚠ Answers revealed</span>
+            ) : (
+              <span className="text-xs text-gray-400">Attempt {currentTry} of 3</span>
+            )
+          )}
           {!isFinal && selectedIndex !== undefined && (
             <span className={`text-xs font-semibold ${selectedIndex === currentQ.correctIndex ? 'text-green-600' : 'text-red-500'}`}>
               {selectedIndex === currentQ.correctIndex ? 'Correct!' : 'Incorrect'}

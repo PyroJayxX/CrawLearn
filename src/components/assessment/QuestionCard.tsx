@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Question } from '../../types';
+import { playCorrect, playDragClick, playIncorrect } from '../../lib/sounds';
 
 interface CardProps {
   question:        Question;
@@ -73,6 +74,7 @@ export default function QuestionCard({
             key={idx}
             onClick={() => {
               if (isCommitted) return;
+              playDragClick();
               setPendingIndex(idx);
             }}
             disabled={isCommitted}
@@ -89,6 +91,9 @@ export default function QuestionCard({
           <button
             onClick={() => {
               if (pendingIndex === undefined) return;
+              if (showAnswers) {
+                pendingIndex === question.correctIndex ? playCorrect() : playIncorrect();
+              }
               onSelect(pendingIndex);
             }}
             disabled={pendingIndex === undefined}
