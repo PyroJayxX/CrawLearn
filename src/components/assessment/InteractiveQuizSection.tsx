@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { playPass, playFail, playIncorrect, playCorrect, playDragClick, playDrop } from '../../lib/sounds';
 import {
   DndContext,
   closestCenter,
@@ -78,7 +79,9 @@ function MultipleChoiceQuestion({
   const handleSubmit = () => {
     if (pending === undefined) return;
     setCommitted(pending);
-    onScore(pending === payload.correctIndex);
+    const correct = pending === payload.correctIndex;
+    correct ? playCorrect() : playIncorrect();
+    onScore(correct);
   };
 
   return (
@@ -116,12 +119,21 @@ function MultipleChoiceQuestion({
 function DraggableCard({ id, text, style }: { id: string; text: string; style: string }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
   const s = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)` } : undefined;
+  const listenersWithSound = {
+    ...listeners,
+    onPointerDown: (e: React.PointerEvent) => {
+      playDragClick();
+      listeners?.onPointerDown?.(e);
+    },
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={s}
       {...attributes}
       {...listeners}
+      {...listenersWithSound}
       className={`px-3 py-2 rounded-lg border-2 text-sm transition-all duration-200 cursor-grab active:cursor-grabbing select-none
         ${isDragging ? 'opacity-50 shadow-lg z-50' : ''}
         ${style}`}
@@ -143,6 +155,7 @@ function DroppableBucket({
   submitted: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: bucket });
+  
   return (
     <div
       ref={setNodeRef}
@@ -187,8 +200,9 @@ function ClassificationQuestion({
     const { active, over } = event;
     setActiveId(null);
     if (!over) return;
+    playDrop(); // add this
     const cardText = active.id as string;
-    const bucket   = over.id as string;
+    const bucket = over.id as string;
     if (payload.buckets.includes(bucket)) {
       setAssignments(prev => ({ ...prev, [cardText]: bucket }));
     } else if (over.id === 'bank') {
@@ -198,6 +212,7 @@ function ClassificationQuestion({
 
   const handleSubmit = () => {
     const correct = payload.cards.every(c => assignments[c.text] === c.belongsTo);
+    correct ? playCorrect() : playIncorrect(); // add this
     setSubmitted(true);
     setIsCorrect(correct);
     onScore(correct);
@@ -335,6 +350,7 @@ function FillInTheBlanksQuestion({
 
   const handleSubmit = () => {
     const correct = blankKeys.every(k => filled[k] === payload.correctAnswers[k]);
+    correct ? playCorrect() : playIncorrect(); // add this
     setSubmitted(true);
     setIsCorrect(correct);
     onScore(correct);
@@ -428,7 +444,7 @@ function FillInTheBlanksQuestion({
           ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}
         >
           <span className={`text-sm font-semibold ${isCorrect ? 'text-green-700' : 'text-red-600'}`}>
-            {isCorrect ? 'Correct!' : 'One or more blanks are wrong.'}
+            {isCorrect ? 'Correct!' : 'That\'s not quite right.'}
           </span>
           {!isCorrect && attemptsLeft > 0 && (
             <button
@@ -448,6 +464,14 @@ function FillInTheBlanksQuestion({
 function SortableItem({ id, text, submitted, isCorrect }: { id: string; text: string; submitted: boolean; isCorrect: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
+  const listenersWithSound = {
+    ...listeners,
+    onPointerDown: (e: React.PointerEvent) => {
+      playDragClick();
+      listeners?.onPointerDown?.(e);
+    },
+  };
+
 
   return (
     <div
@@ -462,6 +486,7 @@ function SortableItem({ id, text, submitted, isCorrect }: { id: string; text: st
           : 'border-gray-200 text-gray-800 cursor-grab active:cursor-grabbing hover:border-accent/50 hover:shadow-sm'}`}
       {...attributes}
       {...listeners}
+      {...listenersWithSound}
     >
       {/* Drag handle */}
       <svg className="w-4 h-4 text-gray-400 flex-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -506,6 +531,7 @@ function SequentialOrderingQuestion({
     if (submitted) return;
     const { active, over } = event;
     if (over && active.id !== over.id) {
+      playDrop(); // add this
       setItems(prev => {
         const oldIdx = prev.findIndex(i => i.id === active.id);
         const newIdx = prev.findIndex(i => i.id === over.id);
@@ -515,9 +541,9 @@ function SequentialOrderingQuestion({
   };
 
   const handleSubmit = () => {
-    // Compare current positions to correct order
     const result = items.map((item, idx) => item.order === idx + 1);
     const allCorrect = result.every(Boolean);
+    allCorrect ? playCorrect() : playIncorrect(); // add this
     setCorrectness(result);
     setSubmitted(true);
     setIsCorrect(allCorrect);
@@ -670,6 +696,16 @@ export default function InteractiveQuizSection({
       </div>
     );
   }
+  
+  const didPlaySound = useRef(false);
+    useEffect(() => {
+      if (finalScore === null) return;
+      if (didPlaySound.current) return;
+      didPlaySound.current = true;
+      finalScore >= passingScore ? playPass() : playFail();
+    }, [finalScore]);
+
+
 // ── Pass/Fail screen ──────────────────────────────────────────────────
 if (finalScore !== null) {
   const passed = finalScore >= passingScore;
