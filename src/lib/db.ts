@@ -124,3 +124,37 @@ export async function saveVideoComplete(
 
   if (error) console.error('saveVideoComplete:', error);
 }
+
+/**
+ * Load the user's profile (display_name, user_number, etc.)
+ * Returns null if no profile row exists yet.
+ */
+export async function loadUserProfile(userId: string): Promise<{
+  displayName: string | null;
+  userNumber:  number | null;
+} | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('display_name, user_number')
+    .eq('id', userId)
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    displayName: data.display_name ?? null,
+    userNumber:  data.user_number  ?? null,
+  };
+}
+
+/**
+ * Save the display name the user sets in the onboarding modal.
+ */
+export async function saveDisplayName(userId: string, displayName: string) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ display_name: displayName })
+    .eq('id', userId);
+
+  if (error) throw error;
+}

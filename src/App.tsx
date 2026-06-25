@@ -8,13 +8,14 @@ import ModuleResults from './components/assessment/ModuleResults';
 import FAQPanel from './components/shared/FAQPanel';
 import LessonContainer from './components/layout/LessonContainer';
 import AuthScreen from './components/auth/AuthScreen';
+import OnboardingModal from './components/auth/OnboardingModal';
 import Dashboard from './components/layout/Dashboard';
 import {
   ch1Questions, ch2Questions, ch3Questions, finalQuestions,
   mod2Ch1Questions, mod2Ch2Questions, mod2Ch3Questions, mod2FinalQuestions,
 } from './data/Module1Questions';
 import { supabase } from './lib/supabase';
-import { loadUserProgress, saveQuizScore, saveVideoComplete } from './lib/db';
+import { loadUserProgress, loadUserProfile, saveDisplayName, saveQuizScore, saveVideoComplete } from './lib/db';
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
@@ -49,8 +50,8 @@ const COURSE_CONFIG: ModuleConfig[] = [
       id: `module${n}`,
       title: `Module ${n}`,
       sections: [
-        { id: `mod${n}_ch1`,   title: 'Chapter 1',        hasVideo: true,  passingScore: 3, questions: [] },
-        { id: `mod${n}_final`, title: 'Final Assessment',  hasVideo: false, passingScore: 5, questions: [] },
+        { id: `mod${n}_ch1`,   title: 'Chapter 1',       hasVideo: true,  passingScore: 3, questions: [] },
+        { id: `mod${n}_final`, title: 'Final Assessment', hasVideo: false, passingScore: 5, questions: [] },
       ],
     };
   }),
@@ -74,9 +75,11 @@ function buildDefaultState(): LearningState {
 export default function App() {
   const [session,         setSession]         = useState<Session | null>(null);
   const [sessionLoading,  setSessionLoading]  = useState(true);
-  const [progressLoading, setProgressLoading] = useState(false);
   const [minLoadDone,     setMinLoadDone]     = useState(false);
   const hasLoadedOnce                         = useRef(false);
+
+  const [displayName,     setDisplayName]     = useState<string | null>(null);
+  const [showOnboarding,  setShowOnboarding]  = useState(false);
 
   const [state,            setState]            = useState<LearningState>(buildDefaultState);
   const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
@@ -84,11 +87,13 @@ export default function App() {
   const [showResults,      setShowResults]      = useState(false);
   const [showDashboard,    setShowDashboard]    = useState(true);
 
+  // ── Minimum loading time ──────────────────────────────────────────────────
   useEffect(() => {
     const t = setTimeout(() => setMinLoadDone(true), 800);
     return () => clearTimeout(t);
   }, []);
 
+  // ── Session ───────────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -100,19 +105,28 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // ── Load progress + profile ───────────────────────────────────────────────
   useEffect(() => {
     if (!session) return;
     if (hasLoadedOnce.current) return;
     hasLoadedOnce.current = true;
-    setProgressLoading(true);
-    loadUserProgress(session.user.id)
-      .then(({ quizScores, completedModules, attempts }) => {
-        setState(prev => ({ ...prev, quizScores, completedModules }));
-        setSectionAttempts(attempts);
-      })
-      .catch(err => console.error('Failed to load progress:', err))
-      .finally(() => setProgressLoading(false));
+
+    Promise.all([
+      loadUserProgress(session.user.id),
+      loadUserProfile(session.user.id),
+    ]).then(([progress, profile]) => {
+      setState(prev => ({ ...prev, quizScores: progress.quizScores, completedModules: progress.completedModules }));
+      setSectionAttempts(progress.attempts);
+
+      if (!profile?.displayName) {
+        setShowOnboarding(true);
+      } else {
+        setDisplayName(profile.displayName);
+      }
+    }).catch(err => console.error('Failed to load:', err));
   }, [session]);
+
+  // ── Derived ───────────────────────────────────────────────────────────────
 
   const currentModule = useMemo(() =>
     COURSE_CONFIG.find(m => m.id === state.currentModuleId),
@@ -136,6 +150,20 @@ export default function App() {
 
   const currentFinalAttempts =
     sectionAttempts[state.currentModuleId]?.[state.currentSectionId] ?? 0;
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  const handleOnboardingSubmit = async (name: string) => {
+    setDisplayName(name);
+    setShowOnboarding(false);
+    if (session) {
+      try {
+        await saveDisplayName(session.user.id, name);
+      } catch (err) {
+        console.error('Failed to save display name:', err);
+      }
+    }
+  };
 
   const handleModuleNavigate = (moduleId: string) => {
     const mod = COURSE_CONFIG.find(m => m.id === moduleId);
@@ -247,9 +275,11 @@ export default function App() {
     setSectionAttempts({});
     setShowResults(false);
     setShowDashboard(true);
+    setDisplayName(null);
+    setShowOnboarding(false);
   };
 
-  // ── Loading / auth gates ───────────────────────────────────────────────────
+  // ── Gates ─────────────────────────────────────────────────────────────────
 
   const isLoading = sessionLoading || !minLoadDone;
 
@@ -267,7 +297,7 @@ export default function App() {
           ))}
         </div>
         <p className="text-xs uppercase tracking-widest text-white/30 font-semibold">
-          {sessionLoading ? 'Starting up…' : 'Loading your progress…'}
+          Starting up…
         </p>
       </div>
     );
@@ -282,9 +312,16 @@ export default function App() {
   const nextModule         = COURSE_CONFIG[currentModuleIndex + 1] ?? null;
   const finalPassed        = state.completedModules.has(state.currentModuleId);
   const isFinalSection     = state.currentSectionId.endsWith('final');
+  const userName           = displayName ?? session.user.user_metadata?.full_name ?? session.user.email;
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
+
+      {/* Onboarding modal */}
+      {showOnboarding && (
+        <OnboardingModal onSubmit={handleOnboardingSubmit} />
+      )}
+
       <header className="flex-none h-18 bg-background border-b border-white/5 relative z-50">
         <ModuleNavigator
           modules={COURSE_CONFIG}
@@ -292,10 +329,7 @@ export default function App() {
           onModuleNavigate={handleModuleNavigate}
           onSignOut={handleSignOut}
           onHome={() => { setShowDashboard(true); setShowResults(false); }}
-          userName={
-            session.user.user_metadata?.full_name as string | undefined
-            ?? session.user.email
-          }
+          userName={userName}
         />
       </header>
 
@@ -316,10 +350,7 @@ export default function App() {
               <Dashboard
                 modules={COURSE_CONFIG}
                 currentState={state}
-                userName={
-                  session.user.user_metadata?.full_name as string | undefined
-                  ?? session.user.email
-                }
+                userName={userName}
                 onNavigate={handleDashboardNavigate}
               />
             ) : showResults ? (
