@@ -1,3 +1,5 @@
+import { InteractiveQuizQuestion } from "../data/InteractiveQuizTypes";
+
 export type SubState = 'video' | 'quiz';
 
 export interface Question {
@@ -11,9 +13,9 @@ export interface SectionConfig {
   id: string;
   title: string;
   hasVideo: boolean;
-  passingScore?: number;   
-  questionCount?: number;  
-  questions?: Question[];
+  passingScore?: number;
+  questionCount?: number;
+  questions?: Question[] | InteractiveQuizQuestion[];
 }
 
 export interface ModuleConfig {

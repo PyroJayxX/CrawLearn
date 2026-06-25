@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
-import { LearningState, ModuleConfig } from './types';
+import { LearningState, ModuleConfig, Question } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
 import CourseSidebar from './components/layout/CourseSidebar';
 import QuizSection from './components/assessment/QuizSection';
@@ -11,36 +11,46 @@ import AuthScreen from './components/auth/AuthScreen';
 import OnboardingModal from './components/auth/OnboardingModal';
 import Dashboard from './components/layout/Dashboard';
 import {
-  ch1Questions, ch2Questions, ch3Questions, finalQuestions,
-  mod2Ch1Questions, mod2Ch2Questions, mod2Ch3Questions, mod2FinalQuestions,
+  mod1FinalQuestions,
+  mod1Ch1Quiz,
+  mod1Ch2Quiz,
+  mod1Ch3Quiz,
 } from './data/Module1Questions';
+import {
+  mod2Ch1Quiz,
+  mod2Ch2Quiz,
+  mod2Ch3Quiz,
+  mod2FinalQuestions,
+} from './data/Module2Questions';
 import { supabase } from './lib/supabase';
 import { loadUserProgress, loadUserProfile, saveDisplayName, saveQuizScore, saveVideoComplete } from './lib/db';
+import InteractiveQuizSection from './components/assessment/InteractiveQuizSection';
+import { InteractiveQuizQuestion } from './data/InteractiveQuizTypes';
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
     id: 'module1',
     title: 'Module 1',
     sections: [
-      { id: 'ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: ch1Questions },
-      { id: 'ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: ch1Questions },
-      { id: 'ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: ch2Questions },
-      { id: 'ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: ch2Questions },
-      { id: 'ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: ch3Questions },
-      { id: 'ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: ch3Questions },
-      { id: 'final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: finalQuestions, questionCount: 15 },
+      { id: 'ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod1Ch1Quiz },
+      { id: 'ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod1Ch1Quiz },
+      { id: 'ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod1Ch2Quiz },
+      { id: 'ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod1Ch2Quiz },
+      { id: 'ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod1Ch3Quiz },
+      { id: 'ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod1Ch3Quiz },
+      { id: 'final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod1FinalQuestions, questionCount: 15 },
     ],
   },
   {
     id: 'module2',
     title: 'Module 2',
     sections: [
-      { id: 'mod2_ch1',      title: 'Chapter 1',        hasVideo: true,  passingScore: 3,  questions: mod2Ch1Questions },
-      { id: 'mod2_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod2Ch1Questions },
-      { id: 'mod2_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod2Ch2Questions },
-      { id: 'mod2_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod2Ch2Questions },
-      { id: 'mod2_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod2Ch3Questions },
-      { id: 'mod2_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod2Ch3Questions },
+      { id: 'mod2_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod2Ch1Quiz },
+      { id: 'mod2_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod2Ch1Quiz },
+      { id: 'mod2_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod2Ch2Quiz },
+      { id: 'mod2_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod2Ch2Quiz },
+      { id: 'mod2_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod2Ch3Quiz },
+      { id: 'mod2_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod2Ch3Quiz },
       { id: 'mod2_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod2FinalQuestions, questionCount: 15 },
     ],
   },
@@ -50,8 +60,8 @@ const COURSE_CONFIG: ModuleConfig[] = [
       id: `module${n}`,
       title: `Module ${n}`,
       sections: [
-        { id: `mod${n}_ch1`,   title: 'Chapter 1',       hasVideo: true,  passingScore: 3, questions: [] },
-        { id: `mod${n}_final`, title: 'Final Assessment', hasVideo: false, passingScore: 5, questions: [] },
+        { id: `mod${n}_ch1`,   title: 'Chapter 1',        hasVideo: true,  passingScore: 3, questions: [] },
+        { id: `mod${n}_final`, title: 'Final Assessment',  hasVideo: false, passingScore: 5, questions: [] },
       ],
     };
   }),
@@ -394,20 +404,31 @@ export default function App() {
                   />
                 ) : (
                   <div className="max-w-3xl mx-auto">
-                    <QuizSection
-                      key={state.currentSectionId}
-                      sectionId={state.currentSectionId}
-                      questions={currentSection?.questions ?? []}
-                      nextSectionTitle={nextSectionTitle}
-                      previousAttempts={isFinalSection ? currentFinalAttempts : 0}
-                      alreadyPassed={
-                        isFinalSection
-                          ? (state.quizScores[state.currentModuleId]?.[state.currentSectionId] ?? -1) >= (currentSection?.passingScore ?? 0)
-                          : false
-                      }
-                      onComplete={handleQuizComplete}
-                      onProceed={handleProceedToNext}
-                    />
+                    {currentSection?.questions?.length && 'type' in (currentSection.questions[0] ?? {}) ? (
+                      <InteractiveQuizSection
+                        key={state.currentSectionId}
+                        sectionId={state.currentSectionId}
+                        questions={currentSection.questions as InteractiveQuizQuestion[]}
+                        nextSectionTitle={nextSectionTitle}
+                        onComplete={handleQuizComplete}
+                        onProceed={handleProceedToNext}
+                      />
+                    ) : (
+                      <QuizSection
+                        key={state.currentSectionId}
+                        sectionId={state.currentSectionId}
+                        questions={(currentSection?.questions ?? []) as Question[]}
+                        nextSectionTitle={nextSectionTitle}
+                        previousAttempts={isFinalSection ? currentFinalAttempts : 0}
+                        alreadyPassed={
+                          isFinalSection
+                            ? (state.quizScores[state.currentModuleId]?.[state.currentSectionId] ?? -1) >= (currentSection?.passingScore ?? 0)
+                            : false
+                        }
+                        onComplete={handleQuizComplete}
+                        onProceed={handleProceedToNext}
+                      />
+                    )}
                   </div>
                 )}
               </>
