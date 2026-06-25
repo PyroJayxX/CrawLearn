@@ -142,9 +142,9 @@ export const mod1Ch1Quiz: InteractiveQuizQuestion[] = [
       buckets: ['Ancient Babylon / Italy', 'Traditional Philippines'],
       cards: [
         { text: "Compensating crime victims if a robber wasn't caught", belongsTo: 'Ancient Babylon / Italy' },
-        { text: "Paluwagan (Homegrown local mutual pooling fund)", belongsTo: 'Traditional Philippines' },
-        { text: "Bottomry Bond (Vessel hull used as credit collateral)", belongsTo: 'Ancient Babylon / Italy' },
-        { text: "Abuloy (Community collection for family grief affairs)", belongsTo: 'Traditional Philippines' },
+        { text: "Paluwagan", belongsTo: 'Traditional Philippines' },
+        { text: "Bottomry Bond", belongsTo: 'Ancient Babylon / Italy' },
+        { text: "Abuloy", belongsTo: 'Traditional Philippines' },
       ],
     },
   },
@@ -203,7 +203,7 @@ export const mod1Ch2Quiz: InteractiveQuizQuestion[] = [
     type: 'fill-in-the-blanks',
     instruction: "Complete the definition that details the functional difference between Risk and Peril.",
     payload: {
-      sentence: "Risk is strictly defined as the fundamental ______ [blank1] concerning a loss. Conversely, Peril is the actual immediate ______ [blank2] of the loss.",
+      sentence: "Risk is strictly defined as the fundamental [blank1] concerning a loss. Conversely, Peril is the actual immediate [blank2] of the loss.",
       optionsBank: ['uncertainty', 'cause', 'hazard', 'probability'],
       correctAnswers: {
         blank1: 'uncertainty',
@@ -243,7 +243,7 @@ export const mod1Ch2Quiz: InteractiveQuizQuestion[] = [
     type: 'fill-in-the-blanks',
     instruction: "Complete the fundamental underwriting rules regarding premium value collection and policy values.",
     payload: {
-      sentence: "The face amount listed on a document representing liability limits is the ______ [blank1]. To activate it, a consideration value must be paid; the industry general rule dictates no ______ [blank2] equals no policy liability.",
+      sentence: "The face amount listed on a document representing liability limits is the [blank1]. To activate it, a consideration value must be paid; the industry general rule dictates no [blank2] equals no policy liability.",
       optionsBank: ['total sum insured', 'premium', 'net premium', 'face asset'],
       correctAnswers: {
         blank1: 'total sum insured',

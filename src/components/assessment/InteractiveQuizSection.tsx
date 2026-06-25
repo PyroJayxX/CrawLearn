@@ -92,7 +92,11 @@ function MultipleChoiceQuestion({
           <button
             key={idx}
             disabled={isCommitted}
-            onClick={() => !isCommitted && setPending(idx)}
+            onClick={() => {
+              if (isCommitted) return;
+              playDragClick();
+              setPending(idx);
+            }}
             className={`text-left px-4 py-3.5 rounded-xl border-2 transition-all duration-200 text-sm ${getStyle(idx)}`}
           >
             {opt}
@@ -334,15 +338,16 @@ function FillInTheBlanksQuestion({
 
   const handleOptionClick = (opt: string) => {
     if (submitted) return;
-    // Find first empty blank and fill it; if all filled, do nothing
     const firstEmpty = blankKeys.find(k => filled[k] === '');
     if (firstEmpty) {
+      playDragClick();
       setFilled(prev => ({ ...prev, [firstEmpty]: opt }));
     }
   };
 
   const handleClearBlank = (key: string) => {
     if (submitted) return;
+    playDrop();
     setFilled(prev => ({ ...prev, [key]: '' }));
   };
 
@@ -777,11 +782,7 @@ if (finalScore !== null) {
       <div className="bg-white border border-gray-200 rounded-xl p-5 md:p-7 shadow-sm">
         {/* Type badge + instruction */}
         <div className="flex items-center gap-2 mb-4">
-          <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full
-            ${current.type === 'multiple-choice'     ? 'bg-blue-100 text-blue-600'
-            : current.type === 'classification'      ? 'bg-purple-100 text-purple-600'
-            : current.type === 'fill-in-the-blanks'  ? 'bg-amber-100 text-amber-600'
-            : 'bg-teal-100 text-teal-600'}`}>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-accent/10 text-accent">
             {current.type.replace(/-/g, ' ')}
           </span>
         </div>

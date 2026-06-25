@@ -43,6 +43,5 @@ export function playDragClick() {
 }
 
 export function playDrop() {
-  playTone(350, 0.06, 'triangle', 0.12);
-  setTimeout(() => playTone(300, 0.08, 'triangle', 0.1), 60);
+  playTone(300, 0.08, 'triangle', 0.15);
 }
