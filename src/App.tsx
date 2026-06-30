@@ -10,6 +10,7 @@ import LessonContainer from './components/layout/LessonContainer';
 import AuthScreen from './components/auth/AuthScreen';
 import OnboardingModal from './components/auth/OnboardingModal';
 import Dashboard from './components/layout/Dashboard';
+import LandingPage from './components/layout/LandingPage';
 import {
   mod1FinalQuestions,
   mod1Ch1Quiz,
@@ -90,6 +91,10 @@ export default function App() {
 
   const [displayName,     setDisplayName]     = useState<string | null>(null);
   const [showOnboarding,  setShowOnboarding]  = useState(false);
+
+  // Auth flow
+  const [showAuth,        setShowAuth]        = useState(false);
+  const [authMode,        setAuthMode]        = useState<'login' | 'signup'>('signup');
 
   const [state,            setState]            = useState<LearningState>(buildDefaultState);
   const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
@@ -287,6 +292,7 @@ export default function App() {
     setShowDashboard(true);
     setDisplayName(null);
     setShowOnboarding(false);
+    setShowAuth(false);
   };
 
   // ── Gates ─────────────────────────────────────────────────────────────────
@@ -313,7 +319,23 @@ export default function App() {
     );
   }
 
-  if (!session) return <AuthScreen onSuccess={() => {}} />;
+  if (!session) {
+    if (showAuth) {
+      return (
+        <AuthScreen
+          mode={authMode}
+          onSuccess={() => setShowAuth(false)}
+          onBack={() => setShowAuth(false)}
+        />
+      );
+    }
+    return (
+      <LandingPage
+        onLogin={() => { setAuthMode('login'); setShowAuth(true); }}
+        onSignup={() => { setAuthMode('signup'); setShowAuth(true); }}
+      />
+    );
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -327,7 +349,6 @@ export default function App() {
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
 
-      {/* Onboarding modal */}
       {showOnboarding && (
         <OnboardingModal onSubmit={handleOnboardingSubmit} />
       )}
@@ -339,7 +360,7 @@ export default function App() {
           onModuleNavigate={handleModuleNavigate}
           onSignOut={handleSignOut}
           onHome={() => { setShowDashboard(true); setShowResults(false); }}
-          userName={session.user.email}
+          userName={userName}
         />
       </header>
 
