@@ -23,6 +23,12 @@ import {
   mod2Ch3Quiz,
   mod2FinalQuestions,
 } from './data/Module2Questions';
+import {
+  mod3Ch1Quiz,
+  mod3Ch2Quiz,
+  mod3Ch3Quiz,
+  mod3FinalQuestions,
+} from './data/Module3Questions';
 import { supabase } from './lib/supabase';
 import { loadUserProgress, loadUserProfile, saveDisplayName, saveQuizScore, saveVideoComplete } from './lib/db';
 import InteractiveQuizSection from './components/assessment/InteractiveQuizSection';
@@ -55,8 +61,21 @@ const COURSE_CONFIG: ModuleConfig[] = [
       { id: 'mod2_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod2FinalQuestions, questionCount: 15 },
     ],
   },
+  {
+    id: 'module3',
+    title: 'Module 3',
+    sections: [
+      { id: 'mod3_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod3Ch1Quiz },
+      { id: 'mod3_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod3Ch1Quiz },
+      { id: 'mod3_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod3Ch2Quiz },
+      { id: 'mod3_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod3Ch2Quiz },
+      { id: 'mod3_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod3Ch3Quiz },
+      { id: 'mod3_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod3Ch3Quiz },
+      { id: 'mod3_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod3FinalQuestions, questionCount: 15 },
+    ],
+  },
   ...Array.from({ length: 8 }, (_, i) => {
-    const n = i + 3;
+    const n = i + 4;
     return {
       id: `module${n}`,
       title: `Module ${n}`,

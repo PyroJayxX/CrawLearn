@@ -186,4 +186,102 @@ export const LESSON_DATA: Record<string, LessonData> = {
     ],
     pdfUrl:      '/materials/Module2.pdf',
   },
+
+  mod3_ch1: {
+    videoUrl:    'https://youtu.be/z874nORfFZQ',
+    srtFile:     '',
+    tag:         'INSURANCE • LIABILITY COVERAGE',
+    title:       'The Weight Of The Wheel',
+    duration:    'TBD',
+    description: 'Motor insurance provides essential protection against physical and financial risks on the road. The standard Motor Car Policy offers mandatory lifelines, including Compulsory Third Party Liability and No Fault Indemnity, to ensure immediate relief for public injuries without proving negligence.',
+    topics: [
+      { icon: '🚗', label: 'Standard Vehicle Categories' },
+      { icon: '🛡️', label: 'Third-Party Liability' },
+      { icon: '⏱️', label: 'No Fault Indemnity' }
+    ],
+    faqs: [
+      {
+        id:       'mod3_ch1-faq-1',
+        question: 'What happens if an authorized driver crashes a vehicle they do not own?',
+        answer:   'If the driver holds a private car or motorcycle policy, the "Driving Other Car" clause extends third-party liability protection to them while driving a borrowed vehicle.'
+      },
+      {
+        id:       'mod3_ch1-faq-2',
+        question: 'Can an injured family member claim third-party liability benefits?',
+        answer:   'No. Compulsory Third Party Liability (CTPL) explicitly excludes the insured\'s household members, close family, and employees from third-party protection.'
+      },
+      {
+        id:       'mod3_ch1-faq-3',
+        question: 'Do I have to wait for a lengthy court battle to pay for emergency hospital care if my car injures someone?',
+        answer:   'No. Section II: No Fault Indemnity provides immediate relief up to 15,000 pesos without the need to prove who was at fault, requiring only basic proof like a police or medical report.'
+      }
+    ],
+    pdfUrl:      '/materials/Module3.pdf',
+  },
+
+  mod3_ch2: {
+    videoUrl:    'https://youtu.be/ir1n2KbBXrs',
+    srtFile:     '',
+    tag:         'INSURANCE • PROPERTY DAMAGE',
+    title:       'The Cost Of The Crash',
+    duration:    'TBD',
+    description: 'Vehicle collisions involve shared financial responsibilities between the insurer and the policyholder. This section covers physical loss and damage to the vehicle, explaining how depreciation and deductibles are applied to repair costs, and outlines excess liability limits for catastrophic accidents.',
+    topics: [
+      { icon: '💥', label: 'Covered Perils And Towing' },
+      { icon: '📉', label: 'Depreciation And Deductibles' },
+      { icon: '⚖️', label: 'Excess Liability Safety Nets' }
+    ],
+    faqs: [
+      {
+        id:       'mod3_ch2-faq-1',
+        question: 'What happens if my older car needs brand-new replacement parts after a crash?',
+        answer:   'Because a car loses value over time, you will share the repair cost through depreciation. You must pay a set percentage of the brand-new part\'s cost based entirely on the age of your vehicle.'
+      },
+      {
+        id:       'mod3_ch2-faq-2',
+        question: 'Why do I have to pay a deductible even if I have insurance?',
+        answer:   'Deductibles exist to keep the system free of tiny, nuisance claims. By requiring a minimum out-of-pocket payment, insurers can keep overall premiums affordable for everyone.'
+      },
+      {
+        id:       'mod3_ch2-faq-3',
+        question: 'Can I take my damaged car to any mechanic and charge the insurer whatever they quote?',
+        answer:   'No. Insurers enforce an Authorized Repair Limit, meaning the covered repair costs are strictly capped at the manufacturer\'s official price catalogue.'
+      }
+    ],
+    pdfUrl:      '/materials/Module3.pdf',
+  },
+
+  mod3_ch3: {
+    videoUrl:    'https://youtu.be/eW9MACTJ8AI',
+    srtFile:     '',
+    tag:         'INSURANCE • LEGAL PRINCIPLES',
+    title:       'The Rules Of The Road',
+    duration:    'TBD',
+    description: 'Insurance contracts operate on strict legal doctrines that require honesty and responsibility from the policyholder. Understanding fundamental principles like utmost good faith, proximate cause, and subrogation is critical to ensuring coverage remains valid during a claim settlement.',
+    topics: [
+      { icon: '🤝', label: 'Utmost Good Faith' },
+      { icon: '🔍', label: 'Proximate Cause And Indemnity' },
+      { icon: '🚫', label: 'Exceptions And Cancellation' }
+    ],
+    faqs: [
+      {
+        id:       'mod3_ch3-faq-1',
+        question: 'Will the standard policy cover my car if it is swept away in a flood?',
+        answer:   'No. Standard motor car policies do not cover acts of nature like floods, typhoons, or earthquakes unless you specifically pay to add that coverage extension.'
+      },
+      {
+        id:       'mod3_ch3-faq-2',
+        question: 'If another reckless driver hits me, do I have to sue them myself to get money for repairs?',
+        answer:   'No. Through the Principle of Subrogation, your insurer can pay your claim immediately and then take over your legal right to pursue the at-fault driver to recover the money.'
+      },
+      {
+        id:       'mod3_ch3-faq-3',
+        question: 'Can I cancel my motor car policy if I sell the vehicle mid-year?',
+        answer:   'Yes, you can cancel the policy at any time. However, a Short Period Rate Scale penalty applies to the refund to cover the insurer\'s administrative costs.'
+      }
+    ],
+    pdfUrl:      '/materials/Module3.pdf',
+  }
+
+  
 };
