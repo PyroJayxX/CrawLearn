@@ -10,8 +10,6 @@ interface DashboardProps {
   onNavigate:   (moduleId: string, sectionId: string) => void;
 }
 
-// ── MiniMap ───────────────────────────────────────────────────────────────────
-
 function MiniMap({
   modules,
   currentState,
@@ -124,9 +122,9 @@ function MiniMap({
 
                   let dotColor = 'bg-gray-200';
                   if (!isSectionUnlocked)            dotColor = 'bg-gray-100';
-                  else if (passed || videoCompleted)  dotColor = 'bg-green-400';
-                  else if (failed)                    dotColor = 'bg-red-300';
-                  else if (isSectionActive)           dotColor = 'bg-accent';
+                  else if (passed || videoCompleted) dotColor = 'bg-green-400';
+                  else if (failed)                   dotColor = 'bg-red-300';
+                  else if (isSectionActive)          dotColor = 'bg-accent';
 
                   return (
                     <button
@@ -163,8 +161,6 @@ function MiniMap({
   );
 }
 
-// ── StatsDonut ────────────────────────────────────────────────────────────────
-
 function StatsDonut({
   modules,
   quizScores,
@@ -191,7 +187,6 @@ function StatsDonut({
   const hasAnyData = passed > 0 || failed > 0;
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
 
-  // Empty state
   if (!hasAnyData) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
@@ -264,7 +259,106 @@ function StatsDonut({
   );
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────────────────
+function StreakTracker() {
+  const [streak] = useState(3);
+
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const activeToday = 4;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center flex-none">
+          <span className="text-lg">🔥</span>
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-gray-900 leading-none">{streak}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">day streak</p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-1">
+        {days.map((d, i) => (
+          <div key={i} className="flex flex-col items-center gap-1 flex-1">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold
+                ${i < activeToday
+                  ? 'bg-accent text-white'
+                  : i === activeToday
+                  ? 'bg-accent/15 text-accent ring-2 ring-accent'
+                  : 'bg-gray-100 text-gray-300'}`}
+            >
+              {i < activeToday ? (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : d}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-gray-400 leading-relaxed">
+        Complete a lesson or quiz today to keep your streak alive.
+      </p>
+    </div>
+  );
+}
+
+interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  exp: number;
+  isCurrentUser?: boolean;
+}
+
+function Leaderboard({ currentUserName }: { currentUserName: string }) {
+  const mockEntries: LeaderboardEntry[] = useMemo(() => {
+    const others = [
+      { name: 'Maria Santos', exp: 1280 },
+      { name: 'Jasper Reyes', exp: 1120 },
+      { name: 'Kim Dela Cruz', exp: 940 },
+      { name: 'Anton Garcia', exp: 760 },
+    ];
+    const me = { name: currentUserName || 'You', exp: 540, isCurrentUser: true };
+
+    return [...others, me]
+      .sort((a, b) => b.exp - a.exp)
+      .map((entry, i) => ({ ...entry, rank: i + 1 }));
+  }, [currentUserName]);
+
+  const medalColor = (rank: number) => {
+    if (rank === 1) return 'bg-yellow-100 text-yellow-700';
+    if (rank === 2) return 'bg-gray-100 text-gray-500';
+    if (rank === 3) return 'bg-orange-100 text-orange-600';
+    return 'bg-gray-50 text-gray-400';
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-[10px] text-gray-400 leading-relaxed mb-1">
+        EXP system coming soon — showing placeholder data.
+      </p>
+      {mockEntries.map(entry => (
+        <div
+          key={entry.rank}
+          className={`flex items-center gap-3 px-2.5 py-2 rounded-lg
+            ${entry.isCurrentUser ? 'bg-accent/10 ring-1 ring-accent/30' : ''}`}
+        >
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-none ${medalColor(entry.rank)}`}>
+            {entry.rank}
+          </span>
+          <span className={`flex-1 text-xs truncate ${entry.isCurrentUser ? 'font-bold text-accent' : 'font-medium text-gray-700'}`}>
+            {entry.name}{entry.isCurrentUser ? ' (You)' : ''}
+          </span>
+          <span className="text-[11px] font-semibold text-gray-400 flex-none">
+            {entry.exp} XP
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Dashboard({ modules, currentState, userName, onNavigate }: DashboardProps) {
   const { completedModules, quizScores } = currentState;
@@ -344,9 +438,8 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-6">
+    <div className="max-w-[100rem] mx-auto py-10 px-6">
 
-      {/*  Onboarding banner (new users only)  */}
       {!hasAnyProgress && !bannerDismissed && (
         <div className="mb-6 bg-background rounded-2xl px-6 py-5 flex items-start justify-between gap-6">
           <div className="flex flex-col gap-3">
@@ -380,10 +473,10 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      {/* CHANGED: Added justify-center here so columns stay tightly grouped together in the middle */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start justify-center">
 
-        {/* Stats sidebar */}
-        <div className="w-full lg:w-72 flex-none flex flex-col gap-4 lg:sticky lg:top-6">
+        <div className="w-full xl:w-72 flex-none flex flex-col gap-4 xl:sticky xl:top-6">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-4">Quiz Stats</p>
             <StatsDonut
@@ -403,10 +496,9 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="flex-1 min-w-0 flex flex-col gap-6">
+        {/* CHANGED: Removed flex-1 min-w-0 and added w-full xl:max-w-3xl to keep it cleanly sized */}
+        <div className="w-full xl:max-w-3xl flex flex-col gap-6">
 
-          {/* Welcome card */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-7 py-6 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -431,7 +523,6 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
             </div>
           </div>
 
-          {/* Continue learning — hidden for new users */}
           {hasAnyProgress && resumeTarget && (
             <div className="bg-background rounded-2xl px-6 py-5 flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
@@ -451,7 +542,6 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
             </div>
           )}
 
-          {/* Module list */}
           <div className="flex flex-col gap-1">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">Course Modules</p>
             <div className="flex flex-col gap-2">
@@ -539,6 +629,19 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
             </div>
           </div>
         </div>
+
+        <div className="w-full xl:w-72 flex-none flex flex-col gap-4 xl:sticky xl:top-6">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5">
+            <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-4">Streak</p>
+            <StreakTracker />
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-5">
+            <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3 px-1">Leaderboard</p>
+            <Leaderboard currentUserName={firstName} />
+          </div>
+        </div>
+
       </div>
     </div>
   );

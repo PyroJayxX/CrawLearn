@@ -11,6 +11,7 @@ interface TranscriptProps {
   lines?: TranscriptLine[];
   currentTime?: number;
   onSeek?: (seconds: number) => void;
+  onCollapse?: () => void;
 }
 
 const MOCK_LINES: TranscriptLine[] = [
@@ -25,6 +26,7 @@ export default function InteractiveTranscript({
   lines = MOCK_LINES,
   currentTime = 0,
   onSeek,
+  onCollapse,
 }: TranscriptProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -44,16 +46,22 @@ export default function InteractiveTranscript({
   return (
     <div className="flex flex-col h-full overflow-hidden">
 
-      {/* ── Header: label + search + options ── */}
+      {/* ── Header: label + collapse + options ── */}
       <div className="flex items-center justify-between mb-4 flex-none">
         <span className="text-xs font-bold tracking-widest uppercase text-gray-900">Transcript</span>
         <div className="flex items-center gap-1">
-          {/* More options */}
-          <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors" title="Options">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" />
-            </svg>
-          </button>
+          {onCollapse && (
+            <button
+              onClick={onCollapse}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              aria-label="Hide transcript"
+              title="Hide transcript"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M4 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 

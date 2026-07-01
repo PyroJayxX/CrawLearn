@@ -9,6 +9,10 @@ export interface LessonData {
   description: string;
   topics:      { icon: string; label: string }[];
   faqs:        FAQItem[];
+  // Optional: link to the source-material PDF, used by Read mode.
+  // Leave undefined until you have the file hosted — PdfViewer falls
+  // back to an empty state automatically.
+  pdfUrl?:     string;
 }
 
 // Single merged map — key = section id used in COURSE_CONFIG
@@ -39,6 +43,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'In ancient maritime trade, a bottomry bond used the physical hull or vessel of the ship as collateral for a loan, while respondentia secured the loan using the commercial cargo carried inside the ship.',
       },
     ],
+    pdfUrl:      '/materials/Module1.pdf',
   },
 
   ch2: {
@@ -65,6 +70,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Taking on massive amounts of risk alone can bankrupt a primary insurer. Reinsurance acts as an "insurance of an insurance," allowing the primary company to share a portion of their Total Sum Insured (TSI) and premiums with a professional reinsurer to mitigate catastrophic financial hits.',
       },
     ],
+    pdfUrl:      '/materials/Module1.pdf',
   },
 
   ch3: {
@@ -96,6 +102,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'A rescissible contract is technically valid but can be legally set aside if a party violates the principle of "utmost good faith." This usually happens when the insured conceals a material fact or misrepresents information that would have influenced the premium pricing or the decision to underwrite the risk.',
       },
     ],
+    pdfUrl:      '/materials/Module1.pdf',
   },
 
   // ── Module 2 ──────────────────────────────────────────────────────────────
@@ -123,6 +130,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Coverage kicks off the exact moment your construction materials are unloaded and delivered to the project site.',
       },
     ],
+    pdfUrl:      '/materials/Module2.pdf',
   },
 
   mod2_ch2: {
@@ -149,6 +157,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Not automatically. While EAR natively covers the testing and commissioning phase for new machinery, you must explicitly pay extra for a special endorsement to add testing coverage to a CAR policy.',
       },
     ],
+    pdfUrl:      '/materials/Module2.pdf',
   },
 
   mod2_ch3: {
@@ -175,5 +184,6 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   "This is where EEI Section III kicks in. It covers the Increased Cost of Working, effectively paying for the emergency rental fees to hire substitute computer equipment so your business operations don't stall.",
       },
     ],
+    pdfUrl:      '/materials/Module2.pdf',
   },
 };
