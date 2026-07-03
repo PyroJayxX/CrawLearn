@@ -189,10 +189,10 @@ export const LESSON_DATA: Record<string, LessonData> = {
 
   mod3_ch1: {
     videoUrl:    'https://youtu.be/z874nORfFZQ',
-    srtFile:     '',
+    srtFile:     'Lesson1',
     tag:         'INSURANCE • LIABILITY COVERAGE',
     title:       'The Weight Of The Wheel',
-    duration:    'TBD',
+    duration:    '2:22',
     description: 'Motor insurance provides essential protection against physical and financial risks on the road. The standard Motor Car Policy offers mandatory lifelines, including Compulsory Third Party Liability and No Fault Indemnity, to ensure immediate relief for public injuries without proving negligence.',
     topics: [
       { icon: '🚗', label: 'Standard Vehicle Categories' },
@@ -221,10 +221,10 @@ export const LESSON_DATA: Record<string, LessonData> = {
 
   mod3_ch2: {
     videoUrl:    'https://youtu.be/ir1n2KbBXrs',
-    srtFile:     '',
+    srtFile:     'Lesson2',
     tag:         'INSURANCE • PROPERTY DAMAGE',
     title:       'The Cost Of The Crash',
-    duration:    'TBD',
+    duration:    '1:58',
     description: 'Vehicle collisions involve shared financial responsibilities between the insurer and the policyholder. This section covers physical loss and damage to the vehicle, explaining how depreciation and deductibles are applied to repair costs, and outlines excess liability limits for catastrophic accidents.',
     topics: [
       { icon: '💥', label: 'Covered Perils And Towing' },
@@ -253,10 +253,10 @@ export const LESSON_DATA: Record<string, LessonData> = {
 
   mod3_ch3: {
     videoUrl:    'https://youtu.be/eW9MACTJ8AI',
-    srtFile:     '',
+    srtFile:     'Lesson3',
     tag:         'INSURANCE • LEGAL PRINCIPLES',
     title:       'The Rules Of The Road',
-    duration:    'TBD',
+    duration:    '2:04',
     description: 'Insurance contracts operate on strict legal doctrines that require honesty and responsibility from the policyholder. Understanding fundamental principles like utmost good faith, proximate cause, and subrogation is critical to ensuring coverage remains valid during a claim settlement.',
     topics: [
       { icon: '🤝', label: 'Utmost Good Faith' },

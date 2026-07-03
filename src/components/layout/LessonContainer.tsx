@@ -28,13 +28,16 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   const currentLesson = LESSON_DATA[lessonId];
 
   useEffect(() => {
-    if (!currentLesson) return;
-    const folder = lessonId.startsWith('mod2_') ? 'module2' : 'module1';
-    fetch(`/transcripts/${folder}/${currentLesson.srtFile}.srt`)
-      .then(res => res.text())
-      .then(raw => setTranscriptLines(parseSrt(raw)))
-      .catch(() => setTranscriptLines([]));
-  }, [lessonId, currentLesson]);
+  if (!currentLesson) return;
+
+  const match  = lessonId.match(/^mod(\d+)_/);
+  const folder = match ? `module${match[1]}` : 'module1';
+
+  fetch(`/transcripts/${folder}/${currentLesson.srtFile}.srt`)
+    .then(res => res.text())
+    .then(raw => setTranscriptLines(parseSrt(raw)))
+    .catch(() => setTranscriptLines([]));
+}, [lessonId, currentLesson]);
 
   // Reset to a sane default whenever the lesson changes
   useEffect(() => {
