@@ -401,6 +401,7 @@ export default function App() {
                 modules={COURSE_CONFIG}
                 currentState={state}
                 userName={userName}
+                userId={session.user.id}
                 onNavigate={handleDashboardNavigate}
               />
             ) : showResults ? (

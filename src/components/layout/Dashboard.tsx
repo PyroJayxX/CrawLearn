@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { LearningState, ModuleConfig } from '../../types';
 import { computeUnlocked } from '../../lib/progress';
+import { useStreak, useLeaderboard } from '../../lib/useDashboardData';
 
 interface DashboardProps {
   modules:      ModuleConfig[];
   currentState: LearningState;
   userName?:    string;
+  userId?:      string; // Supabase auth user id — needed for streak + leaderboard
   onNavigate:   (moduleId: string, sectionId: string) => void;
 }
 
@@ -259,11 +261,29 @@ function StatsDonut({
   );
 }
 
-function StreakTracker() {
-  const [streak] = useState(3);
+// ── Streak — now backed by Supabase via useStreak() ─────────────────────
+function StreakTracker({ userId }: { userId?: string }) {
+  const { streak, loading } = useStreak(userId);
 
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const activeToday = 4;
+  // JS getDay(): 0 = Sunday ... 6 = Saturday. Convert to Mon-first index (0-6).
+  const todayIdx = (new Date().getDay() + 6) % 7;
+
+  if (!userId || loading) {
+    return (
+      <div className="flex flex-col gap-4 animate-pulse">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-full bg-gray-100 flex-none" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-6 w-8 bg-gray-100 rounded" />
+            <div className="h-2.5 w-16 bg-gray-100 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentStreak = streak?.currentStreak ?? 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -272,7 +292,7 @@ function StreakTracker() {
           <span className="text-lg">🔥</span>
         </div>
         <div>
-          <p className="text-2xl font-bold text-gray-900 leading-none">{streak}</p>
+          <p className="text-2xl font-bold text-gray-900 leading-none">{currentStreak}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">day streak</p>
         </div>
       </div>
@@ -281,51 +301,27 @@ function StreakTracker() {
         {days.map((d, i) => (
           <div key={i} className="flex flex-col items-center gap-1 flex-1">
             <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold
-                ${i < activeToday
-                  ? 'bg-accent text-white'
-                  : i === activeToday
-                  ? 'bg-accent/15 text-accent ring-2 ring-accent'
-                  : 'bg-gray-100 text-gray-300'}`}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors
+                ${i === todayIdx
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-gray-200 bg-gray-50 text-gray-400'}`}
             >
-              {i < activeToday ? (
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : d}
+              {d}
             </div>
           </div>
         ))}
       </div>
 
       <p className="text-[11px] text-gray-400 leading-relaxed">
-        Complete a lesson or quiz today to keep your streak alive.
+        Complete a chapter or quiz today to keep your streak going!
       </p>
     </div>
   );
 }
 
-interface LeaderboardEntry {
-  rank: number;
-  name: string;
-  exp: number;
-  isCurrentUser?: boolean;
-}
-
-function Leaderboard({ currentUserName }: { currentUserName: string }) {
-  const mockEntries: LeaderboardEntry[] = useMemo(() => {
-    const others = [
-      { name: 'Maria Santos', exp: 1280 },
-      { name: 'Jasper Reyes', exp: 1120 },
-      { name: 'Kim Dela Cruz', exp: 940 },
-      { name: 'Anton Garcia', exp: 760 },
-    ];
-    const me = { name: currentUserName || 'You', exp: 540, isCurrentUser: true };
-
-    return [...others, me]
-      .sort((a, b) => b.exp - a.exp)
-      .map((entry, i) => ({ ...entry, rank: i + 1 }));
-  }, [currentUserName]);
+// ── Leaderboard — now backed by Supabase via useLeaderboard() ───────────
+function Leaderboard({ userId }: { userId?: string }) {
+  const { entries, loading } = useLeaderboard(userId, 3);
 
   const medalColor = (rank: number) => {
     if (rank === 1) return 'bg-yellow-100 text-yellow-700';
@@ -334,14 +330,33 @@ function Leaderboard({ currentUserName }: { currentUserName: string }) {
     return 'bg-gray-50 text-gray-400';
   };
 
+  if (!userId || loading) {
+    return (
+      <div className="flex flex-col gap-2 animate-pulse">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="h-10 bg-gray-100 rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <p className="text-xs text-gray-400 leading-relaxed py-4 text-center">
+        No XP earned yet — pass a quiz to appear on the leaderboard.
+      </p>
+    );
+  }
+
+  const topEntries = entries.slice(0, 3);
+  const currentUserEntry = entries.find(entry => entry.isCurrentUser);
+  const showSkippedBreak = Boolean(currentUserEntry && currentUserEntry.rank > 3);
+
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-[10px] text-gray-400 leading-relaxed mb-1">
-        EXP system coming soon — showing placeholder data.
-      </p>
-      {mockEntries.map(entry => (
+      {topEntries.map(entry => (
         <div
-          key={entry.rank}
+          key={entry.userId}
           className={`flex items-center gap-3 px-2.5 py-2 rounded-lg
             ${entry.isCurrentUser ? 'bg-accent/10 ring-1 ring-accent/30' : ''}`}
         >
@@ -352,15 +367,41 @@ function Leaderboard({ currentUserName }: { currentUserName: string }) {
             {entry.name}{entry.isCurrentUser ? ' (You)' : ''}
           </span>
           <span className="text-[11px] font-semibold text-gray-400 flex-none">
-            {entry.exp} XP
+            {entry.xp} XP
           </span>
         </div>
       ))}
+
+      {showSkippedBreak && currentUserEntry && (
+        <div className="flex items-center gap-3 py-2 px-1">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs font-semibold tracking-[0.35em] text-gray-300 uppercase leading-none">
+            •••
+          </span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+      )}
+
+      {showSkippedBreak && currentUserEntry && (
+        <div
+          className="flex items-center gap-3 px-2.5 py-2 rounded-lg bg-accent/10 ring-1 ring-accent/30"
+        >
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-none bg-accent/15 text-accent">
+            {currentUserEntry.rank}
+          </span>
+          <span className="flex-1 text-xs truncate font-bold text-accent">
+            {currentUserEntry.name} (You)
+          </span>
+          <span className="text-[11px] font-semibold text-gray-400 flex-none">
+            {currentUserEntry.xp} XP
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function Dashboard({ modules, currentState, userName, onNavigate }: DashboardProps) {
+export default function Dashboard({ modules, currentState, userName, userId, onNavigate }: DashboardProps) {
   const { completedModules, quizScores } = currentState;
 
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -633,12 +674,12 @@ export default function Dashboard({ modules, currentState, userName, onNavigate 
         <div className="w-full xl:w-72 flex-none flex flex-col gap-4 xl:sticky xl:top-6">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-4">Streak</p>
-            <StreakTracker />
+            <StreakTracker userId={userId} />
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3 px-1">Leaderboard</p>
-            <Leaderboard currentUserName={firstName} />
+            <Leaderboard userId={userId} />
           </div>
         </div>
 
