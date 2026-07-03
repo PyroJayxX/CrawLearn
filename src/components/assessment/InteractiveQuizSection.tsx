@@ -163,7 +163,7 @@ function DroppableBucket({
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[100px] rounded-xl border-2 p-3 flex flex-col gap-2 transition-all duration-200
+      className={`min-h-25 rounded-xl border-2 p-3 flex flex-col gap-2 transition-all duration-200
         ${isOver && !submitted ? 'border-accent bg-accent/10' : isTarget && !submitted ? 'border-accent/40 bg-accent/5' : 'border-gray-200 bg-gray-50'}
         ${submitted ? 'cursor-default' : ''}`}
     >
@@ -402,7 +402,7 @@ function FillInTheBlanksQuestion({
               key={i}
               onClick={() => handleClearBlank(key)}
               disabled={submitted || !val}
-              className={`inline-flex items-center justify-center mx-1 px-3 py-0.5 rounded-lg border-2 min-w-[80px] text-sm font-semibold transition-all duration-200 ${getBlankStyle(key)}`}
+              className={`inline-flex items-center justify-center mx-1 px-3 py-0.5 rounded-lg border-2 min-w-20 text-sm font-semibold transition-all duration-200 ${getBlankStyle(key)}`}
             >
               {val || <span className="text-gray-400 font-normal text-xs">blank</span>}
             </button>
@@ -623,6 +623,11 @@ interface InteractiveQuizSectionProps {
   sectionId:         string;
   questions:         InteractiveQuizQuestion[];
   nextSectionTitle?: string;
+  resultSummary?: {
+    xpEarned:      number;
+    rank?:         number;
+    totalLearners?: number;
+  } | null;
   onComplete:        (score: number) => void;
   onProceed?:        () => void;
 }
@@ -633,6 +638,7 @@ export default function InteractiveQuizSection({
   sectionId,
   questions,
   nextSectionTitle,
+  resultSummary = null,
   onComplete,
   onProceed,
 }: InteractiveQuizSectionProps) {
@@ -692,6 +698,9 @@ export default function InteractiveQuizSection({
 
   const passingScore = 3;
   const answeredCount = scores.length;
+  const topPercent = resultSummary?.rank && resultSummary.totalLearners
+    ? Math.max(1, Math.ceil((resultSummary.rank / resultSummary.totalLearners) * 100))
+    : null;
 
   // ── No questions ──────────────────────────────────────────────────────
   if (questions.length === 0) {
@@ -715,44 +724,59 @@ export default function InteractiveQuizSection({
 if (finalScore !== null) {
   const passed = finalScore >= passingScore;
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-white border border-gray-200 rounded-xl p-10 shadow-sm flex flex-col items-center gap-6 text-center">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center ${passed ? 'bg-green-100' : 'bg-red-100'}`}>
-          <svg className={`w-8 h-8 ${passed ? 'text-green-500' : 'text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {passed
-              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />}
-          </svg>
+    <div className="min-h-[70vh] flex items-center justify-center px-4">
+      <div className="w-full max-w-xl bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+
+        {/* Score panel */}
+        <div className={`flex flex-col items-center justify-center gap-1 py-8 sm:py-0 ${passed ? 'bg-accent' : 'bg-[#10374d]'}`}>
+          <span className="font-serif text-5xl font-semibold text-white tabular-nums leading-none">{finalScore}</span>
+          <span className={`text-sm ${passed ? 'text-white/70' : 'text-white/50'}`}>of {questions.length}</span>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{passed ? 'Quiz Passed!' : 'Quiz Failed'}</h2>
-          <p className="text-gray-500 text-sm">
-            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>.
-            {!passed && <> You need at least <span className="font-semibold text-gray-700">{passingScore}</span> to pass.</>}
-            {passed && ' Great work!'}
-          </p>
+
+        {/* Details */}
+        <div className="flex flex-col gap-4 px-7 py-7">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Quiz result</p>
+            <h2 className="font-serif text-2xl font-semibold text-gray-900">{passed ? 'Quiz passed' : 'Quiz failed'}</h2>
+            <p className="text-gray-500 text-sm">
+              {passed
+                ? 'Great work — that\'s a clean pass.'
+                : <>You need at least <span className="font-semibold text-gray-700">{passingScore}</span> correct to pass.</>}
+            </p>
+          </div>
+
+          {resultSummary && (
+            <div className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-4 py-2 w-fit">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-none" />
+              <p className="text-sm font-semibold text-amber-800">
+                +{resultSummary.xpEarned} XP
+                {passed && topPercent ? <span className="font-normal text-amber-700"> · top {topPercent}% of learners</span> : null}
+              </p>
+            </div>
+          )}
+
+          {passed && nextSectionTitle && (
+            <button onClick={onProceed} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:opacity-90 transition-opacity w-fit">
+              Proceed to {nextSectionTitle} →
+            </button>
+          )}
+          {!passed && (
+            <button
+              onClick={() => {
+                setFinalScore(null);
+                setCurrentIdx(0);
+                setScores([]);
+                setAttempts(0);
+                setLocked(false);
+                setScored(false);
+                setQuestionKey(k => k + 1);
+              }}
+              className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:opacity-90 transition-opacity w-fit"
+            >
+              Try Again
+            </button>
+          )}
         </div>
-        {passed && nextSectionTitle && (
-          <button onClick={onProceed} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors">
-            Proceed to {nextSectionTitle} →
-          </button>
-        )}
-        {!passed && (
-          <button
-            onClick={() => {
-              setFinalScore(null);
-              setCurrentIdx(0);
-              setScores([]);
-              setAttempts(0);
-              setLocked(false);
-              setScored(false);
-              setQuestionKey(k => k + 1);
-            }}
-            className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors"
-          >
-            Try Again
-          </button>
-        )}
       </div>
     </div>
   );

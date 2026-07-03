@@ -30,9 +30,17 @@ import {
   mod3FinalQuestions,
 } from './data/Module3Questions';
 import { supabase } from './lib/supabase';
-import { loadUserProgress, loadUserProfile, saveDisplayName, saveQuizScore, saveVideoComplete } from './lib/db';
+import { loadLearnerRank, loadUserProgress, loadUserProfile, saveDisplayName, saveQuizScore, saveVideoComplete } from './lib/db';
 import InteractiveQuizSection from './components/assessment/InteractiveQuizSection';
 import { InteractiveQuizQuestion } from './data/InteractiveQuizTypes';
+
+type QuizCompletionSummary = {
+  moduleId:      string;
+  sectionId:     string;
+  xpEarned:      number;
+  rank?:         number;
+  totalLearners?: number;
+};
 
 const COURSE_CONFIG: ModuleConfig[] = [
   {
@@ -109,6 +117,7 @@ export default function App() {
   const hasLoadedOnce                         = useRef(false);
 
   const [displayName,     setDisplayName]     = useState<string | null>(null);
+  const [profileXp,       setProfileXp]       = useState(0);
   const [showOnboarding,  setShowOnboarding]  = useState(false);
 
   // Auth flow
@@ -120,6 +129,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showResults,      setShowResults]      = useState(false);
   const [showDashboard,    setShowDashboard]    = useState(true);
+  const [quizCompletionSummary, setQuizCompletionSummary] = useState<QuizCompletionSummary | null>(null);
 
   // ── Minimum loading time ──────────────────────────────────────────────────
   useEffect(() => {
@@ -151,6 +161,7 @@ export default function App() {
     ]).then(([progress, profile]) => {
       setState(prev => ({ ...prev, quizScores: progress.quizScores, completedModules: progress.completedModules }));
       setSectionAttempts(progress.attempts);
+      setProfileXp(profile?.xp ?? 0);
 
       if (!profile?.displayName) {
         setShowOnboarding(true);
@@ -269,6 +280,21 @@ export default function App() {
           passingScore,
           previousAttempts,
         });
+
+        const [updatedProfile, rankStats] = await Promise.all([
+          loadUserProfile(session.user.id),
+          loadLearnerRank(session.user.id),
+        ]);
+
+        const nextXp = updatedProfile?.xp ?? profileXp;
+        setProfileXp(nextXp);
+        setQuizCompletionSummary({
+          moduleId: currentModuleId,
+          sectionId: currentSectionId,
+          xpEarned: Math.max(0, nextXp - profileXp),
+          rank: rankStats?.rank,
+          totalLearners: rankStats?.total,
+        });
       } catch (err) {
         console.error('Failed to save quiz score:', err);
       }
@@ -281,6 +307,8 @@ export default function App() {
 
   const handleProceedToNext = () => {
     if (nextSection) {
+      setShowDashboard(false);
+      setShowResults(false);
       setState(prev => ({
         ...prev,
         currentSectionId: nextSection.id,
@@ -364,6 +392,9 @@ export default function App() {
   const finalPassed        = state.completedModules.has(state.currentModuleId);
   const isFinalSection     = state.currentSectionId.endsWith('final');
   const userName           = displayName ?? session.user.user_metadata?.full_name ?? session.user.email;
+  const activeQuizSummary  = quizCompletionSummary && quizCompletionSummary.moduleId === state.currentModuleId && quizCompletionSummary.sectionId === state.currentSectionId
+    ? quizCompletionSummary
+    : null;
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
@@ -407,6 +438,7 @@ export default function App() {
             ) : showResults ? (
               <ModuleResults
                 moduleTitle={currentModule?.title ?? 'Module'}
+                completionSummary={activeQuizSummary}
                 scores={
                   (currentModule?.sections ?? []).reduce((acc, sec) => {
                     if ((sec.id.endsWith('-quiz') || sec.id.endsWith('final')) && (sec.questions?.length ?? 0) > 0) {
@@ -451,6 +483,7 @@ export default function App() {
                         sectionId={state.currentSectionId}
                         questions={currentSection.questions as InteractiveQuizQuestion[]}
                         nextSectionTitle={nextSectionTitle}
+                        resultSummary={activeQuizSummary}
                         onComplete={handleQuizComplete}
                         onProceed={handleProceedToNext}
                       />
@@ -466,6 +499,7 @@ export default function App() {
                             ? (state.quizScores[state.currentModuleId]?.[state.currentSectionId] ?? -1) >= (currentSection?.passingScore ?? 0)
                             : false
                         }
+                        resultSummary={activeQuizSummary}
                         onComplete={handleQuizComplete}
                         onProceed={handleProceedToNext}
                       />

@@ -166,10 +166,11 @@ export async function loadLeaderboard(
 export async function loadUserProfile(userId: string): Promise<{
   displayName: string | null;
   userNumber:  number | null;
+  xp:          number;
 } | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('display_name, user_number')
+    .select('display_name, user_number, xp')
     .eq('id', userId)
     .single();
 
@@ -178,6 +179,42 @@ export async function loadUserProfile(userId: string): Promise<{
   return {
     displayName: data.display_name ?? null,
     userNumber:  data.user_number  ?? null,
+    xp:          data.xp            ?? 0,
+  };
+}
+
+export async function loadLearnerRank(userId: string): Promise<{
+  rank:  number;
+  total: number;
+} | null> {
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('xp')
+    .eq('id', userId)
+    .single();
+
+  if (profileError || !profile) return null;
+
+  const currentXp = profile.xp ?? 0;
+
+  const [{ count: higherCount, error: higherError }, { count: totalCount, error: totalError }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .gt('xp', currentXp),
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true }),
+  ]);
+
+  if (higherError || totalError) {
+    console.error('loadLearnerRank:', higherError ?? totalError);
+    return null;
+  }
+
+  return {
+    rank:  (higherCount ?? 0) + 1,
+    total: totalCount ?? 0,
   };
 }
 

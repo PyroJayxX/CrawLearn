@@ -9,6 +9,11 @@ interface QuizProps {
   nextSectionTitle?: string;
   previousAttempts?: number;
   alreadyPassed?:    boolean;
+  resultSummary?: {
+    xpEarned:      number;
+    rank?:         number;
+    totalLearners?: number;
+  } | null;
   onComplete:        (score: number) => void;
   onProceed?:        () => void;
 }
@@ -77,6 +82,7 @@ export default function QuizSection({
   nextSectionTitle,
   previousAttempts = 0,
   alreadyPassed = false,
+  resultSummary = null,
   onComplete,
   onProceed,
 }: QuizProps) {
@@ -136,6 +142,12 @@ export default function QuizSection({
       ? `Proceed to ${nextSectionTitle} →`
       : 'Finish Quiz →';
 
+  const topPercent = resultSummary?.rank && resultSummary.totalLearners
+    ? Math.max(1, Math.ceil((resultSummary.rank / resultSummary.totalLearners) * 100))
+    : null;
+
+  const scorePct = questions.length > 0 ? Math.round((finalScore / questions.length) * 100) : 0;
+
   if (questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
@@ -152,28 +164,45 @@ export default function QuizSection({
 // ── Failed ───────────────────────────────────────────────────────────────
 if (hasFailed) {
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-white border border-gray-200 rounded-xl p-10 shadow-sm flex flex-col items-center gap-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-          <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+    <div className="min-h-[70vh] flex items-center justify-center px-4">
+      <div className="w-full max-w-xl bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+
+        {/* Score panel */}
+        <div className="bg-[#10374d] flex flex-col items-center justify-center gap-1 py-8 sm:py-0">
+          <span className="font-serif text-5xl font-semibold text-white tabular-nums leading-none">{finalScore}</span>
+          <span className="text-white/50 text-sm">of {questions.length}</span>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{isFinal ? 'Assessment Failed' : 'Quiz Failed'}</h2>
-          <p className="text-gray-500 text-sm">
-            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>.{' '}
-            You need at least <span className="font-semibold text-gray-700">{passingScore}</span> to pass.
-          </p>
-          {isFinal && triesLeft > 0 && (
-            <p className="text-xs text-gray-400 mt-2">
-              {triesLeft} {triesLeft === 1 ? 'attempt' : 'attempts'} remaining before answers are revealed.
+
+        {/* Details */}
+        <div className="flex flex-col gap-4 px-7 py-7">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+              {isFinal ? 'Final Assessment' : 'Quiz result'}
             </p>
+            <h2 className="font-serif text-2xl font-semibold text-gray-900">
+              {isFinal ? 'Assessment failed' : 'Quiz failed'}
+            </h2>
+            <p className="text-gray-500 text-sm">
+              You need at least <span className="font-semibold text-gray-700">{passingScore}</span> correct to pass.
+            </p>
+            {isFinal && triesLeft > 0 && (
+              <p className="text-xs text-gray-400">
+                {triesLeft} {triesLeft === 1 ? 'attempt' : 'attempts'} remaining before answers are revealed.
+              </p>
+            )}
+          </div>
+
+          {resultSummary && (
+            <div className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-4 py-2 w-fit">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-none" />
+              <p className="text-sm font-semibold text-amber-800">+{resultSummary.xpEarned} XP</p>
+            </div>
           )}
+
+          <button onClick={handleRetry} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:opacity-90 transition-opacity w-fit">
+            Try Again
+          </button>
         </div>
-        <button onClick={handleRetry} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors">
-          Try Again
-        </button>
       </div>
     </div>
   );
@@ -182,25 +211,44 @@ if (hasFailed) {
 // ── Passed ───────────────────────────────────────────────────────────────
 if (hasPassed) {
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-white border border-gray-200 rounded-xl p-10 shadow-sm flex flex-col items-center gap-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-          <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
+    <div className="min-h-[70vh] flex items-center justify-center px-4">
+      <div className="w-full max-w-xl bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+
+        {/* Score panel */}
+        <div className="bg-accent flex flex-col items-center justify-center gap-1 py-8 sm:py-0">
+          <span className="font-serif text-5xl font-semibold text-white tabular-nums leading-none">{finalScore}</span>
+          <span className="text-white/70 text-sm">of {questions.length}</span>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{isFinal ? 'Assessment Passed!' : 'Quiz Passed!'}</h2>
-          <p className="text-gray-500 text-sm">
-            You scored <span className="font-semibold text-gray-700">{finalScore} / {questions.length}</span>. Great work!
-          </p>
+
+        {/* Details */}
+        <div className="flex flex-col gap-4 px-7 py-7">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+              {isFinal ? 'Final Assessment' : 'Quiz result'}
+            </p>
+            <h2 className="font-serif text-2xl font-semibold text-gray-900">
+              {isFinal ? 'Assessment passed' : 'Quiz passed'}
+            </h2>
+            <p className="text-gray-500 text-sm">Great work — that's a clean pass.</p>
+          </div>
+
+          {resultSummary && (
+            <div className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-4 py-2 w-fit">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-none" />
+              <p className="text-sm font-semibold text-amber-800">
+                +{resultSummary.xpEarned} XP
+                {topPercent ? <span className="font-normal text-amber-700"> · top {topPercent}% of learners</span> : null}
+              </p>
+            </div>
+          )}
+
+          {!isFinal && nextSectionTitle && (
+            <button onClick={onProceed} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:opacity-90 transition-opacity w-fit">
+              Proceed to {nextSectionTitle} →
+            </button>
+          )}
+          {isFinal && <p className="text-xs text-gray-400">Loading your results…</p>}
         </div>
-        {!isFinal && nextSectionTitle && (
-          <button onClick={onProceed} className="px-8 py-3 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent/80 transition-colors">
-            Proceed to {nextSectionTitle} →
-          </button>
-        )}
-        {isFinal && <p className="text-xs text-gray-400">Loading your results…</p>}
       </div>
     </div>
   );
