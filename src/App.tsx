@@ -11,6 +11,7 @@ import AuthScreen from './components/auth/AuthScreen';
 import OnboardingModal from './components/auth/OnboardingModal';
 import Dashboard from './components/layout/Dashboard';
 import LandingPage from './components/layout/LandingPage';
+import TutorPage from './components/layout/TutorPage';
 import {
   mod1FinalQuestions,
   mod1Ch1Quiz,
@@ -129,6 +130,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showResults,      setShowResults]      = useState(false);
   const [showDashboard,    setShowDashboard]    = useState(true);
+  const [showTutor,        setShowTutor]        = useState(false);
   const [quizCompletionSummary, setQuizCompletionSummary] = useState<QuizCompletionSummary | null>(null);
 
   // ── Minimum loading time ──────────────────────────────────────────────────
@@ -215,6 +217,7 @@ export default function App() {
     if (!mod) return;
     setShowResults(false);
     setShowDashboard(false);
+    setShowTutor(false);
     setState(prev => ({
       ...prev,
       currentModuleId:  moduleId,
@@ -226,13 +229,21 @@ export default function App() {
   const handleSectionNavigate = (sectionId: string) => {
     setShowResults(false);
     setShowDashboard(false);
+    setShowTutor(false);
     setState(prev => ({ ...prev, currentSectionId: sectionId, subState: 'video' }));
   };
 
   const handleDashboardNavigate = (moduleId: string, sectionId: string) => {
     setShowDashboard(false);
     setShowResults(false);
+    setShowTutor(false);
     setState(prev => ({ ...prev, currentModuleId: moduleId, currentSectionId: sectionId, subState: 'video' }));
+  };
+
+  const handleTutorMode = () => {
+    setShowTutor(true);
+    setShowDashboard(false);
+    setShowResults(false);
   };
 
   const handleQuizComplete = async (score: number) => {
@@ -337,6 +348,7 @@ export default function App() {
     setSectionAttempts({});
     setShowResults(false);
     setShowDashboard(true);
+    setShowTutor(false);
     setDisplayName(null);
     setShowOnboarding(false);
     setShowAuth(false);
@@ -408,14 +420,15 @@ export default function App() {
           modules={COURSE_CONFIG}
           currentState={state}
           onModuleNavigate={handleModuleNavigate}
+          onTutorMode={handleTutorMode}
           onSignOut={handleSignOut}
-          onHome={() => { setShowDashboard(true); setShowResults(false); }}
+          onHome={() => { setShowDashboard(true); setShowResults(false); setShowTutor(false); }}
           userName={userName}
         />
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {!showDashboard && (
+        {!showDashboard && !showTutor && (
           <CourseSidebar
             modules={COURSE_CONFIG}
             currentState={state}
@@ -426,8 +439,11 @@ export default function App() {
         )}
 
         <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
-          <div className="mx-auto py-6 px-6 md:py-8 md:px-10">
-            {showDashboard ? (
+          {showTutor ? (
+            <TutorPage modules={COURSE_CONFIG} currentState={state} />
+          ) : (
+            <div className="mx-auto py-6 px-6 md:py-8 md:px-10">
+              {showDashboard ? (
               <Dashboard
                 modules={COURSE_CONFIG}
                 currentState={state}
@@ -435,7 +451,7 @@ export default function App() {
                 userId={session.user.id}
                 onNavigate={handleDashboardNavigate}
               />
-            ) : showResults ? (
+              ) : showResults ? (
               <ModuleResults
                 moduleTitle={currentModule?.title ?? 'Module'}
                 completionSummary={activeQuizSummary}
@@ -466,16 +482,16 @@ export default function App() {
                   handleModuleNavigate(nextModule.id);
                 } : undefined}
               />
-            ) : currentSection?.id === 'faq' ? (
+              ) : currentSection?.id === 'faq' ? (
               <FAQPanel />
-            ) : (
-              <>
-                {state.subState === 'video' && currentSection?.hasVideo ? (
+              ) : (
+                <>
+                  {state.subState === 'video' && currentSection?.hasVideo ? (
                   <LessonContainer
                     lessonId={state.currentSectionId}
                     onComplete={() => handleVideoComplete(state.currentSectionId)}
                   />
-                ) : (
+                  ) : (
                   <div className="max-w-3xl mx-auto">
                     {currentSection?.questions?.length && 'type' in (currentSection.questions[0] ?? {}) ? (
                       <InteractiveQuizSection
@@ -505,10 +521,11 @@ export default function App() {
                       />
                     )}
                   </div>
-                )}
-              </>
-            )}
-          </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>
