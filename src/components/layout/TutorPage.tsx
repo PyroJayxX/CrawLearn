@@ -15,6 +15,19 @@ interface QuizQuestion {
   explanation: string;
 }
 
+interface ScenarioData {
+  scenario: string;
+  keyPoints: string[];
+}
+
+interface GradeResult {
+  score: number;
+  verdict: 'strong' | 'partial' | 'weak';
+  feedback: string;
+  hits: string[];
+  misses: string[];
+}
+
 export default function TutorPage({ modules, currentState }: TutorPageProps) {
   const [mode, setMode] = useState<TutorMode>('home');
   const [selectedModuleId, setSelectedModuleId] = useState(
@@ -35,6 +48,15 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
   const [quizError, setQuizError] = useState<string | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
 
+  // Scenario mode state
+  const [scenarioData, setScenarioData] = useState<ScenarioData | null>(null);
+  const [scenarioLoading, setScenarioLoading] = useState(false);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [gradeResult, setGradeResult] = useState<GradeResult | null>(null);
+  const [gradingLoading, setGradingLoading] = useState(false);
+  const [gradingError, setGradingError] = useState<string | null>(null);
+
   const tutorModules = useMemo(() => modules.slice(0, 2), [modules]);
 
   const promptText = (() => {
@@ -53,8 +75,16 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
       if (quizQuestions) return `Here's your quiz! ${quizQuestions.length} questions, give it a go.`;
       return 'Sure! Which module and chapter do you want to be quizzed on?';
     }
+    if (mode === 'scenario') {
+      if (scenarioLoading) return 'Cooking up a real-world scenario...';
+      if (scenarioError) return `Hmm, something went wrong: ${scenarioError}`;
+      if (gradingLoading) return 'Let me grade that...';
+      if (gradingError) return `Hmm, something went wrong: ${gradingError}`;
+      if (gradeResult) return gradeResult.feedback;
+      if (scenarioData) return scenarioData.scenario;
+      return 'Which module do you want a scenario from?';
+    }
     switch (mode) {
-      case 'scenario':
       case 'weakspot':
         return 'This feature is coming soon! Stay tuned.';
       default:
@@ -81,6 +111,11 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     setQuizQuestions(null);
     setQuizError(null);
     setSelectedAnswers({});
+    setScenarioData(null);
+    setScenarioError(null);
+    setUserAnswer('');
+    setGradeResult(null);
+    setGradingError(null);
   };
 
   const handleGenerateQuiz = async () => {
@@ -195,6 +230,72 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
       setExplainLoading(false);
       setExplainStreaming(false);
     }
+  };
+
+  const handleGenerateScenario = async () => {
+    setScenarioLoading(true);
+    setScenarioError(null);
+    setScenarioData(null);
+    setUserAnswer('');
+    setGradeResult(null);
+    setGradingError(null);
+
+    const moduleTitle = tutorModules.find(m => m.id === selectedModuleId)?.title;
+
+    try {
+      const res = await fetch(`/api/scenario`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId: selectedModuleId, moduleTitle }),
+      });
+
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+
+      const data: { scenario?: string; keyPoints?: string[]; error?: string } = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.scenario) throw new Error('No scenario returned.');
+      setScenarioData({ scenario: data.scenario, keyPoints: data.keyPoints ?? [] });
+    } catch (err) {
+      setScenarioError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setScenarioLoading(false);
+    }
+  };
+
+  const handleSubmitAnswer = async () => {
+    if (!userAnswer.trim() || !scenarioData) return;
+
+    setGradingLoading(true);
+    setGradingError(null);
+    setGradeResult(null);
+
+    try {
+      const res = await fetch(`/api/scenario-grade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scenario: scenarioData.scenario,
+          keyPoints: scenarioData.keyPoints,
+          userAnswer,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+
+      const data: GradeResult & { error?: string } = await res.json();
+      if (data.error) throw new Error(data.error as string);
+      setGradeResult(data);
+    } catch (err) {
+      setGradingError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setGradingLoading(false);
+    }
+  };
+
+  const verdictClasses: Record<GradeResult['verdict'], string> = {
+    strong: 'border-emerald-400 bg-emerald-50 text-emerald-800',
+    partial: 'border-amber-300 bg-amber-50 text-amber-800',
+    weak: 'border-red-300 bg-red-50 text-red-700',
   };
 
   return (
@@ -388,7 +489,126 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
             </div>
           )}
 
-          {(mode === 'scenario' || mode === 'weakspot') && (
+          {mode === 'scenario' && (
+            <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+              {!scenarioData && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">Module</label>
+                    <select
+                      value={selectedModuleId}
+                      onChange={e => setSelectedModuleId(e.target.value)}
+                      disabled={scenarioLoading}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+                    >
+                      {tutorModules.map(mod => (
+                        <option key={mod.id} value={mod.id}>
+                          {mod.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={handleGenerateScenario}
+                      disabled={scenarioLoading}
+                      className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {scenarioLoading ? 'Generating...' : 'Generate Scenario'}
+                    </button>
+                    <button
+                      onClick={resetToHome}
+                      className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {scenarioData && !gradeResult && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">Your answer</label>
+                    <textarea
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      placeholder="Walk through how you'd handle this..."
+                      rows={5}
+                      disabled={gradingLoading}
+                      className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={handleSubmitAnswer}
+                      disabled={gradingLoading || !userAnswer.trim()}
+                      className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {gradingLoading ? 'Grading...' : 'Submit Answer'}
+                    </button>
+                    <button
+                      onClick={resetToHome}
+                      className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {gradeResult && (
+                <div className="space-y-4">
+                  <div className={`rounded-xl border px-4 py-3 ${verdictClasses[gradeResult.verdict]}`}>
+                    <p className="text-sm font-semibold capitalize">
+                      {gradeResult.verdict} — {gradeResult.score}/100
+                    </p>
+                  </div>
+
+                  {gradeResult.hits.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">What you nailed</p>
+                      <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
+                        {gradeResult.hits.map((h, i) => (
+                          <li key={i}>{h}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {gradeResult.misses.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">What you missed</p>
+                      <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
+                        {gradeResult.misses.map((m, i) => (
+                          <li key={i}>{m}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={handleGenerateScenario}
+                      className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+                    >
+                      New Scenario
+                    </button>
+                    <button
+                      onClick={resetToHome}
+                      className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {mode === 'weakspot' && (
             <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)] opacity-75">
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
                 Coming soon
