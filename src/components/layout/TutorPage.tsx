@@ -61,7 +61,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
   const [gradingLoading, setGradingLoading] = useState(false);
   const [gradingError, setGradingError] = useState<string | null>(null);
 
-  const tutorModules = useMemo(() => modules.slice(0, 2), [modules]);
+  const tutorModules = useMemo(() => modules.slice(0, 3), [modules]);
 
   const promptText = (() => {
     if (mode === 'explain') {
