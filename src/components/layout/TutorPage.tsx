@@ -26,6 +26,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
   // RAG explain state
   const [explainAnswer, setExplainAnswer] = useState<string | null>(null);
   const [explainLoading, setExplainLoading] = useState(false);
+  const [explainStreaming, setExplainStreaming] = useState(false);
   const [explainError, setExplainError] = useState<string | null>(null);
 
   // RAG quiz state
@@ -38,6 +39,9 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
 
   const promptText = (() => {
     if (mode === 'explain') {
+      // explainLoading = waiting on retrieval, before any text has arrived yet.
+      // explainStreaming = text is actively arriving (explainAnswer already
+      // has partial content by this point, so it takes priority below).
       if (explainLoading) return 'Let me look that up in the course material...';
       if (explainError) return `Hmm, something went wrong: ${explainError}`;
       if (explainAnswer) return explainAnswer;
@@ -58,10 +62,22 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     }
   })();
 
+  // Long Crawley responses (e.g. RAG explain answers) look oversized at the
+  // default speech-bubble font. Step the size down as length grows so long
+  // answers still read comfortably instead of overflowing/wrapping oddly.
+  const promptTextSizeClass = (() => {
+    const len = promptText.length;
+    if (len > 400) return 'text-sm md:text-base';
+    if (len > 220) return 'text-base md:text-lg';
+    if (len > 120) return 'text-lg md:text-xl';
+    return 'text-xl md:text-2xl';
+  })();
+
   const resetToHome = () => {
     setMode('home');
     setExplainAnswer(null);
     setExplainError(null);
+    setExplainStreaming(false);
     setQuizQuestions(null);
     setQuizError(null);
     setSelectedAnswers({});
@@ -103,6 +119,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     if (!topic.trim()) return;
 
     setExplainLoading(true);
+    setExplainStreaming(false);
     setExplainError(null);
     setExplainAnswer(null);
 
@@ -120,14 +137,63 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
         throw new Error(`Server responded ${res.status}`);
       }
 
-      const data: { answer: string; sources: { source: string; start_hms: string; end_hms: string }[] } =
-        await res.json();
+      const contentType = res.headers.get('Content-Type') ?? '';
 
-      setExplainAnswer(data.answer);
+      // No-results case: explain.js falls back to a plain JSON response
+      // instead of opening a stream, when there's no course material to
+      // ground an answer in.
+      if (!contentType.includes('text/event-stream')) {
+        const data: { answer: string; sources?: unknown } = await res.json();
+        setExplainAnswer(data.answer);
+        setExplainLoading(false);
+        return;
+      }
+
+      if (!res.body) throw new Error('No response stream received.');
+
+      setExplainLoading(false);
+      setExplainStreaming(true);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? ''; // keep any partial trailing line for next chunk
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+
+          let parsed: { sources?: unknown; delta?: string; done?: boolean; error?: string };
+          try {
+            parsed = JSON.parse(jsonStr);
+          } catch {
+            continue; // ignore any malformed frame rather than crashing the stream
+          }
+
+          if (parsed.error) throw new Error(parsed.error);
+
+          if (parsed.delta) {
+            accumulated += parsed.delta;
+            setExplainAnswer(accumulated);
+          }
+          // parsed.sources and parsed.done are both received but currently
+          // unused here — sources could be surfaced in the UI later if needed.
+        }
+      }
     } catch (err) {
       setExplainError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setExplainLoading(false);
+      setExplainStreaming(false);
     }
   };
 
@@ -142,8 +208,9 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
             <div className="absolute -bottom-2 left-12 h-4 w-4 rotate-45 border-b border-r border-gray-100 bg-white" />
             <div className="relative flex items-center gap-4">
               <img src="/tutor.png" alt="Crawley" className="h-14 w-auto shrink-0 object-contain" />
-              <p className="flex-1 text-left text-xl font-semibold leading-relaxed text-gray-900 md:text-2xl">
+              <p className={`flex-1 text-left font-semibold leading-relaxed text-gray-900 transition-[font-size] duration-150 ${promptTextSizeClass}`}>
                 {promptText}
+                {explainStreaming && <span className="ml-0.5 inline-block w-2 animate-pulse">▍</span>}
               </p>
             </div>
           </div>
@@ -297,7 +364,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                     onChange={e => setTopic(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAskCrawley()}
                     placeholder="e.g. What is subrogation?"
-                    disabled={explainLoading}
+                    disabled={explainLoading || explainStreaming}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
                   />
                 </div>
@@ -305,10 +372,10 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <button
                     onClick={handleAskCrawley}
-                    disabled={explainLoading || !topic.trim()}
+                    disabled={explainLoading || explainStreaming || !topic.trim()}
                     className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {explainLoading ? 'Thinking...' : 'Ask Crawley'}
+                    {explainLoading ? 'Thinking...' : explainStreaming ? 'Answering...' : 'Ask Crawley'}
                   </button>
                   <button
                     onClick={resetToHome}

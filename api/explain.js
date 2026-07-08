@@ -8,9 +8,15 @@ TRANSCRIPT EXCERPTS:
 ${contextBlock}`;
 }
 
-async function generateAnswer(question, chunks, apiKey) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GENERATION_MODEL}:generateContent?key=${apiKey}`,
+// Streams the answer back as Server-Sent Events instead of waiting for the
+// full Gemini response. Each event is one of:
+//   { sources: [...] }        — sent once, immediately, before any text
+//   { delta: "..." }          — a chunk of answer text, sent repeatedly
+//   { done: true }            — sent once, at the very end
+//   { error: "..." }          — sent instead of done, if something failed mid-stream
+async function streamAnswer(res, question, chunks, apiKey) {
+  const geminiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GENERATION_MODEL}:streamGenerateContent?alt=sse&key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -21,14 +27,46 @@ async function generateAnswer(question, chunks, apiKey) {
       }),
     }
   );
-  if (!res.ok) {
+
+  if (!geminiRes.ok || !geminiRes.body) {
     let detail = '';
-    try { detail = (await res.json())?.error?.message ?? ''; } catch { /* ignore */ }
-    throw new Error(detail || `Request failed with status ${res.status}`);
+    try { detail = (await geminiRes.json())?.error?.message ?? ''; } catch { /* ignore */ }
+    throw new Error(detail || `Request failed with status ${geminiRes.status}`);
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map(p => p?.text ?? '').join('').trim();
-  return text || 'I was unable to produce a response. Please try again.';
+
+  const reader = geminiRes.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? ''; // last entry may be a partial line — keep it for next read
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr) continue;
+
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonStr);
+      } catch {
+        continue; // skip any malformed/partial SSE frame
+      }
+
+      const textPiece = parsed?.candidates?.[0]?.content?.parts
+        ?.map(p => p?.text ?? '')
+        .join('') ?? '';
+
+      if (textPiece) {
+        res.write(`data: ${JSON.stringify({ delta: textPiece })}\n\n`);
+      }
+    }
+  }
 }
 
 export default async function handler(req, res) {
@@ -36,31 +74,47 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const { question, module = null, n_results = 4 } = req.body ?? {};
+  if (!question) return res.status(400).json({ error: 'question is required' });
+
+  // Retrieval happens before we open the stream — this part is fast and
+  // still needs to fully complete (and might fail) before we commit to a
+  // streaming response, so ordinary JSON error handling still applies here.
+  let matches;
   try {
-    const { question, module = null, n_results = 4 } = req.body ?? {};
-    if (!question) return res.status(400).json({ error: 'question is required' });
-
-    const apiKey = process.env.VITE_GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     const supabase = getSupabase();
-
     const queryEmbedding = await embedQuery(question, apiKey);
-    const matches = await searchChunks(supabase, queryEmbedding, { module, nResults: n_results });
-
-    if (!matches || matches.length === 0) {
-      return res.json({
-        answer: "I couldn't find anything in the course material about that yet. Try rephrasing, or ask about a different topic.",
-        sources: [],
-      });
-    }
-
-    const answer = await generateAnswer(question, matches, apiKey);
-
-    res.json({
-      answer,
-      sources: matches.map(m => ({ source: m.source, module: m.module, start_hms: m.start_hms, end_hms: m.end_hms, score: m.score })),
-    });
+    matches = await searchChunks(supabase, queryEmbedding, { module, nResults: n_results });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+    return res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+
+  if (!matches || matches.length === 0) {
+    return res.json({
+      answer: "I couldn't find anything in the course material about that yet. Try rephrasing, or ask about a different topic.",
+      sources: [],
+    });
+  }
+
+  // From here on we're committed to a streaming response.
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  res.write(`data: ${JSON.stringify({
+    sources: matches.map(m => ({ source: m.source, module: m.module, start_hms: m.start_hms, end_hms: m.end_hms, score: m.score })),
+  })}\n\n`);
+
+  try {
+    await streamAnswer(res, question, matches, process.env.GEMINI_API_KEY);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+  } catch (err) {
+    console.error(err);
+    res.write(`data: ${JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' })}\n\n`);
+  } finally {
+    res.end();
   }
 }
