@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     const { question, module = null, n_results = 4 } = req.body ?? {};
     if (!question) return res.status(400).json({ error: 'question is required' });
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.VITE_GEMINI_API_KEY;
     const supabase = getSupabase();
 
     const queryEmbedding = await embedQuery(question, apiKey);

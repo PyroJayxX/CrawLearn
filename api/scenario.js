@@ -54,7 +54,7 @@ Respond with ONLY a JSON object (no markdown fences, no commentary) with this ex
   "keyPoints": [string, string, string]
 }`;
 
-    const result = await generateJSON(systemPrompt, 'Generate the scenario now.', process.env.GEMINI_API_KEY);
+    const result = await generateJSON(systemPrompt, 'Generate the scenario now.', process.env.VITE_GEMINI_API_KEY);
     res.json(result);
   } catch (err) {
     console.error(err);

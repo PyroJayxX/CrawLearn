@@ -60,7 +60,7 @@ Respond with ONLY a JSON array (no markdown fences, no commentary), where each i
   "explanation": string (1-2 sentences on why the answer is correct)
 }`;
 
-    const questions = await generateJSON(systemPrompt, 'Generate the quiz now.', process.env.GEMINI_API_KEY);
+    const questions = await generateJSON(systemPrompt, 'Generate the quiz now.', process.env.VITE_GEMINI_API_KEY);
     res.json({ questions });
   } catch (err) {
     console.error(err);
