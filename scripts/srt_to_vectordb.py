@@ -1,32 +1,47 @@
 """
 srt_to_vectordb.py
 
-Batch pipeline: parse a folder of .srt transcripts -> chunk them ->
-embed with a local (free, no API key) sentence-transformers model ->
-store in a persistent ChromaDB vector database.
+Batch pipeline: parse a folder of .srt transcripts (organized in module
+subfolders) -> chunk them -> embed with a local (free, no API key)
+sentence-transformers model -> store in a persistent ChromaDB vector database.
+
+Expected folder layout
+-----------------------
+input_dir/
+    module1/
+        Lesson1.srt
+        Lesson2.srt
+    module2/
+        Lesson1.srt
+        ...
+
+Files are discovered recursively, so nesting depth doesn't matter. Each
+chunk's "source" is the path relative to input_dir (e.g. "module1/Lesson1.srt"),
+so same-named lessons in different modules never collide. The top-level
+folder name is also stored separately as "module" metadata so you can filter
+queries to a single module later.
 
 Usage
 -----
 1) Install dependencies (one time):
    pip install sentence-transformers chromadb
 
-2) Put all your .srt files in one folder, e.g. ./transcripts
+2) Put your .srt files in module subfolders, e.g. ./transcripts/module1/Lesson1.srt
 
 3) Ingest everything:
    python srt_to_vectordb.py ingest --input_dir ./transcripts --db_dir ./vector_db
 
 4) Query it:
    python srt_to_vectordb.py query --db_dir ./vector_db --q "What does CTPL cover?"
+   python srt_to_vectordb.py query --db_dir ./vector_db --q "..." --module module1
 
 Re-running ingest on the same folder is safe: files already ingested are
-skipped (tracked by filename) unless you pass --overwrite.
+skipped (tracked by relative path) unless you pass --overwrite.
 """
 
 import argparse
-import json
 import os
 import re
-import sys
 
 import chromadb
 from sentence_transformers import SentenceTransformer
@@ -77,6 +92,29 @@ def seconds_to_hms(s):
 
 
 # ---------------------------------------------------------------------------
+# File discovery
+# ---------------------------------------------------------------------------
+
+def find_srt_files(input_dir):
+    """Recursively find .srt files under input_dir.
+    Returns a sorted list of (abs_path, rel_path, module) tuples, where
+    rel_path uses forward slashes (e.g. 'module1/Lesson1.srt') and module
+    is the top-level subfolder name ('module1'), or '' if the file sits
+    directly in input_dir with no subfolder."""
+    found = []
+    for root, _dirs, files in os.walk(input_dir):
+        for fname in files:
+            if not fname.lower().endswith(".srt"):
+                continue
+            abs_path = os.path.join(root, fname)
+            rel_path = os.path.relpath(abs_path, input_dir).replace(os.sep, "/")
+            parts = rel_path.split("/")
+            module = parts[0] if len(parts) > 1 else ""
+            found.append((abs_path, rel_path, module))
+    return sorted(found, key=lambda t: t[1])
+
+
+# ---------------------------------------------------------------------------
 # Chunking
 # ---------------------------------------------------------------------------
 
@@ -110,17 +148,17 @@ def chunk_cues(cues, window_seconds=45, max_chars=800, min_chars=200):
     return chunks
 
 
-def build_records(srt_path, window_seconds=45, max_chars=800):
-    source = os.path.basename(srt_path)
-    cues = parse_srt(srt_path)
+def build_records(abs_path, rel_path, module, window_seconds=45, max_chars=800):
+    cues = parse_srt(abs_path)
     if not cues:
         return []
     chunks = chunk_cues(cues, window_seconds=window_seconds, max_chars=max_chars)
     records = []
     for i, c in enumerate(chunks):
         records.append({
-            "id": f"{source}::chunk_{i + 1}",
-            "source": source,
+            "id": f"{rel_path}::chunk_{i + 1}",
+            "source": rel_path,          # e.g. "module1/Lesson1.srt" -- unique across modules
+            "module": module,            # e.g. "module1"
             "chunk_index": i + 1,
             "start_time": round(c["start"], 2),
             "end_time": round(c["end"], 2),
@@ -136,15 +174,14 @@ def build_records(srt_path, window_seconds=45, max_chars=800):
 # ---------------------------------------------------------------------------
 
 def ingest(input_dir, db_dir, window_seconds, max_chars, overwrite):
-    srt_files = sorted(
-        f for f in os.listdir(input_dir) if f.lower().endswith(".srt")
-    )
+    srt_files = find_srt_files(input_dir)
     if not srt_files:
-        print(f"No .srt files found in {input_dir}")
+        print(f"No .srt files found under {input_dir}")
         return
 
-    print(f"Found {len(srt_files)} .srt file(s). Loading embedding model "
-          f"'{EMBEDDING_MODEL_NAME}' (first run downloads it, ~90MB)...")
+    print(f"Found {len(srt_files)} .srt file(s) across module subfolders. "
+          f"Loading embedding model '{EMBEDDING_MODEL_NAME}' "
+          f"(first run downloads it, ~90MB)...")
     model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 
     client = chromadb.PersistentClient(path=db_dir)
@@ -156,19 +193,18 @@ def ingest(input_dir, db_dir, window_seconds, max_chars, overwrite):
         already_done = {m["source"] for m in existing["metadatas"]} if existing["metadatas"] else set()
 
     total_chunks = 0
-    for fname in srt_files:
-        if fname in already_done:
-            print(f"  - {fname}: already ingested, skipping (use --overwrite to redo)")
+    for abs_path, rel_path, module in srt_files:
+        if rel_path in already_done:
+            print(f"  - {rel_path}: already ingested, skipping (use --overwrite to redo)")
             continue
 
-        path = os.path.join(input_dir, fname)
-        records = build_records(path, window_seconds=window_seconds, max_chars=max_chars)
+        records = build_records(abs_path, rel_path, module, window_seconds=window_seconds, max_chars=max_chars)
         if not records:
-            print(f"  - {fname}: no parseable cues, skipping")
+            print(f"  - {rel_path}: no parseable cues, skipping")
             continue
 
         if overwrite:
-            collection.delete(where={"source": fname})
+            collection.delete(where={"source": rel_path})
 
         texts = [r["text"] for r in records]
         embeddings = model.encode(texts, show_progress_bar=False).tolist()
@@ -179,6 +215,7 @@ def ingest(input_dir, db_dir, window_seconds, max_chars, overwrite):
             documents=texts,
             metadatas=[{
                 "source": r["source"],
+                "module": r["module"],
                 "chunk_index": r["chunk_index"],
                 "start_time": r["start_time"],
                 "end_time": r["end_time"],
@@ -186,7 +223,7 @@ def ingest(input_dir, db_dir, window_seconds, max_chars, overwrite):
                 "end_hms": r["end_hms"],
             } for r in records],
         )
-        print(f"  - {fname}: {len(records)} chunks added")
+        print(f"  - {rel_path}: {len(records)} chunks added")
         total_chunks += len(records)
 
     print(f"\nDone. {total_chunks} new chunks stored in '{db_dir}' "
@@ -197,23 +234,25 @@ def ingest(input_dir, db_dir, window_seconds, max_chars, overwrite):
 # Query
 # ---------------------------------------------------------------------------
 
-def query(db_dir, question, n_results):
+def query(db_dir, question, n_results, module=None):
     model = SentenceTransformer(EMBEDDING_MODEL_NAME)
     client = chromadb.PersistentClient(path=db_dir)
     collection = client.get_or_create_collection(COLLECTION_NAME)
 
     q_embedding = model.encode([question]).tolist()
-    results = collection.query(query_embeddings=q_embedding, n_results=n_results)
+    where = {"module": module} if module else None
+    results = collection.query(query_embeddings=q_embedding, n_results=n_results, where=where)
 
     docs = results["documents"][0]
     metas = results["metadatas"][0]
     dists = results["distances"][0]
 
     if not docs:
-        print("No results (is the database empty? run 'ingest' first).")
+        print("No results (is the database empty, or does the module filter match nothing?).")
         return
 
-    print(f"\nTop {len(docs)} result(s) for: {question!r}\n")
+    print(f"\nTop {len(docs)} result(s) for: {question!r}"
+          + (f" (module={module})" if module else "") + "\n")
     for doc, meta, dist in zip(docs, metas, dists):
         print(f"[{meta['source']} | {meta['start_hms']}-{meta['end_hms']} | "
               f"score={1 - dist:.3f}]")
@@ -229,8 +268,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_ingest = sub.add_parser("ingest", help="Chunk + embed all .srt files in a folder into the vector DB")
-    p_ingest.add_argument("--input_dir", required=True, help="Folder containing .srt files")
+    p_ingest = sub.add_parser("ingest", help="Chunk + embed all .srt files (recursively) into the vector DB")
+    p_ingest.add_argument("--input_dir", required=True, help="Root folder containing module subfolders of .srt files")
     p_ingest.add_argument("--db_dir", default="./vector_db", help="Where to store the persistent vector DB")
     p_ingest.add_argument("--window_seconds", type=float, default=45, help="Target chunk duration in seconds")
     p_ingest.add_argument("--max_chars", type=int, default=800, help="Max characters per chunk")
@@ -240,13 +279,14 @@ def main():
     p_query.add_argument("--db_dir", default="./vector_db", help="Path to the persistent vector DB")
     p_query.add_argument("--q", required=True, help="Your search question")
     p_query.add_argument("--n", type=int, default=3, help="Number of results to return")
+    p_query.add_argument("--module", default=None, help="Restrict results to a single module, e.g. module1")
 
     args = parser.parse_args()
 
     if args.command == "ingest":
         ingest(args.input_dir, args.db_dir, args.window_seconds, args.max_chars, args.overwrite)
     elif args.command == "query":
-        query(args.db_dir, args.q, args.n)
+        query(args.db_dir, args.q, args.n, args.module)
 
 
 if __name__ == "__main__":
