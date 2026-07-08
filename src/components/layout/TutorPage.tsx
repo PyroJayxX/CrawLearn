@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { LearningState, ModuleConfig } from '../../types';
+import { playCorrect, playDragClick, playIncorrect, playPass } from '../../lib/sounds';
 
 type TutorMode = 'home' | 'quiz' | 'explain' | 'scenario' | 'weakspot';
 
@@ -123,6 +124,21 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     setUserAnswer('');
     setGradeResult(null);
     setGradingError(null);
+  };
+
+  const handleSelectAnswer = (qi: number, oi: number, correctIndex: number, isLastQuestion: boolean) => {
+    playDragClick();
+    setSelectedAnswers(prev => ({ ...prev, [qi]: oi }));
+
+    const isCorrect = oi === correctIndex;
+    setTimeout(() => {
+      if (isCorrect) playCorrect();
+      else playIncorrect();
+
+      if (isLastQuestion) {
+        setTimeout(() => playPass(), 300);
+      }
+    }, 120);
   };
 
   const fetchNextQuizQuestion = async (existing: QuizQuestion[]) => {
@@ -451,7 +467,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                           <button
                             key={oi}
                             disabled={hasAnswered}
-                            onClick={() => setSelectedAnswers(prev => ({ ...prev, [qi]: oi }))}
+                            onClick={() => handleSelectAnswer(qi, oi, q.correctIndex, isLastQuestion)}
                             className={`w-full rounded-lg border px-4 py-2.5 text-left text-sm transition-colors disabled:cursor-default ${stateClasses}`}
                           >
                             {opt}
@@ -476,7 +492,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                           onClick={handleStartQuiz}
                           className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
                         >
-                          Quiz Complete! New Quiz?
+                          Quiz Complete — New Quiz
                         </button>
                       )}
                       <button
