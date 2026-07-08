@@ -9,7 +9,7 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 2048, responseMimeType: 'application/json' },
+        generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 4096, responseMimeType: 'application/json' },
       }),
     }
   );
