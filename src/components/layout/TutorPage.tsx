@@ -476,7 +476,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                           onClick={handleStartQuiz}
                           className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
                         >
-                          Quiz Complete — New Quiz
+                          Quiz Complete! New Quiz?
                         </button>
                       )}
                       <button
