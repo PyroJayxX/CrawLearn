@@ -42,8 +42,12 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
   const [explainStreaming, setExplainStreaming] = useState(false);
   const [explainError, setExplainError] = useState<string | null>(null);
 
-  // RAG quiz state
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[] | null>(null);
+  // RAG quiz state — fetched one question at a time to avoid truncation
+  // on long multi-question generations, and so the first question shows
+  // up fast instead of waiting on all of them.
+  const TOTAL_QUIZ_QUESTIONS = 5;
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [quizStarted, setQuizStarted] = useState(false);
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState<string | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
@@ -70,9 +74,11 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
       return 'What topic or concept would you like me to explain?';
     }
     if (mode === 'quiz') {
-      if (quizLoading) return 'Putting together some questions for you...';
+      if (quizLoading && quizQuestions.length === 0) return 'Putting together a question for you...';
       if (quizError) return `Hmm, something went wrong: ${quizError}`;
-      if (quizQuestions) return `Here's your quiz! ${quizQuestions.length} questions, give it a go.`;
+      if (quizQuestions.length > 0) {
+        return `Question ${quizQuestions.length} of ${TOTAL_QUIZ_QUESTIONS}`;
+      }
       return 'Sure! Which module and chapter do you want to be quizzed on?';
     }
     if (mode === 'scenario') {
@@ -108,7 +114,8 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     setExplainAnswer(null);
     setExplainError(null);
     setExplainStreaming(false);
-    setQuizQuestions(null);
+    setQuizQuestions([]);
+    setQuizStarted(false);
     setQuizError(null);
     setSelectedAnswers({});
     setScenarioData(null);
@@ -118,11 +125,9 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     setGradingError(null);
   };
 
-  const handleGenerateQuiz = async () => {
+  const fetchNextQuizQuestion = async (existing: QuizQuestion[]) => {
     setQuizLoading(true);
     setQuizError(null);
-    setQuizQuestions(null);
-    setSelectedAnswers({});
 
     const moduleTitle = tutorModules.find(m => m.id === selectedModuleId)?.title;
 
@@ -134,20 +139,32 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
           moduleId: selectedModuleId,
           moduleTitle,
           chapter: selectedChapter,
-          n_questions: 5,
+          previousQuestions: existing.map(q => q.question),
         }),
       });
 
       if (!res.ok) throw new Error(`Server responded ${res.status}`);
 
-      const data: { questions?: QuizQuestion[]; error?: string } = await res.json();
+      const data: { question?: QuizQuestion; error?: string } = await res.json();
       if (data.error) throw new Error(data.error);
-      setQuizQuestions(data.questions ?? []);
+      if (!data.question) throw new Error('No question returned.');
+      setQuizQuestions([...existing, data.question]);
     } catch (err) {
       setQuizError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setQuizLoading(false);
     }
+  };
+
+  const handleStartQuiz = () => {
+    setQuizStarted(true);
+    setQuizQuestions([]);
+    setSelectedAnswers({});
+    fetchNextQuizQuestion([]);
+  };
+
+  const handleNextQuizQuestion = () => {
+    fetchNextQuizQuestion(quizQuestions);
   };
 
   const handleAskCrawley = async () => {
@@ -347,15 +364,14 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
 
           {mode === 'quiz' && (
             <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-              {!quizQuestions && (
+              {!quizStarted && (
                 <div className="space-y-4">
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">Module</label>
                     <select
                       value={selectedModuleId}
                       onChange={e => setSelectedModuleId(e.target.value)}
-                      disabled={quizLoading}
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20"
                     >
                       {tutorModules.map(mod => (
                         <option key={mod.id} value={mod.id}>
@@ -370,8 +386,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                     <select
                       value={selectedChapter}
                       onChange={e => setSelectedChapter(e.target.value)}
-                      disabled={quizLoading}
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition-colors hover:border-accent/60 focus:border-accent focus:ring-2 focus:ring-accent/20"
                     >
                       <option>Chapter 1</option>
                       <option>Chapter 2</option>
@@ -381,67 +396,10 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <button
-                      onClick={handleGenerateQuiz}
-                      disabled={quizLoading}
-                      className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {quizLoading ? 'Generating...' : 'Generate Quiz'}
-                    </button>
-                    <button
-                      onClick={resetToHome}
-                      className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
-                    >
-                      ← Back
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {quizQuestions && (
-                <div className="space-y-6">
-                  {quizQuestions.map((q, qi) => {
-                    const picked = selectedAnswers[qi];
-                    const hasAnswered = picked !== undefined;
-                    return (
-                      <div key={qi} className="border-b border-gray-100 pb-5 last:border-0 last:pb-0">
-                        <p className="mb-3 text-sm font-semibold text-gray-800">
-                          {qi + 1}. {q.question}
-                        </p>
-                        <div className="space-y-2">
-                          {q.options.map((opt, oi) => {
-                            const isCorrect = oi === q.correctIndex;
-                            const isPicked = oi === picked;
-                            let stateClasses = 'border-gray-200 bg-white hover:border-accent/60';
-                            if (hasAnswered) {
-                              if (isCorrect) stateClasses = 'border-emerald-400 bg-emerald-50 text-emerald-800';
-                              else if (isPicked) stateClasses = 'border-red-300 bg-red-50 text-red-700';
-                              else stateClasses = 'border-gray-200 bg-white opacity-60';
-                            }
-                            return (
-                              <button
-                                key={oi}
-                                disabled={hasAnswered}
-                                onClick={() => setSelectedAnswers(prev => ({ ...prev, [qi]: oi }))}
-                                className={`w-full rounded-lg border px-4 py-2.5 text-left text-sm transition-colors disabled:cursor-default ${stateClasses}`}
-                              >
-                                {opt}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {hasAnswered && (
-                          <p className="mt-2 text-xs leading-relaxed text-gray-500">{q.explanation}</p>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <button
-                      onClick={handleGenerateQuiz}
+                      onClick={handleStartQuiz}
                       className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
                     >
-                      New Quiz
+                      Start Quiz
                     </button>
                     <button
                       onClick={resetToHome}
@@ -452,6 +410,85 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                   </div>
                 </div>
               )}
+
+              {quizStarted && quizLoading && quizQuestions.length === 0 && (
+                <div className="py-6 text-center text-sm text-gray-400">Generating your first question...</div>
+              )}
+
+              {quizStarted && quizError && (
+                <div className="space-y-4">
+                  <p className="text-sm text-red-600">{quizError}</p>
+                  <button
+                    onClick={resetToHome}
+                    className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                  >
+                    ← Back
+                  </button>
+                </div>
+              )}
+
+              {quizStarted && !quizError && quizQuestions.length > 0 && (() => {
+                const qi = quizQuestions.length - 1;
+                const q = quizQuestions[qi];
+                const picked = selectedAnswers[qi];
+                const hasAnswered = picked !== undefined;
+                const isLastQuestion = quizQuestions.length >= TOTAL_QUIZ_QUESTIONS;
+
+                return (
+                  <div className="space-y-4">
+                    <p className="text-sm font-semibold text-gray-800">{q.question}</p>
+                    <div className="space-y-2">
+                      {q.options.map((opt, oi) => {
+                        const isCorrect = oi === q.correctIndex;
+                        const isPicked = oi === picked;
+                        let stateClasses = 'border-gray-200 bg-white hover:border-accent/60';
+                        if (hasAnswered) {
+                          if (isCorrect) stateClasses = 'border-emerald-400 bg-emerald-50 text-emerald-800';
+                          else if (isPicked) stateClasses = 'border-red-300 bg-red-50 text-red-700';
+                          else stateClasses = 'border-gray-200 bg-white opacity-60';
+                        }
+                        return (
+                          <button
+                            key={oi}
+                            disabled={hasAnswered}
+                            onClick={() => setSelectedAnswers(prev => ({ ...prev, [qi]: oi }))}
+                            className={`w-full rounded-lg border px-4 py-2.5 text-left text-sm transition-colors disabled:cursor-default ${stateClasses}`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {hasAnswered && <p className="text-xs leading-relaxed text-gray-500">{q.explanation}</p>}
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      {hasAnswered && !isLastQuestion && (
+                        <button
+                          onClick={handleNextQuizQuestion}
+                          disabled={quizLoading}
+                          className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {quizLoading ? 'Loading next...' : 'Next Question'}
+                        </button>
+                      )}
+                      {hasAnswered && isLastQuestion && (
+                        <button
+                          onClick={handleStartQuiz}
+                          className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+                        >
+                          Quiz Complete — New Quiz
+                        </button>
+                      )}
+                      <button
+                        onClick={resetToHome}
+                        className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                      >
+                        ← Back
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 

@@ -9,7 +9,7 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { temperature: 0.3, topP: 0.9, maxOutputTokens: 1024, responseMimeType: 'application/json' },
+        generationConfig: { temperature: 0.3, topP: 0.9, maxOutputTokens: 4096, responseMimeType: 'application/json' },
       }),
     }
   );
@@ -19,9 +19,22 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
     throw new Error(detail || `Request failed with status ${res.status}`);
   }
   const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map(p => p?.text ?? '').join('').trim();
-  const cleaned = (text || '').replace(/^```json\s*|```$/g, '').trim();
-  return JSON.parse(cleaned);
+  const candidate = data?.candidates?.[0];
+  const text = candidate?.content?.parts?.map(p => p?.text ?? '').join('').trim();
+
+  if (candidate?.finishReason === 'MAX_TOKENS') {
+    throw new Error('Gemini response was cut off (hit maxOutputTokens) before finishing the JSON.');
+  }
+  if (!text) {
+    throw new Error(`Gemini returned no text (finishReason: ${candidate?.finishReason ?? 'unknown'})`);
+  }
+
+  const cleaned = text.replace(/^```json\s*|```$/g, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    throw new Error(`Gemini response wasn't valid JSON: ${cleaned.slice(0, 200)}`);
+  }
 }
 
 export default async function handler(req, res) {
