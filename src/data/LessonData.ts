@@ -281,7 +281,275 @@ export const LESSON_DATA: Record<string, LessonData> = {
       }
     ],
     pdfUrl:      '/materials/Module3.pdf',
-  }
+  },
+    mod4_ch1: {
+    videoUrl:    'https://youtu.be/_0W9NwSoVfk',
+    srtFile:     'Lesson1',
+    tag:         'SURETYSHIP • STRUCTURAL FRAMEWORKS',
+    title:       'The Triangle Of Trust',
+    duration:    '2:19',
+    description: 'Suretyship operates as a highly specialized triangular transaction involving a Principal, an Obligee, and a Surety. This lesson establishes the critical legal distinctions separating suretyship from traditional insurance, focusing on its multi-contract architecture, accessory nature, and non-cancellation boundaries.',
+    topics: [
+      { icon: '📐', label: 'Triangular Transactions' },
+      { icon: '📜', label: 'The Three Core Contracts' },
+      { icon: '🔒', label: 'No Loss Characteristics' }
+    ],
+    faqs: [
+      {
+        id:       'mod4_ch1-faq-1',
+        question: 'Can a surety company deny an Obligee\'s claim if the Principal stops paying their bond premiums?',
+        answer:   'No. Unlike standard insurance contracts, non-payment of the premium by the Principal is not a valid legal ground for the denial of a claim under a contract of suretyship.'
+      },
+      {
+        id:       'mod4_ch1-faq-2',
+        question: 'Why can an insurance policy be cancelled at any time while a surety bond cannot?',
+        answer:   'An insurance contract is a principal agreement between two parties, whereas a surety bond functions as an accessory contract that explicitly requires the consent of the Obligee before it can be legally cancelled.'
+      },
+      {
+        id:       'mod4_ch1-faq-3',
+        question: 'How does the Indemnity Agreement protect the insurance company from incurring final losses?',
+        answer:   'The Indemnity Agreement binds the Principal solidarily to the Surety, legally forcing the Principal to fully reimburse the insurance company for any expenses, legal costs, or payouts arising from a bond claim.'
+      }
+    ],
+    pdfUrl:      '/materials/[Crawlers] Suretyship.pdf'
+  },
 
-  
+  mod4_ch2: {
+    videoUrl:    'https://youtu.be/HSA_2jbEWO4 ',
+    srtFile:     'Lesson2',
+    tag:         'SURETYSHIP • BOND CLASSIFICATIONS',
+    title:       'Promises In Action',
+    duration:    '2:59',
+    description: 'Commercial risk management requires selecting the precise bond instrument for legal and construction milestones. This lesson covers the functional mechanics of Fidelity Bonds, Judicial Bonds required by court statutes, and the sequential deployment of Contractor Bonds throughout a project lifecycle.',
+    topics: [
+      { icon: '🧑‍💼', label: 'Fidelity vs. Fidelity Guarantee' },
+      { icon: '⚖️', label: 'Judicial Court Bonds' },
+      { icon: '🏗️', label: 'Contractor Project Lifecycles' }
+    ],
+    faqs: [
+      {
+        id:       'mod4_ch2-faq-1',
+        question: 'What separates a true Fidelity Bond from a standard Fidelity Guarantee policy during a claim process?',
+        answer:   'A true three-party Fidelity Bond strictly requires the presence and fulfillment of a prior conviction clause regarding the dishonest individual before the policy responds, which is completely unnecessary under a two-party Fidelity Guarantee.'
+      },
+      {
+        id:       'mod4_ch2-faq-2',
+        question: 'If a contractor defaults during construction, what specific costs does a Performance Bond cover for the project owner?',
+        answer:   'The Performance Bond answers for the exact financial costs tied to project delays and pays for the additional completion cost, calculated as the difference between the new contractor\'s price and the old contractor\'s original contract rate.'
+      },
+      {
+        id:       'mod4_ch2-faq-3',
+        question: 'Why does an Obligee require a Warranty Bond if a project has already been completed and provisionally accepted?',
+        answer:   'The Warranty Bond allows the safe release of retention money by guaranteeing the correction and repair of any hidden defects in materials and workmanship that become evident within one year from final or provisional acceptance.'
+      }
+    ],
+    pdfUrl:      '/materials/[Crawlers] Suretyship.pdf'
+  },
+
+  mod4_ch3: {
+    videoUrl:    'https://youtu.be/-0a6iC3_HCA',
+    srtFile:     'Lesson3',
+    tag:         'SURETYSHIP • UNDERWRITING MECHANICS',
+    title:       'Securing The Guarantee',
+    duration:    '3:17',
+    description: 'Evaluating financial guarantees demands strict analysis of creditworthiness, operational capacities, and asset security. This lesson provides an exhaustive breakdown of the 3 Cs of bond underwriting, acceptable collateral management parameters, and the critical pre-release compliance verification checklist.',
+    topics: [
+      { icon: '📊', label: 'The 3 Cs Of Underwriting' },
+      { icon: '🏦', label: 'Collateral Legal Standards' },
+      { icon: '✅', label: 'Pre-Release Verification' }
+    ],
+    faqs: [
+      {
+        id:       'mod4_ch3-faq-1',
+        question: 'What parameters must a Real Estate Mortgage meet to be legally accepted by an underwriter as bond collateral?',
+        answer:   'The property must be prime residential or commercial real estate registered directly to the Principal, completely free from encumbrances, hold a market value at least twice the value of the bond, and be officially registered and annotated on the title.'
+      },
+      {
+        id:       'mod4_ch3-faq-2',
+        question: 'Which specific tracking metrics do underwriters pull from audited financial statements to verify a Principal\'s financial capacity?',
+        answer:   'Underwriters evaluate past two-year audited statements to calculate the Liquidity Ratio (cash conversion availability), the Debt Ratio (creditor asset contribution), and the Debt-to-Equity Ratio (overall shareholder versus creditor leverage).'
+      },
+      {
+        id:       'mod4_ch3-faq-3',
+        question: 'Why must an underwriter require a Secretary\'s Certificate or Board Resolution before executing a corporate bond?',
+        answer:   'These corporate documents are strictly required during the pre-release checklist to legally verify that the individual physical signatories possess the explicit, delegated authority to bind the corporate entity to the bond and its indemnity terms.'
+      }
+    ],
+    pdfUrl:      '/materials/[Crawlers] Suretyship.pdf'
+  },
+    mod5_ch1: {
+    videoUrl:    'https://youtu.be/DL0vxtEkVek ',
+    srtFile:     'Lesson1',
+    tag:         'INSURANCE • PERSONAL ACCIDENT',
+    title:       'The Unexpected Impact',
+    duration:    '1:49',
+    description: 'Personal Accident (PA) insurance emerged during the Industrial Revolution to protect individuals against sudden, unforeseen physical injuries. Unlike property or motor coverage, PA is a valued policy because a human life cannot be monetarily quantified, making it a highly accessible alternative to traditional life insurance.',
+    topics: [
+      { icon: '🚂', label: 'Industrial Origins' },
+      { icon: '⚠️', label: 'Definition Of An Accident' },
+      { icon: '⚖️', label: 'Valued Policy Concept' }
+    ],
+    faqs: [
+      {
+        id:       'mod5_ch1-faq-1',
+        question: 'Why is Personal Accident insurance not considered a contract of indemnity?',
+        answer:   'A contract of indemnity aims to replace an exact monetary loss, but a human life or a severed limb has no exact monetary value. Therefore, PA is a "valued policy" that simply pays a specific, pre-agreed face value.'
+      },
+      {
+        id:       'mod5_ch1-faq-2',
+        question: 'Does an injury caused by a sudden illness qualify as an accident under this policy?',
+        answer:   'No. To trigger a PA claim, the event must arise strictly from accidental, violent, external, and visible means, independent of any other cause like sickness.'
+      }
+    ],
+    pdfUrl:      '/materials/[Crawlers] Personal Accident Insurance.pdf'
+  },
+
+  mod5_ch2: {
+    videoUrl:    'https://youtu.be/WoxR9JSaS8A',
+    srtFile:     'Lesson2',
+    tag:         'INSURANCE • ACCIDENT BENEFITS',
+    title:       'The Physical And Financial Toll',
+    duration:    '1:46',
+    description: 'Accidents generate both direct physical losses, such as dismemberment, and indirect financial losses, such as sudden medical expenses and lost wages. This lesson breaks down the specific percentage payouts for permanent disablement and details the mandatory geographic and lifestyle exclusions.',
+    topics: [
+      { icon: '📉', label: 'Direct vs. Indirect Losses' },
+      { icon: '🦿', label: 'Disablement Percentages' },
+      { icon: '🚫', label: 'Standard Policy Exclusions' }
+    ],
+    faqs: [
+      {
+        id:       'mod5_ch2-faq-1',
+        question: 'If a client dies from an accident a year after it happens, will the basic PA policy pay the death benefit?',
+        answer:   'Generally, no. The basic accidental death cover dictates that the death must occur within a specific period, usually 180 days from the exact date of the accident.'
+      },
+      {
+        id:       'mod5_ch2-faq-2',
+        question: 'If a client adds the Unprovoked Murder or Assault optional cover, are they protected everywhere in the Philippines?',
+        answer:   'No. The policy enforces strict geographical exclusions for this specific extension, voiding coverage if the unprovoked murder occurs in areas like Samar, Basilan, the Sulu Archipelago, or certain parts of Mindanao.'
+      }
+    ],
+    pdfUrl:      '/materials/[Crawlers] Personal Accident Insurance.pdf'
+  },
+
+  mod5_ch3: {
+    videoUrl:    'https://youtu.be/987SH-O0WcI',
+    srtFile:     'Lesson3',
+    tag:         'INSURANCE • UNDERWRITING RISK',
+    title:       'Assessing The Hazard',
+    duration:    '1:40',
+    description: 'Since Personal Accident policies bypass medical examinations, the underwriting process relies entirely on the principle of Utmost Good Faith. Premium pricing is dictated not by the applicant\'s age, but strictly by their occupational hazard classification, ranging from indoor white-collar roles to high-risk industrial labor.',
+    topics: [
+      { icon: '🤝', label: 'Utmost Good Faith' },
+      { icon: '💼', label: 'Occupational Risk Classes' },
+      { icon: '📋', label: 'Application Disclosures' }
+    ],
+    faqs: [
+      {
+        id:       'mod5_ch3-faq-1',
+        question: 'If a client wants to buy a PA policy for their neighbor, is that allowed?',
+        answer:   'No. The Principle of Insurable Interest requires that the person buying the policy must suffer a direct pecuniary (financial) loss if the assured is injured or dies, restricting this to family members, business partners, or creditors.'
+      },
+      {
+        id:       'mod5_ch3-faq-2',
+        question: 'Why does an accountant pay a different PA premium than a truck driver of the exact same age?',
+        answer:   'PA premiums are not priced based on age. They are strictly calculated based on Occupational Class, where an accountant is a low-risk Class I and a truck driver is a higher-risk Class IV.'
+      },
+      {
+        id:       'mod5_ch3-faq-3',
+        question: 'What happens if an underwriter discovers a pre-existing medical condition after a PA policy is issued?',
+        answer:   'Because the policy relies on Utmost Good Faith in lieu of a medical exam, any discovery of a concealed pre-existing condition or congenital anomaly automatically suspends the coverage.'
+      }
+    ],
+    pdfUrl:      '/materials/[Crawlers] Personal Accident Insurance.pdf'
+  },
+    mod6_ch1: {
+    videoUrl:    'https://youtu.be/H8wysLVBE3E',
+    srtFile:     'Lesson1',
+    tag:         'HEALTH • DISABILITY INCOME',
+    title:       'The Devastation Of Disability',
+    duration:    '1:43',
+    description: 'Health insurance originated in the 19th century to indemnify railroad travelers, but evolved to protect families from total financial ruin. This lesson covers the dual purpose of modern health insurance: replacing lost income and defining the strict boundaries of total disability.',
+    topics: [
+      { icon: '🚂', label: 'Historical Origins' },
+      { icon: '📉', label: 'Financial Losses Of Disability' },
+      { icon: '⚖️', label: 'Definitions Of Occupation' }
+    ],
+    faqs: [
+      {
+        id:       'mod6_ch1-faq-1',
+        question: 'If a client is unemployed when an accident disables them, will they still receive disability income payments?',
+        answer:   'Yes. Disability income payments are not true indemnity; they pay out the contracted benefit for the insured loss regardless of whether the person was actively earning money at the exact time of the accident.'
+      },
+      {
+        id:       'mod6_ch1-faq-2',
+        question: 'How does an "his occupation" clause protect highly specialized professionals like surgeons?',
+        answer:   'An "his occupation" clause is the most liberal definition of disability. It provides benefits if a surgeon can no longer perform surgery due to an injury, even if they are still perfectly capable of earning money by teaching at a medical college.'
+      }
+    ],
+    pdfUrl:      '/materials/Module_6_Images'
+  },
+
+  mod6_ch2: {
+    videoUrl:    'https://youtu.be/5JtrG9Wjmfg',
+    srtFile:     'Lesson2',
+    tag:         'HEALTH • BASIC EXPENSES',
+    title:       'Covering The Medical Bills',
+    duration:    '1:33',
+    description: 'Basic health insurance plans are segmented into specific coverage areas to manage average hospitalization costs. This lesson breaks down Basic Hospital Expense Insurance, Basic Surgical Expense Insurance, and the Physician\'s Attendance Benefit.',
+    topics: [
+      { icon: '🏥', label: 'Basic Hospital Expenses' },
+      { icon: '⚕️', label: 'Surgical Expense Schedules' },
+      { icon: '👨‍⚕️', label: 'Physician Attendance' }
+    ],
+    faqs: [
+      {
+        id:       'mod6_ch2-faq-1',
+        question: 'Will Basic Hospital Expense Insurance pay the surgeon\'s professional fees?',
+        answer:   'No. Basic Hospital Expense Insurance only covers daily room and board and miscellaneous hospital charges like x-rays and drugs. Professional doctor or surgeon fees are strictly excluded from this specific benefit.'
+      },
+      {
+        id:       'mod6_ch2-faq-2',
+        question: 'What happens if a surgeon performs a procedure that is not listed on the policy\'s schedule of operations?',
+        answer:   'If an unlisted procedure is performed, the insurance company will consult with medical experts to determine a commensurate value based on the existing supplementary schedules.'
+      },
+      {
+        id:       'mod6_ch2-faq-3',
+        question: 'Is cosmetic surgery ever covered under Basic Surgical Expense Insurance?',
+        answer:   'Generally, cosmetic surgery for beautification is excluded because it is not caused by sickness. However, most companies will cover cosmetic surgery if it is explicitly necessitated by an accidental injury.'
+      }
+    ],
+    pdfUrl:      '/materials/Module_6_Images'
+  },
+
+  mod6_ch3: {
+    videoUrl:    'https://youtu.be/otJstC6sYSU',
+    srtFile:     'Lesson3',
+    tag:         'HEALTH • CATASTROPHIC COVERAGE',
+    title:       'Surviving The Catastrophe',
+    duration:    '1:37',
+    description: 'When average illnesses escalate into medical catastrophes, Major Medical Expense Policies step in to prevent bankruptcy. This lesson explores the mechanics of cost-sharing through deductibles and co-insurance, alongside the strict standard exclusions applied to individual health plans.',
+    topics: [
+      { icon: '🚨', label: 'Major Medical Policies' },
+      { icon: '💰', label: 'Deductibles And Co-insurance' },
+      { icon: '🚫', label: 'Standard Plan Exclusions' }
+    ],
+    faqs: [
+      {
+        id:       'mod6_ch3-faq-1',
+        question: 'Why do Major Medical policies force the insured to pay a deductible instead of covering all costs?',
+        answer:   'Cost-sharing is necessary to keep premiums affordable for the average person. It also restrains extravagant medical charges by giving the insured a financial incentive to hold expenses down.'
+      },
+      {
+        id:       'mod6_ch3-faq-2',
+        question: 'Does health insurance cover medical expenses if the client is injured while serving in the military?',
+        answer:   'No. Standard health policies explicitly exclude sickness, disease, or injury sustained while serving in the armed forces during a war or armed conflict.'
+      },
+      {
+        id:       'mod6_ch3-faq-3',
+        question: 'Will an individual health policy cover the medical costs of normal childbirth?',
+        answer:   'No. Normal pregnancy, childbirth, and miscarriages are generally excluded from standard individual health insurance coverage, though specific complications may be covered under certain conditions.'
+      }
+    ],
+    pdfUrl:      '/materials/Module_6_Images'
+  }
 };

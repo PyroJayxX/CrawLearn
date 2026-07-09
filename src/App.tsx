@@ -30,6 +30,24 @@ import {
   mod3Ch3Quiz,
   mod3FinalQuestions,
 } from './data/Module3Questions';
+import {
+  mod4Ch1Quiz,
+  mod4Ch2Quiz,
+  mod4Ch3Quiz,
+  mod4FinalQuestions,
+} from './data/Module4Questions';
+import {
+  mod5Ch1Quiz,
+  mod5Ch2Quiz,
+  mod5Ch3Quiz,
+  mod5FinalQuestions,
+} from './data/Module5Questions';
+import {
+  mod6Ch1Quiz,
+  mod6Ch2Quiz,
+  mod6Ch3Quiz,
+  mod6FinalQuestions,
+} from './data/Module6Questions';
 import { supabase } from './lib/supabase';
 import { loadLearnerRank, loadUserProgress, loadUserProfile, saveDisplayName, saveQuizScore, saveVideoComplete } from './lib/db';
 import InteractiveQuizSection from './components/assessment/InteractiveQuizSection';
@@ -83,8 +101,47 @@ const COURSE_CONFIG: ModuleConfig[] = [
       { id: 'mod3_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod3FinalQuestions, questionCount: 15 },
     ],
   },
+  {
+    id: 'module4',
+    title: 'Module 4',
+    sections: [
+      { id: 'mod4_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod4Ch1Quiz },
+      { id: 'mod4_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod4Ch1Quiz },
+      { id: 'mod4_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod4Ch2Quiz },
+      { id: 'mod4_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod4Ch2Quiz },
+      { id: 'mod4_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod4Ch3Quiz },
+      { id: 'mod4_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod4Ch3Quiz },
+      { id: 'mod4_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod4FinalQuestions, questionCount: 15 },
+    ],
+  },
+  {
+    id: 'module5',
+    title: 'Module 5',
+    sections: [
+      { id: 'mod5_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod5Ch1Quiz },
+      { id: 'mod5_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod5Ch1Quiz },
+      { id: 'mod5_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod5Ch2Quiz },
+      { id: 'mod5_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod5Ch2Quiz },
+      { id: 'mod5_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod5Ch3Quiz },
+      { id: 'mod5_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod5Ch3Quiz },
+      { id: 'mod5_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod5FinalQuestions, questionCount: 15 },
+    ],
+  },
+  {
+    id: 'module6',
+    title: 'Module 6',
+    sections: [
+      { id: 'mod6_ch1',      title: 'Chapter 1',       hasVideo: true,  passingScore: 3,  questions: mod6Ch1Quiz },
+      { id: 'mod6_ch1-quiz', title: 'Quiz 1',           hasVideo: false, passingScore: 3,  questions: mod6Ch1Quiz },
+      { id: 'mod6_ch2',      title: 'Chapter 2',        hasVideo: true,  passingScore: 3,  questions: mod6Ch2Quiz },
+      { id: 'mod6_ch2-quiz', title: 'Quiz 2',           hasVideo: false, passingScore: 3,  questions: mod6Ch2Quiz },
+      { id: 'mod6_ch3',      title: 'Chapter 3',        hasVideo: true,  passingScore: 3,  questions: mod6Ch3Quiz },
+      { id: 'mod6_ch3-quiz', title: 'Quiz 3',           hasVideo: false, passingScore: 3,  questions: mod6Ch3Quiz },
+      { id: 'mod6_final',    title: 'Final Assessment', hasVideo: false, passingScore: 12, questions: mod6FinalQuestions, questionCount: 15 },
+    ],
+  },
   ...Array.from({ length: 8 }, (_, i) => {
-    const n = i + 4;
+    const n = i + 7;
     return {
       id: `module${n}`,
       title: `Module ${n}`,
