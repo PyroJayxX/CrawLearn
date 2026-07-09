@@ -43,11 +43,12 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
   const [explainStreaming, setExplainStreaming] = useState(false);
   const [explainError, setExplainError] = useState<string | null>(null);
 
-  // RAG quiz state — fetched one question at a time to avoid truncation
-  // on long multi-question generations, and so the first question shows
-  // up fast instead of waiting on all of them.
+  // RAG quiz state — all questions are fetched in a single batch call up
+  // front, then the user pages through them locally with no further
+  // network round-trips.
   const TOTAL_QUIZ_QUESTIONS = 5;
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [quizIndex, setQuizIndex] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState<string | null>(null);
@@ -75,10 +76,10 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
       return 'What topic or concept would you like me to explain?';
     }
     if (mode === 'quiz') {
-      if (quizLoading && quizQuestions.length === 0) return 'Putting together a question for you...';
+      if (quizLoading) return 'Putting together your quiz...';
       if (quizError) return `Hmm, something went wrong: ${quizError}`;
       if (quizQuestions.length > 0) {
-        return `Question ${quizQuestions.length} of ${TOTAL_QUIZ_QUESTIONS}`;
+        return `Question ${quizIndex + 1} of ${quizQuestions.length}`;
       }
       return 'Sure! Which module and chapter do you want to be quizzed on?';
     }
@@ -116,6 +117,7 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     setExplainError(null);
     setExplainStreaming(false);
     setQuizQuestions([]);
+    setQuizIndex(0);
     setQuizStarted(false);
     setQuizError(null);
     setSelectedAnswers({});
@@ -141,7 +143,11 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     }, 120);
   };
 
-  const fetchNextQuizQuestion = async (existing: QuizQuestion[]) => {
+  const handleStartQuiz = async () => {
+    setQuizStarted(true);
+    setQuizQuestions([]);
+    setQuizIndex(0);
+    setSelectedAnswers({});
     setQuizLoading(true);
     setQuizError(null);
 
@@ -155,16 +161,15 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
           moduleId: selectedModuleId,
           moduleTitle,
           chapter: selectedChapter,
-          previousQuestions: existing.map(q => q.question),
         }),
       });
 
       if (!res.ok) throw new Error(`Server responded ${res.status}`);
 
-      const data: { question?: QuizQuestion; error?: string } = await res.json();
+      const data: { questions?: QuizQuestion[]; error?: string } = await res.json();
       if (data.error) throw new Error(data.error);
-      if (!data.question) throw new Error('No question returned.');
-      setQuizQuestions([...existing, data.question]);
+      if (!data.questions || data.questions.length === 0) throw new Error('No questions returned.');
+      setQuizQuestions(data.questions);
     } catch (err) {
       setQuizError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -172,15 +177,8 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     }
   };
 
-  const handleStartQuiz = () => {
-    setQuizStarted(true);
-    setQuizQuestions([]);
-    setSelectedAnswers({});
-    fetchNextQuizQuestion([]);
-  };
-
   const handleNextQuizQuestion = () => {
-    fetchNextQuizQuestion(quizQuestions);
+    setQuizIndex(i => Math.min(i + 1, quizQuestions.length - 1));
   };
 
   const handleAskCrawley = async () => {
@@ -427,11 +425,11 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                 </div>
               )}
 
-              {quizStarted && quizLoading && quizQuestions.length === 0 && (
-                <div className="py-6 text-center text-sm text-gray-400">Generating your first question...</div>
+              {quizStarted && quizLoading && (
+                <div className="py-6 text-center text-sm text-gray-400">Generating your quiz...</div>
               )}
 
-              {quizStarted && quizError && (
+              {quizStarted && !quizLoading && quizError && (
                 <div className="space-y-4">
                   <p className="text-sm text-red-600">{quizError}</p>
                   <button
@@ -443,12 +441,12 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                 </div>
               )}
 
-              {quizStarted && !quizError && quizQuestions.length > 0 && (() => {
-                const qi = quizQuestions.length - 1;
+              {quizStarted && !quizLoading && !quizError && quizQuestions.length > 0 && (() => {
+                const qi = quizIndex;
                 const q = quizQuestions[qi];
                 const picked = selectedAnswers[qi];
                 const hasAnswered = picked !== undefined;
-                const isLastQuestion = quizQuestions.length >= TOTAL_QUIZ_QUESTIONS;
+                const isLastQuestion = qi >= quizQuestions.length - 1;
 
                 return (
                   <div className="space-y-4">
@@ -481,10 +479,9 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
                       {hasAnswered && !isLastQuestion && (
                         <button
                           onClick={handleNextQuizQuestion}
-                          disabled={quizLoading}
-                          className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                          className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
                         >
-                          {quizLoading ? 'Loading next...' : 'Next Question'}
+                          Next Question
                         </button>
                       )}
                       {hasAnswered && isLastQuestion && (

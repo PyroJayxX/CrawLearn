@@ -1,5 +1,7 @@
 import { GENERATION_MODEL, getChunksBySource, getModuleChunks, getSupabase, setCors } from '../lib.js';
 
+const QUESTION_COUNT = 5;
+
 async function generateJSON(systemPrompt, userMessage, apiKey) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${GENERATION_MODEL}:generateContent?key=${apiKey}`,
@@ -9,7 +11,8 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 4096, responseMimeType: 'application/json' },
+        // maxOutputTokens bumped up since we're generating 5 questions in one shot now.
+        generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 8192, responseMimeType: 'application/json' },
       }),
     }
   );
@@ -43,7 +46,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { moduleId, moduleTitle, chapter, previousQuestions = [] } = req.body ?? {};
+    const { moduleId, moduleTitle, chapter } = req.body ?? {};
     if (!moduleId) return res.status(400).json({ error: 'moduleId is required' });
 
     const supabase = getSupabase();
@@ -55,30 +58,40 @@ export default async function handler(req, res) {
       chunks = await getModuleChunks(supabase, moduleId);
     }
     if (!chunks || chunks.length === 0) {
-      return res.json({ question: null, error: 'No course material found for that module yet.' });
+      return res.json({ questions: null, error: 'No course material found for that module yet.' });
     }
 
     const contextBlock = chunks.map(c => c.text).join('\n\n');
-    const avoidBlock = previousQuestions.length > 0
-      ? `\n\nQUESTIONS ALREADY ASKED (do NOT repeat these or ask near-duplicates):\n${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}`
-      : '';
 
-    const systemPrompt = `You are Crawley, a course tutor generating a quiz question for the module "${moduleTitle ?? moduleId}".
-Using ONLY the transcript material below, write ONE multiple-choice question that tests understanding of a key concept.
+    const systemPrompt = `You are Crawley, a course tutor generating a quiz for the module "${moduleTitle ?? moduleId}".
+Using ONLY the transcript material below, write ${QUESTION_COUNT} multiple-choice questions that test understanding of key concepts. 
+When writing the question, do not reference "According to the transcript" or similar phrases, write it like how a teacher would normally ask a question in a classroom setting.
+Each question must test a DIFFERENT concept — do not repeat or near-duplicate questions within the set.
 
 TRANSCRIPT MATERIAL:
-${contextBlock}${avoidBlock}
+${contextBlock}
 
 Respond with ONLY a JSON object (no markdown fences, no commentary) with this exact shape:
 {
-  "question": string,
-  "options": [string, string, string, string],
-  "correctIndex": number (0-3),
-  "explanation": string (1-2 sentences on why the answer is correct)
-}`;
+  "questions": [
+    {
+      "question": string,
+      "options": [string, string, string, string],
+      "correctIndex": number (0-3),
+      "explanation": string (1-2 sentences on why the answer is correct)
+    }
+  ]
+}
+The "questions" array must contain exactly ${QUESTION_COUNT} items.`;
 
-    const question = await generateJSON(systemPrompt, 'Generate the question now.', process.env.VITE_GEMINI_API_KEY);
-    res.json({ question });
+    const result = await generateJSON(systemPrompt, 'Generate the quiz now.', process.env.VITE_GEMINI_API_KEY);
+    const questions = Array.isArray(result?.questions) ? result.questions.slice(0, QUESTION_COUNT) : null;
+
+    if (!questions || questions.length === 0) {
+      throw new Error('No questions returned.');
+    }
+
+    res.json({ questions });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' });
