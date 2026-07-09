@@ -43,7 +43,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'In ancient maritime trade, a bottomry bond used the physical hull or vessel of the ship as collateral for a loan, while respondentia secured the loan using the commercial cargo carried inside the ship.',
       },
     ],
-    pdfUrl:      '/materials/Module1.pdf',
+    pdfUrl:      '/materials/Mod1_PDF1.pdf',
   },
 
   ch2: {
@@ -70,7 +70,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Taking on massive amounts of risk alone can bankrupt a primary insurer. Reinsurance acts as an "insurance of an insurance," allowing the primary company to share a portion of their Total Sum Insured (TSI) and premiums with a professional reinsurer to mitigate catastrophic financial hits.',
       },
     ],
-    pdfUrl:      '/materials/Module1.pdf',
+    pdfUrl:      '/materials/Mod1_PDF2.pdf',
   },
 
   ch3: {
@@ -102,7 +102,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'A rescissible contract is technically valid but can be legally set aside if a party violates the principle of "utmost good faith." This usually happens when the insured conceals a material fact or misrepresents information that would have influenced the premium pricing or the decision to underwrite the risk.',
       },
     ],
-    pdfUrl:      '/materials/Module1.pdf',
+    pdfUrl:      '/materials/Mod1_PDF3.pdf',
   },
 
   // ── Module 2 ──────────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Coverage kicks off the exact moment your construction materials are unloaded and delivered to the project site.',
       },
     ],
-    pdfUrl:      '/materials/Module2.pdf',
+    pdfUrl:      '/materials/Mod2_PDF1.pdf',
   },
 
   mod2_ch2: {
@@ -157,7 +157,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Not automatically. While EAR natively covers the testing and commissioning phase for new machinery, you must explicitly pay extra for a special endorsement to add testing coverage to a CAR policy.',
       },
     ],
-    pdfUrl:      '/materials/Module2.pdf',
+    pdfUrl:      '/materials/Mod2_PDF2.pdf',
   },
 
   mod2_ch3: {
@@ -184,7 +184,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   "This is where EEI Section III kicks in. It covers the Increased Cost of Working, effectively paying for the emergency rental fees to hire substitute computer equipment so your business operations don't stall.",
       },
     ],
-    pdfUrl:      '/materials/Module2.pdf',
+    pdfUrl:      '/materials/Mod2_PDF3.pdf',
   },
 
   mod3_ch1: {
@@ -216,7 +216,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'No. Section II: No Fault Indemnity provides immediate relief up to 15,000 pesos without the need to prove who was at fault, requiring only basic proof like a police or medical report.'
       }
     ],
-    pdfUrl:      '/materials/Module3.pdf',
+    pdfUrl:      '/materials/Mod3_PDF1.pdf',
   },
 
   mod3_ch2: {
@@ -248,7 +248,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'No. Insurers enforce an Authorized Repair Limit, meaning the covered repair costs are strictly capped at the manufacturer\'s official price catalogue.'
       }
     ],
-    pdfUrl:      '/materials/Module3.pdf',
+    pdfUrl:      '/materials/Mod3_PDF2.pdf',
   },
 
   mod3_ch3: {
@@ -280,7 +280,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Yes, you can cancel the policy at any time. However, a Short Period Rate Scale penalty applies to the refund to cover the insurer\'s administrative costs.'
       }
     ],
-    pdfUrl:      '/materials/Module3.pdf',
+    pdfUrl:      '/materials/Mod3_PDF3.pdf',
   },
     mod4_ch1: {
     videoUrl:    'https://youtu.be/_0W9NwSoVfk',
@@ -311,7 +311,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'The Indemnity Agreement binds the Principal solidarily to the Surety, legally forcing the Principal to fully reimburse the insurance company for any expenses, legal costs, or payouts arising from a bond claim.'
       }
     ],
-    pdfUrl:      '/materials/[Crawlers] Suretyship.pdf'
+    pdfUrl:      '/materials/Mod4_PDF1.pdf'
   },
 
   mod4_ch2: {
@@ -343,7 +343,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'The Warranty Bond allows the safe release of retention money by guaranteeing the correction and repair of any hidden defects in materials and workmanship that become evident within one year from final or provisional acceptance.'
       }
     ],
-    pdfUrl:      '/materials/[Crawlers] Suretyship.pdf'
+    pdfUrl:      '/materials/Mod4_PDF2.pdf'
   },
 
   mod4_ch3: {
@@ -375,7 +375,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'These corporate documents are strictly required during the pre-release checklist to legally verify that the individual physical signatories possess the explicit, delegated authority to bind the corporate entity to the bond and its indemnity terms.'
       }
     ],
-    pdfUrl:      '/materials/[Crawlers] Suretyship.pdf'
+    pdfUrl:      '/materials/Mod4_PDF3.pdf'
   },
     mod5_ch1: {
     videoUrl:    'https://youtu.be/DL0vxtEkVek ',
@@ -401,7 +401,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'No. To trigger a PA claim, the event must arise strictly from accidental, violent, external, and visible means, independent of any other cause like sickness.'
       }
     ],
-    pdfUrl:      '/materials/[Crawlers] Personal Accident Insurance.pdf'
+    pdfUrl:      '/materials/Mod5_PDF1.pdf'
   },
 
   mod5_ch2: {
@@ -428,7 +428,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'No. The policy enforces strict geographical exclusions for this specific extension, voiding coverage if the unprovoked murder occurs in areas like Samar, Basilan, the Sulu Archipelago, or certain parts of Mindanao.'
       }
     ],
-    pdfUrl:      '/materials/[Crawlers] Personal Accident Insurance.pdf'
+    pdfUrl:      '/materials/Mod5_PDF2.pdf'
   },
 
   mod5_ch3: {
@@ -460,7 +460,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Because the policy relies on Utmost Good Faith in lieu of a medical exam, any discovery of a concealed pre-existing condition or congenital anomaly automatically suspends the coverage.'
       }
     ],
-    pdfUrl:      '/materials/[Crawlers] Personal Accident Insurance.pdf'
+    pdfUrl:      '/materials/Mod5_PDF3.pdf'
   },
     mod6_ch1: {
     videoUrl:    'https://youtu.be/H8wysLVBE3E',
@@ -486,7 +486,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'An "his occupation" clause is the most liberal definition of disability. It provides benefits if a surgeon can no longer perform surgery due to an injury, even if they are still perfectly capable of earning money by teaching at a medical college.'
       }
     ],
-    pdfUrl:      '/materials/Module_6_Images'
+    pdfUrl:      '/materials/Mod6_PDF1.pdf'
   },
 
   mod6_ch2: {
@@ -518,7 +518,7 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'Generally, cosmetic surgery for beautification is excluded because it is not caused by sickness. However, most companies will cover cosmetic surgery if it is explicitly necessitated by an accidental injury.'
       }
     ],
-    pdfUrl:      '/materials/Module_6_Images'
+    pdfUrl:      '/materials/Mod6_PDF2.pdf'
   },
 
   mod6_ch3: {
@@ -550,6 +550,6 @@ export const LESSON_DATA: Record<string, LessonData> = {
         answer:   'No. Normal pregnancy, childbirth, and miscarriages are generally excluded from standard individual health insurance coverage, though specific complications may be covered under certain conditions.'
       }
     ],
-    pdfUrl:      '/materials/Module_6_Images'
+    pdfUrl:      '/materials/Mod6_PDF3.pdf'
   }
 };
