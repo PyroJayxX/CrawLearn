@@ -1,0 +1,71 @@
+1
+00:00:00,000 --> 00:00:10,640
+Crawl back with you for Chapter 2. Every commercial and legal transaction carries a unique risk profile requiring highly targeted bond instruments.
+
+2
+00:00:10,640 --> 00:00:18,040
+The industry categorizes these into two primary divisions: fidelity bonds and surety bonds.
+
+3
+00:00:18,040 --> 00:00:27,280
+Fidelity bonds strictly guarantee the personal honesty of individuals, usually employees handling corporate funds like cashiers or collectors.
+
+4
+00:00:27,280 --> 00:00:33,560
+Do not confuse a traditional three-party fidelity bond with a two-party fidelity guarantee.
+
+5
+00:00:33,560 --> 00:00:41,320
+A true fidelity bond requires a prior conviction clause to be present before a claim responds.
+
+6
+00:00:41,320 --> 00:00:50,360
+These can be issued as individual bonds or as blanket types structured as name schedule or position schedule bonds.
+
+7
+00:00:50,360 --> 00:01:00,160
+All other obligations fall under the broader category of surety bonds, which are split into judicial and non-judicial lines.
+
+8
+00:01:00,160 --> 00:01:12,080
+Judicial bonds are required by courts during legal proceedings. In criminal matters, an accused individual posts a bail bond to secure temporary liberty.
+
+9
+00:01:12,080 --> 00:01:26,000
+In civil litigation, a replevin bond is posted to repossess personal property, while a supersedeas bond is mandatory in labor cases to stay the execution of a judgment pending an appeal.
+
+10
+00:01:26,000 --> 00:01:35,160
+If a minor is designated to receive insurance proceeds, a guardian's bond is legally required to protect those assets.
+
+11
+00:01:35,160 --> 00:01:45,040
+On the non-judicial side, you will most frequently handle contractor's bonds, which manage risk sequentially through every phase of a project life cycle.
+
+12
+00:01:45,040 --> 00:01:51,800
+The bidding phase: A bidder's bond ensures the participant has bona fide intentions.
+
+13
+00:01:51,800 --> 00:02:04,280
+If the winning contractor refuses to sign the contract, this bond answers for the cost to conduct a new bidding and covers the financial gap between the winning bid and the next lowest bidder.
+
+14
+00:02:04,280 --> 00:02:14,560
+The awarding phase: A performance bond, typically valued at 10% to 30% of the total contract price, guarantees completion according to specifications.
+
+15
+00:02:14,560 --> 00:02:29,240
+It covers the costs of delays and the financial premium of hiring a replacement contractor. Simultaneously, a down payment bond guarantees the exact liquidation of any advance payments given to the contractor.
+
+16
+00:02:29,240 --> 00:02:37,840
+The completion phase: Prior to final acceptance, a warranty or guarantee bond is deployed.
+
+17
+00:02:37,840 --> 00:02:50,120
+It allows the obligee to safely release retention money because it guarantees that the contractor must repair any hidden defects in materials or workmanship that appear within 1 year.
+
+18
+00:02:50,120 --> 00:02:59,840
+Understanding the product is only half the battle. Next, we must analyze the strict underwriting standards required to manage these exposures safely.

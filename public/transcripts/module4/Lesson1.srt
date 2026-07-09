@@ -1,0 +1,59 @@
+1
+00:00:00,080 --> 00:00:11,840
+At its core, suretyship is a contract where one party guarantees the performance or non-performance of a legal obligation imposed upon another party.
+
+2
+00:00:11,840 --> 00:00:16,480
+To understand this completely, you must separate it from standard insurance.
+
+3
+00:00:16,480 --> 00:00:23,760
+Insurance is a traditional two-party contract of indemnity. Suretyship is a three-party triangular transaction.
+
+4
+00:00:23,760 --> 00:00:38,960
+These three essential parties are: One, the principal, also known as the obligor. This is the party who secures the bond and owes the primary obligation, such as a contractor or an employee.
+
+5
+00:00:38,960 --> 00:00:49,280
+Two, the obligee, the ultimate beneficiary who requires the bond and to whom the obligation is owed.
+
+6
+00:00:49,280 --> 00:00:58,399
+Three, the surety, the insurance company backing the agreement and guaranteeing the obligation.
+
+7
+00:00:58,399 --> 00:01:06,479
+Because three parties are involved, suretyship relies on three distinct contracts executed in a specific sequence.
+
+8
+00:01:06,479 --> 00:01:16,720
+First is the principal contract between the principal and the obligee, which sets details of the work or legal requirement to be guaranteed.
+
+9
+00:01:16,720 --> 00:01:24,320
+Second is the surety bond itself, which establishes the legal liability of the surety to the obligee.
+
+10
+00:01:24,320 --> 00:01:30,960
+Third is the indemnity agreement between the surety and the principal.
+
+11
+00:01:30,960 --> 00:01:38,640
+This indemnity agreement changes the entire financial dynamic, making a surety bond a no-loss contract.
+
+12
+00:01:38,640 --> 00:01:49,680
+Under this agreement, the principal binds themselves solidarily to fully reimburse the surety for any expenses, legal fees, or payouts resulting from a claim.
+
+13
+00:01:49,680 --> 00:02:00,399
+Furthermore, while a standard insurance policy can be cancelled by either party, a surety bond is an accessory contract that cannot be cancelled unless the obligee gives explicit consent.
+
+14
+00:02:00,399 --> 00:02:10,879
+Finally, if a claim arises, non-payment of the premium by the principal is never a valid ground for the surety to deny the obligee's claim.
+
+15
+00:02:10,879 --> 00:02:19,680
+Now that the structural framework is clear, we can examine the specific types of bonds utilized across the industry. Let's move to the next chapter.

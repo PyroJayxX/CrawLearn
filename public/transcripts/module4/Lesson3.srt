@@ -1,0 +1,63 @@
+1
+00:00:00,000 --> 00:00:04,640
+All right, Crawl here again for our final chapter.
+
+2
+00:00:04,640 --> 00:00:12,880
+Because suretyship is architected as a no-loss contract where recovery must be guaranteed, the underwriting process is exacting.
+
+3
+00:00:12,880 --> 00:00:23,359
+Tariff premium rates are determined strictly by the bond's hazard classification, ranging from Class 1 up to Class 5.
+
+4
+00:00:23,359 --> 00:00:36,640
+To evaluate an applicant safely, underwriters rely on the Three C's. One, Character: This measures the credibility, integrity, and market reputation of the principal.
+
+5
+00:00:36,640 --> 00:00:49,440
+Underwriters verify if management figures are listed on the Insurance Commission's negative list, look for past defaults, and check for active lawsuits regarding misappropriation of funds.
+
+6
+00:00:49,440 --> 00:01:08,720
+Two, Capacity: This measures the operational capability and expertise of the applicant. Underwriters analyze whether their current technical facilities, equipment, and active workloads will allow them to successfully execute the contract.
+
+7
+00:01:08,720 --> 00:01:29,840
+Three, Capital: This evaluates financial strength. Underwriters dissect audited financial statements for the past two years, tracking the liquidity ratio to measure cash conversion, the debt ratio to calculate creditor exposure, and the debt-to-equity ratio to measure leverage.
+
+8
+00:01:29,840 --> 00:01:38,799
+When an application presents higher risk, a surety will protect its exposure by demanding acceptable collateral.
+
+9
+00:01:38,799 --> 00:01:45,759
+This is subject to rigid legal guidelines. Cash remains the absolute standard.
+
+10
+00:01:45,759 --> 00:02:00,159
+Government securities must carry a maturity period of no more than one year, be free of encumbrances, and require a formal deed of assignment alongside physical deposit of the original certificates.
+
+11
+00:02:00,159 --> 00:02:08,160
+Savings or time deposits must match the full face value of the bond and require an officially acknowledged bank assignment.
+
+12
+00:02:08,160 --> 00:02:22,239
+Stock certificates must be non-speculative blue chips, hold a market value at least twice the amount of the bond, and have the lien formally recorded in the issuing corporation's books.
+
+13
+00:02:22,239 --> 00:02:41,360
+Real estate mortgages must be prime residential or commercial properties registered directly to the principal, completely free of encumbrances, and worth at least twice the value of the bond, with the mortgage legally annotated on the title before any bond instrument is signed and released.
+
+14
+00:02:38,640 --> 00:02:53,120
+You must execute a final compliance check. Verify that all corporate signatories are legally authorized via a valid secretary's certificate or board resolution.
+
+15
+00:02:51,360 --> 00:03:03,920
+Confirm that all original collateral documents are physically secured and ensure that any matching reinsurance slips are fully executed and co-terminous with the bond term.
+
+16
+00:03:01,440 --> 00:03:14,599
+Managing risk means maintaining absolute clarity through every line of the contract. Drill into the Three C's, enforce proper documentation, and protect the integrity of the transaction.
