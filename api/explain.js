@@ -82,7 +82,7 @@ export default async function handler(req, res) {
   // streaming response, so ordinary JSON error handling still applies here.
   let matches;
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.VITE_GEMINI_API_KEY;
     const supabase = getSupabase();
     const queryEmbedding = await embedQuery(question, apiKey);
     matches = await searchChunks(supabase, queryEmbedding, { module, nResults: n_results });
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
   })}\n\n`);
 
   try {
-    await streamAnswer(res, question, matches, process.env.GEMINI_API_KEY);
+    await streamAnswer(res, question, matches, process.env.VITE_GEMINI_API_KEY);
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
   } catch (err) {
     console.error(err);
