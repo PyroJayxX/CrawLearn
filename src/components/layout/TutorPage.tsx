@@ -91,45 +91,46 @@ export default function TutorPage({ modules, currentState, sectionAttempts }: Tu
   // reflect whatever the user has actually attempted, not the Quiz-mode dropdown's
   // content-availability limit.
   const weakSpots = useMemo<WeakSpot[]>(() => {
-    const list: WeakSpot[] = [];
+  const list: WeakSpot[] = [];
 
-    modules.forEach(mod => {
-      mod.sections.forEach(sec => {
-        const isQuizBearing = sec.id.endsWith('-quiz') || sec.id.endsWith('final');
-        if (!isQuizBearing) return;
+  modules.forEach(mod => {
+    mod.sections.forEach(sec => {
+      const isQuizBearing = sec.id.endsWith('-quiz') || sec.id.endsWith('final');
+      if (!isQuizBearing) return;
 
-        const score = currentState.quizScores[mod.id]?.[sec.id];
-        if (score === undefined) return;
+      const score = currentState.quizScores[mod.id]?.[sec.id];
+      if (score === undefined) return;
 
-        const passingScore = sec.passingScore ?? 0;
-        if (score < passingScore) return; // only passed quizzes are weak-spot candidates
+      const passingScore = sec.passingScore ?? 0;
+      if (score < passingScore) return; // must be passed
 
-        const total = sec.questionCount ?? sec.questions?.length ?? 0;
-        if (!total) return;
+      const total = sec.questionCount ?? sec.questions?.length ?? 0;
+      if (!total) return;
 
-        const chapterMatch = sec.id.match(/ch(\d+)-quiz$/);
-        const chapter = chapterMatch ? `Chapter ${chapterMatch[1]}` : undefined;
+      if (score >= total) return; // perfect score — skip, nothing to drill
 
-        list.push({
-          moduleId: mod.id,
-          moduleTitle: mod.title,
-          sectionId: sec.id,
-          sectionTitle: sec.title,
-          chapter,
-          score,
-          total,
-          ratio: score / total,
-          attempts: sectionAttempts[mod.id]?.[sec.id] ?? 0,
-        });
+      const chapterMatch = sec.id.match(/ch(\d+)-quiz$/);
+      const chapter = chapterMatch ? `Chapter ${chapterMatch[1]}` : undefined;
+
+      list.push({
+        moduleId: mod.id,
+        moduleTitle: mod.title,
+        sectionId: sec.id,
+        sectionTitle: sec.title,
+        chapter,
+        score,
+        total,
+        ratio: score / total,
+        attempts: sectionAttempts?.[mod.id]?.[sec.id] ?? 0,
       });
     });
+  });
 
-    // Lowest score-ratio first; among ties, more attempts = struggled more, so rank weaker.
-    return list.sort((a, b) => {
-      if (a.ratio !== b.ratio) return a.ratio - b.ratio;
-      return b.attempts - a.attempts;
-    });
-  }, [modules, currentState.quizScores, sectionAttempts]);
+  return list.sort((a, b) => {
+    if (a.ratio !== b.ratio) return a.ratio - b.ratio;
+    return b.attempts - a.attempts;
+  });
+}, [modules, currentState.quizScores, sectionAttempts]);
 
   const promptText = (() => {
     if (mode === 'explain') {
