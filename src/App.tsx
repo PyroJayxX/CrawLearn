@@ -498,7 +498,7 @@ function AppShell() {
 
         <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
           {showTutor ? (
-            <TutorPage modules={COURSE_CONFIG} currentState={state} />
+            <TutorPage modules={COURSE_CONFIG} currentState={state} sectionAttempts={sectionAttempts} />
           ) : (
             <div className="mx-auto py-6 px-6 md:py-8 md:px-10">
               {showDashboard ? (
