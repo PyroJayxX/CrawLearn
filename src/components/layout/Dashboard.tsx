@@ -511,10 +511,10 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
   };
 
   return (
-    <div className="max-w-[100rem] mx-auto py-10 px-6">
+    <div className="max-w-[100rem] mx-auto py-6 sm:py-10 px-4 sm:px-6">
 
       {!hasAnyProgress && !bannerDismissed && (
-        <div className="mb-6 bg-background rounded-2xl px-6 py-5 flex items-start justify-between gap-6">
+        <div className="mb-6 bg-background rounded-2xl px-4 sm:px-6 py-5 flex items-start justify-between gap-4 sm:gap-6">
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-1">Getting started</p>
@@ -549,7 +549,8 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
       {/* CHANGED: Added justify-center here so columns stay tightly grouped together in the middle */}
       <div className="flex flex-col xl:flex-row gap-6 items-start justify-center">
 
-        <div className="w-full xl:w-72 flex-none flex flex-col gap-4 xl:sticky xl:top-6">
+        {/* First column: Quiz Stats + Course Map — hidden on mobile/tablet, shown from xl breakpoint up */}
+        <div className="hidden xl:flex w-full xl:w-72 flex-none flex-col gap-4 xl:sticky xl:top-6">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-4">Quiz Stats</p>
             <StatsDonut
@@ -572,11 +573,11 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
         {/* CHANGED: Removed flex-1 min-w-0 and added w-full xl:max-w-3xl to keep it cleanly sized */}
         <div className="w-full xl:max-w-3xl flex flex-col gap-6">
 
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-7 py-6 flex flex-col gap-4">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 sm:px-7 py-5 sm:py-6 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-1">Dashboard</p>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome back, {firstName}.</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome back, {firstName}.</h1>
                 <p className="text-gray-500 text-sm mt-1">
                   You've completed{' '}
                   <span className="font-semibold text-gray-700">{completedCount} of {realModules.length}</span>{' '}
@@ -584,7 +585,7 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
                 </p>
               </div>
               <div className="flex-none text-right">
-                <span className="text-3xl font-bold text-accent">{overallPct}%</span>
+                <span className="text-2xl sm:text-3xl font-bold text-accent">{overallPct}%</span>
                 <p className="text-[11px] text-gray-400 mt-0.5">complete</p>
               </div>
             </div>
@@ -597,7 +598,7 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
           </div>
 
           {hasAnyProgress && resumeTarget && (
-            <div className="bg-background rounded-2xl px-6 py-5 flex items-center justify-between gap-4">
+            <div className="bg-background rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs font-bold tracking-widest uppercase text-white/40">Continue Learning</p>
                 <p className="text-white font-bold text-lg leading-snug">{resumeTarget.moduleTitle}</p>
@@ -605,7 +606,7 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
               </div>
               <button
                 onClick={() => onNavigate(resumeTarget.moduleId, resumeTarget.sectionId)}
-                className="flex-none flex items-center gap-2 px-5 py-3 bg-white text-background font-bold text-sm rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="flex-none flex items-center justify-center gap-2 px-5 py-3 bg-white text-background font-bold text-sm rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap w-full sm:w-auto"
               >
                 Resume
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -637,7 +638,7 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
                     }}
                     className={`
                       bg-white border border-gray-200 rounded-xl shadow-sm
-                      flex items-center gap-5 px-5 py-4 transition-all
+                      flex items-center gap-3 sm:gap-5 px-4 sm:px-5 py-4 transition-all
                       ${isLocked || !hasContent
                         ? 'opacity-40 cursor-not-allowed'
                         : 'hover:shadow-md hover:border-gray-300 cursor-pointer'}
