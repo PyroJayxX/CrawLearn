@@ -25,21 +25,21 @@ export default function LessonInfoCard({
   onContinue,
 }: LessonInfoCardProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
 
-      {/* Top row: tag + CTA button */}
-      <div className="flex items-start justify-between gap-4 mb-3">
+      {/* Top row: tag + CTA button — stacks on mobile so the title has room to breathe */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3">
         <div>
           <p className="text-[10px] font-bold tracking-widest uppercase text-accent mb-1">
             {tag}
           </p>
-          <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">
             {title}
           </h2>
         </div>
         <button
           onClick={onContinue}
-          className="flex-none flex items-center gap-2 px-5 py-3 bg-background hover:bg-background/90 text-white font-bold text-sm rounded-xl transition-colors shadow-sm"
+          className="flex-none flex items-center justify-center gap-2 px-5 py-3 bg-background hover:bg-background/90 text-white font-bold text-sm rounded-xl transition-colors shadow-sm w-full sm:w-auto"
         >
           Continue to Quiz
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,15 +60,15 @@ export default function LessonInfoCard({
       <div className="border-t border-gray-100 mb-5" />
 
       {/* What you'll learn */}
-      <h3 className="text-base font-bold text-gray-900 mb-2">What you'll learn in this lesson</h3>
+      <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-2">What you'll learn in this lesson</h3>
       <p className="text-sm text-gray-500 leading-relaxed mb-5">{description}</p>
 
       {/* Topic pills */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
         {topics.map((topic, i) => (
           <div
             key={i}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm text-gray-600 bg-gray-50"
           >
             <span className="text-accent text-base leading-none">{topic.icon}</span>
             {topic.label}

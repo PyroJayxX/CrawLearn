@@ -267,7 +267,7 @@ if (hasPassed) {
           </span>
           {isFinal && !alreadyPassed && (
             showAnswers ? (
-              <span className="text-xs font-semibold text-amber-600">⚠ Answers revealed</span>
+              <span className="text-xs font-semibold text-green-600">Answers revealed</span>
             ) : (
               <span className="text-xs text-gray-400">Attempt {currentTry} of 3</span>
             )

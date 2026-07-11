@@ -9,7 +9,6 @@ interface NavProps {
   onSignOut:        () => void;
   onHome:          () => void;
   userName?:        string;
-  onSidebarToggle?: () => void; // triggers mobile drawer
 }
 
 function getInitials(name?: string): string {
@@ -32,7 +31,6 @@ export default function ModuleNavigator({
   onSignOut,
   userName,
   onHome,
-  onSidebarToggle,
 }: NavProps) {
   const { currentModuleId, completedModules, quizScores } = currentState;
   const currentModule = modules.find(m => m.id === currentModuleId);
@@ -69,32 +67,21 @@ export default function ModuleNavigator({
   return (
     <div className="flex items-center justify-between px-4 md:px-6 h-full gap-3">
 
-      {/* ── Left: mobile sidebar toggle + logo + module selector ── */}
-      <div className="flex items-center gap-2 md:gap-4 flex-none">
+      {/* ── Left: logo + module selector ── */}
+        <div className="flex items-center gap-2 md:gap-4 flex-none">
 
-        {/* Mobile hamburger — only visible on small screens, triggers drawer */}
-        <button
-          onClick={onSidebarToggle}
-          className="lg:hidden p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08] active:scale-95 transition-all duration-150"
-          aria-label="Toggle sidebar"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+          <button onClick={onHome} className="flex-none hover:opacity-80 active:scale-95 transition-all duration-150">
+            <img src="/logo_2.png" alt="CrawLearn" className="h-8 md:h-9 w-auto" />
+          </button>
 
-        <button onClick={onHome} className="flex-none hover:opacity-80 active:scale-95 transition-all duration-150">
-          <img src="/logo_2.png" alt="CrawLearn" className="h-8 md:h-9 w-auto" />
-        </button>
+          <div className="hidden sm:block w-px h-6 bg-gradient-to-b from-transparent via-white/15 to-transparent" />
 
-        <div className="hidden sm:block w-px h-6 bg-gradient-to-b from-transparent via-white/15 to-transparent" />
-
-        {/* Module selector */}
-        <div className="relative hidden sm:block" ref={moduleMenuRef}>
-          <button
-            onClick={() => setModuleMenuOpen(prev => !prev)}
-            className={`flex items-center gap-2.5 px-2.5 py-1.5 -mx-2.5 rounded-lg transition-all duration-150 hover:bg-white/[0.06] ${moduleMenuOpen ? 'bg-white/[0.06]' : ''}`}
-          >
+          {/* Module selector — visible at all sizes now */}
+          <div className="relative" ref={moduleMenuRef}>
+            <button
+              onClick={() => setModuleMenuOpen(prev => !prev)}
+              className={`flex items-center gap-2.5 px-2.5 py-1.5 -mx-2.5 rounded-lg transition-all duration-150 hover:bg-white/[0.06] ${moduleMenuOpen ? 'bg-white/[0.06]' : ''}`}
+            >
             <div className="flex flex-col gap-[3px] flex-none">
               <span className="block w-4 h-[2px] bg-white/40 rounded-full" />
               <span className="block w-3 h-[2px] bg-white/40 rounded-full" />

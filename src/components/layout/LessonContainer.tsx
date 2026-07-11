@@ -20,7 +20,7 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   const playerRef             = useRef<any>(null);
   const [currentTime,         setCurrentTime]         = useState(0);
   const [transcriptLines,     setTranscriptLines]     = useState<TranscriptLine[]>([]);
-  const [showTranscriptMobile, setShowTranscriptMobile] = useState(false);
+  const [showTranscriptSheet, setShowTranscriptSheet] = useState(false);
 
   const [mode, setMode] = useState<Mode>('watch');
   const [isTranscriptCollapsed, setIsTranscriptCollapsed] = useState(false);
@@ -42,11 +42,25 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
   // Reset to a sane default whenever the lesson changes
   useEffect(() => {
     setMode('watch');
-    setShowTranscriptMobile(false);
+    setShowTranscriptSheet(false);
   }, [lessonId]);
 
+  // Lock body scroll while the mobile transcript sheet is open
+  useEffect(() => {
+    if (!showTranscriptSheet) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, [showTranscriptSheet]);
+
   const handlePlayerRef = (player: any) => { playerRef.current = player; };
-  const handleSeek      = (seconds: number) => { if (playerRef.current) playerRef.current.currentTime = seconds; };
+  const handleSeek      = (seconds: number) => {
+    if (playerRef.current) playerRef.current.currentTime = seconds;
+  };
+  const handleSeekMobile = (seconds: number) => {
+    handleSeek(seconds);
+    setShowTranscriptSheet(false); // jump back to the video after picking a line
+  };
 
   if (!currentLesson) {
     return (
@@ -91,7 +105,7 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
       {mode === 'watch' ? (
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full">
 
-          {/* Left column: video + transcript toggle (mobile) + info card */}
+          {/* Left column: video + info card — this is the whole show on mobile */}
           <div className="flex flex-col flex-[7] min-w-0 gap-4 lg:gap-5">
 
             {/* Video */}
@@ -104,59 +118,15 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
               />
             </div>
 
-            {/* Mobile transcript toggle tab */}
-            <div className="lg:hidden flex rounded-xl overflow-hidden border border-gray-200 bg-white">
-              <button
-                onClick={() => setShowTranscriptMobile(false)}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors
-                  ${!showTranscriptMobile ? 'bg-background text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-              >
-                Lesson Info
-              </button>
-              <button
-                onClick={() => setShowTranscriptMobile(true)}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors
-                  ${showTranscriptMobile ? 'bg-background text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-              >
-                Transcript
-              </button>
-            </div>
-
-            {/* Mobile: show either info card or transcript based on toggle */}
-            <div className="lg:hidden">
-              {showTranscriptMobile ? (
-                <div className="bg-white rounded-xl p-5 border border-gray-200" style={{ minHeight: '400px' }}>
-                  <InteractiveTranscript
-                    lines={transcriptLines}
-                    currentTime={currentTime}
-                    onSeek={handleSeek}
-                  />
-                </div>
-              ) : (
-                <LessonInfoCard
-                  tag={currentLesson.tag}
-                  title={currentLesson.title}
-                  duration={currentLesson.duration}
-                  description={currentLesson.description}
-                  topics={currentLesson.topics}
-                  faqs={currentLesson.faqs}
-                  onContinue={onComplete}
-                />
-              )}
-            </div>
-
-            {/* Desktop: always show info card */}
-            <div className="hidden lg:block">
-              <LessonInfoCard
-                tag={currentLesson.tag}
-                title={currentLesson.title}
-                duration={currentLesson.duration}
-                description={currentLesson.description}
-                topics={currentLesson.topics}
-                faqs={currentLesson.faqs}
-                onContinue={onComplete}
-              />
-            </div>
+            <LessonInfoCard
+              tag={currentLesson.tag}
+              title={currentLesson.title}
+              duration={currentLesson.duration}
+              description={currentLesson.description}
+              topics={currentLesson.topics}
+              faqs={currentLesson.faqs}
+              onContinue={onComplete}
+            />
           </div>
 
           {/* Right column: transcript — desktop only, sticky, collapsible */}
@@ -209,18 +179,9 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
             <div className="flex flex-col flex-[7] min-w-0 gap-4 lg:gap-5">
               <div
                 className="bg-white rounded-xl border border-gray-200 overflow-hidden"
-                style={{ minHeight: '600px', height: 'calc(100vh - 72px - 220px)' }}
+                style={{ minHeight: '500px', height: 'calc(100vh - 72px - 220px)' }}
               >
                 <PdfViewer pdfUrl={currentLesson.pdfUrl} title={currentLesson.title} />
-              </div>
-
-              {/* Mobile: transcript stacks below the PDF, no toggle needed */}
-              <div className="lg:hidden bg-white rounded-xl p-5 border border-gray-200" style={{ minHeight: '300px' }}>
-                <InteractiveTranscript
-                  lines={transcriptLines}
-                  currentTime={currentTime}
-                  onSeek={handleSeek}
-                />
               </div>
 
               <LessonInfoCard
@@ -267,6 +228,63 @@ export default function LessonContainer({ lessonId, onComplete }: LessonContaine
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile-only: floating transcript button + bottom sheet ──
+          Keeps the video/PDF as the main focus; transcript scrolls
+          inside its own sheet instead of stretching the page. */}
+      {transcriptLines.length > 0 && (
+        <button
+          onClick={() => setShowTranscriptSheet(true)}
+          className="lg:hidden fixed bottom-5 left-4 z-40 flex items-center gap-2 pl-3.5 pr-4 py-3 rounded-full bg-background text-white text-sm font-semibold shadow-lg active:scale-95 transition-transform"
+          aria-label="Open transcript"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h7" />
+          </svg>
+          Transcript
+        </button>
+      )}
+
+      {showTranscriptSheet && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowTranscriptSheet(false)}
+          />
+
+          {/* Sheet */}
+          <div
+            className="relative bg-white rounded-t-2xl border-t border-gray-200 flex flex-col"
+            style={{ maxHeight: '75vh' }}
+          >
+            <div className="flex-none flex items-center justify-center pt-2.5 pb-1">
+              <div className="w-10 h-1.5 rounded-full bg-gray-200" />
+            </div>
+
+            <div className="flex-none flex items-center justify-between px-5 py-2">
+              <p className="text-sm font-bold text-gray-900">Transcript</p>
+              <button
+                onClick={() => setShowTranscriptSheet(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                aria-label="Close transcript"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-6">
+              <InteractiveTranscript
+                lines={transcriptLines}
+                currentTime={currentTime}
+                onSeek={handleSeekMobile}
+              />
+            </div>
           </div>
         </div>
       )}

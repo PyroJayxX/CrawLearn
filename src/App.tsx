@@ -186,6 +186,7 @@ function AppShell() {
   const [state,            setState]            = useState<LearningState>(buildDefaultState);
   const [sectionAttempts,  setSectionAttempts]  = useState<Record<string, Record<string, number>>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showResults,      setShowResults]      = useState(false);
   const [showDashboard,    setShowDashboard]    = useState(true);
   const [showTutor,        setShowTutor]        = useState(false);
@@ -230,6 +231,12 @@ function AppShell() {
       }
     }).catch(err => console.error('Failed to load:', err));
   }, [session]);
+
+  // Close the mobile sidebar drawer whenever the current section changes
+  // (covers module nav, dashboard resume, etc. — not just the sidebar itself)
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [state.currentModuleId, state.currentSectionId, showDashboard, showTutor]);
 
   // ── Derived ───────────────────────────────────────────────────────────────
 
@@ -465,6 +472,7 @@ function AppShell() {
   const activeQuizSummary  = quizCompletionSummary && quizCompletionSummary.moduleId === state.currentModuleId && quizCompletionSummary.sectionId === state.currentSectionId
     ? quizCompletionSummary
     : null;
+  const showSidebar        = !showDashboard && !showTutor;
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
@@ -485,22 +493,54 @@ function AppShell() {
         />
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {!showDashboard && !showTutor && (
-          <CourseSidebar
-            modules={COURSE_CONFIG}
-            currentState={state}
-            collapsed={sidebarCollapsed}
-            onCollapsedChange={setSidebarCollapsed}
-            onSectionNavigate={handleSectionNavigate}
-          />
+      <div className="flex flex-1 overflow-hidden relative">
+        {showSidebar && (
+          <>
+            {/* Mobile backdrop — tap outside the drawer to close it */}
+            {mobileSidebarOpen && (
+              <div
+                className="lg:hidden fixed top-18 left-0 right-0 bottom-0 bg-black/40 z-30"
+                onClick={() => setMobileSidebarOpen(false)}
+              />
+            )}
+
+            {/* Drawer on mobile (off-canvas, slides in), normal flex column on lg+ */}
+            <div
+              className={`fixed top-18 left-0 bottom-0 z-40 w-72 max-w-[85vw] transform transition-transform duration-300 ease-in-out
+                ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                lg:static lg:top-auto lg:z-auto lg:w-auto lg:max-w-none lg:translate-x-0 lg:flex-none lg:transition-none`}
+            >
+              <CourseSidebar
+                modules={COURSE_CONFIG}
+                currentState={state}
+                collapsed={sidebarCollapsed}
+                onCollapsedChange={setSidebarCollapsed}
+                onSectionNavigate={handleSectionNavigate}
+              />
+            </div>
+          </>
         )}
 
         <main className="flex-1 overflow-y-auto bg-[#f6f8fa] custom-scrollbar">
+          {/* Mobile-only trigger to open the syllabus drawer */}
+          {showSidebar && (
+            <div className="lg:hidden sticky top-0 z-10 flex items-center bg-white border-b border-gray-200 px-4 py-3">
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Course Syllabus
+              </button>
+            </div>
+          )}
+
           {showTutor ? (
             <TutorPage modules={COURSE_CONFIG} currentState={state} sectionAttempts={sectionAttempts} />
           ) : (
-            <div className="mx-auto py-6 px-6 md:py-8 md:px-10">
+            <div className="mx-auto py-6 px-4 sm:px-6 md:py-8 md:px-10">
               {showDashboard ? (
               <Dashboard
                 modules={COURSE_CONFIG}
