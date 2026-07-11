@@ -12,7 +12,42 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         // maxOutputTokens bumped up since we're generating 5 questions in one shot now.
-        generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 8192, responseMimeType: 'application/json' },
+        generationConfig: {
+          temperature: 0.7,
+          topP: 0.9,
+          maxOutputTokens: 8192,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              questions: {
+                type: 'ARRAY',
+                description: `Exactly ${QUESTION_COUNT} multiple-choice questions.`,
+                items: {
+                  type: 'OBJECT',
+                  properties: {
+                    question: { type: 'STRING' },
+                    options: {
+                      type: 'ARRAY',
+                      items: { type: 'STRING' },
+                      description: 'Exactly 4 answer options.',
+                    },
+                    correctIndex: {
+                      type: 'INTEGER',
+                      description: 'Index (0-3) of the correct option.',
+                    },
+                    explanation: {
+                      type: 'STRING',
+                      description: '1-2 sentences on why the answer is correct.',
+                    },
+                  },
+                  required: ['question', 'options', 'correctIndex', 'explanation'],
+                },
+              },
+            },
+            required: ['questions'],
+          },
+        },
       }),
     }
   );
@@ -69,20 +104,7 @@ When writing the question, do not reference "According to the transcript" or sim
 Each question must test a DIFFERENT concept — do not repeat or near-duplicate questions within the set.
 
 TRANSCRIPT MATERIAL:
-${contextBlock}
-
-Respond with ONLY a JSON object (no markdown fences, no commentary) with this exact shape:
-{
-  "questions": [
-    {
-      "question": string,
-      "options": [string, string, string, string],
-      "correctIndex": number (0-3),
-      "explanation": string (1-2 sentences on why the answer is correct)
-    }
-  ]
-}
-The "questions" array must contain exactly ${QUESTION_COUNT} items.`;
+${contextBlock}`;
 
     const result = await generateJSON(systemPrompt, 'Generate the quiz now.', process.env.VITE_GEMINI_API_KEY);
     const questions = Array.isArray(result?.questions) ? result.questions.slice(0, QUESTION_COUNT) : null;

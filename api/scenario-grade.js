@@ -9,7 +9,40 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { temperature: 0.3, topP: 0.9, maxOutputTokens: 4096, responseMimeType: 'application/json' },
+        generationConfig: {
+          temperature: 0.3,
+          topP: 0.9,
+          maxOutputTokens: 4096,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              score: {
+                type: 'INTEGER',
+                description: 'Score from 0 to 100.',
+              },
+              verdict: {
+                type: 'STRING',
+                enum: ['strong', 'partial', 'weak'],
+              },
+              feedback: {
+                type: 'STRING',
+                description: '2-3 sentences, direct and specific.',
+              },
+              hits: {
+                type: 'ARRAY',
+                items: { type: 'STRING' },
+                description: 'Key points the answer correctly demonstrated.',
+              },
+              misses: {
+                type: 'ARRAY',
+                items: { type: 'STRING' },
+                description: 'Key points the answer missed or got wrong.',
+              },
+            },
+            required: ['score', 'verdict', 'feedback', 'hits', 'misses'],
+          },
+        },
       }),
     }
   );
@@ -59,16 +92,7 @@ ${(keyPoints ?? []).map((k, i) => `${i + 1}. ${k}`).join('\n')}
 STUDENT'S ANSWER:
 ${userAnswer}
 
-Grade the answer on how well it applies the key points to the scenario, not just recall. Be encouraging but honest.
-
-Respond with ONLY a JSON object (no markdown fences, no commentary) with this exact shape:
-{
-  "score": number (0-100),
-  "verdict": "strong" | "partial" | "weak",
-  "feedback": string (2-3 sentences, direct and specific),
-  "hits": [string],
-  "misses": [string]
-}`;
+Grade the answer on how well it applies the key points to the scenario, not just recall. Be encouraging but honest.`;
 
     const result = await generateJSON(systemPrompt, 'Grade the answer now.', process.env.VITE_GEMINI_API_KEY);
     res.json(result);

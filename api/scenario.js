@@ -9,7 +9,27 @@ async function generateJSON(systemPrompt, userMessage, apiKey) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 4096, responseMimeType: 'application/json' },
+        generationConfig: { 
+          temperature: 0.7, 
+          topP: 0.9, 
+          maxOutputTokens: 4096, 
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              scenario: { 
+                type: "STRING",
+                description: "The realistic, real-world non-life insurance scenario."
+              },
+              keyPoints: {
+                type: "ARRAY",
+                items: { type: "STRING" },
+                description: "Three key points applying the concept."
+              }
+            },
+            required: ["scenario", "keyPoints"]
+          }
+        }
       }),
     }
   );
@@ -57,6 +77,8 @@ export default async function handler(req, res) {
 
     const systemPrompt = `You are Crawley, a course tutor for the module "${moduleTitle ?? moduleId}".
 Using ONLY the transcript material below, write ONE realistic, real-world scenario question that requires applying a concept from the material to a practical situation (not just recalling a fact).
+
+CRITICAL INSTRUCTION: The scenario MUST strictly focus ONLY on non-life insurance (e.g., property, casualty, liability, auto, or marine insurance). You must completely exclude any concepts, examples, or references related to life insurance, even if they appear in the transcript material.
 
 TRANSCRIPT MATERIAL:
 ${contextBlock}

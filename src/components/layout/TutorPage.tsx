@@ -164,7 +164,7 @@ export default function TutorPage({ modules, currentState, sectionAttempts }: Tu
         if (drillLoading) return 'Pulling together some practice questions...';
         if (drillError) return `Hmm, something went wrong: ${drillError}`;
         if (drillQuestions.length > 0) {
-          return `Practice round (unscored) — Question ${drillIndex + 1} of ${drillQuestions.length}`;
+          return `Question ${drillIndex + 1} of ${drillQuestions.length}`;
         }
         return 'Getting that ready...';
       }
@@ -877,7 +877,7 @@ export default function TutorPage({ modules, currentState, sectionAttempts }: Tu
                 return (
                   <div className="space-y-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                      {drillTarget.moduleTitle} · {drillTarget.sectionTitle} — practice, not saved
+                      {drillTarget.moduleTitle} · {drillTarget.sectionTitle} practice assessment
                     </p>
                     <p className="text-sm font-semibold text-gray-800">{q.question}</p>
                     <div className="space-y-2">
