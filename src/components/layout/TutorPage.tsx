@@ -84,8 +84,15 @@ export default function TutorPage({ modules, currentState, sectionAttempts }: Tu
   const [drillLoading, setDrillLoading] = useState(false);
   const [drillError, setDrillError] = useState<string | null>(null);
   const [drillAnswers, setDrillAnswers] = useState<Record<number, number>>({});
-
   const tutorModules = useMemo(() => modules.slice(0, 6), [modules]);
+  const hasAnyScoredSection = useMemo(() => {
+    return modules.some(mod =>
+      mod.sections.some(sec => {
+        const isQuizBearing = sec.id.endsWith('-quiz') || sec.id.endsWith('final');
+        return isQuizBearing && currentState.quizScores[mod.id]?.[sec.id] !== undefined;
+      })
+    );
+  }, [modules, currentState.quizScores]);
 
   // Scans ALL modules (not just tutorModules) since weak-spot detection should
   // reflect whatever the user has actually attempted, not the Quiz-mode dropdown's
@@ -168,9 +175,13 @@ export default function TutorPage({ modules, currentState, sectionAttempts }: Tu
         }
         return 'Getting that ready...';
       }
-      return weakSpots.length > 0
-        ? "Here's where extra practice would help most, ranked from weakest to strongest. Pick one to drill."
-        : "You don't have any passed quizzes yet to analyze — come back once you've completed a few!";
+      if (weakSpots.length > 0) {
+        return "Here's where extra practice would help most, ranked from weakest to strongest. Pick one to drill.";
+      }
+      if (hasAnyScoredSection) {
+        return "Nice — no weak spots to drill! You're acing everything so far.";
+      }
+      return "You don't have any passed quizzes yet to analyze — come back once you've completed a few!";
     }
     switch (mode) {
       default:
@@ -811,7 +822,9 @@ export default function TutorPage({ modules, currentState, sectionAttempts }: Tu
             <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
               {weakSpots.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
-                  Nothing to analyze yet — pass a few quizzes and check back.
+                  {hasAnyScoredSection
+                    ? "You're acing everything so far — no weak spots to drill right now."
+                    : 'Nothing to analyze yet — pass a few quizzes and check back.'}
                 </div>
               ) : (
                 <div className="space-y-2">
