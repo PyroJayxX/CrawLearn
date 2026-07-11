@@ -507,6 +507,7 @@ export default function App() {
                 userName={userName}
                 userId={session.user.id}
                 onNavigate={handleDashboardNavigate}
+                onTutorMode={handleTutorMode}
               />
               ) : showResults ? (
               <ModuleResults

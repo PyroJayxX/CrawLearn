@@ -10,6 +10,7 @@ interface DashboardProps {
   userName?:    string;
   userId?:      string; // Supabase auth user id — needed for streak + leaderboard
   onNavigate:   (moduleId: string, sectionId: string) => void;
+  onTutorMode?: () => void;
 }
 
 function MiniMap({
@@ -401,7 +402,38 @@ function Leaderboard({ userId }: { userId?: string }) {
   );
 }
 
-export default function Dashboard({ modules, currentState, userName, userId, onNavigate }: DashboardProps) {
+// ── Tutor Mode teaser card ───────────────────────────────────────────────
+function TutorModeCard({ onTutorMode }: { onTutorMode?: () => void }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5 flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <div className="w-11 h-11 rounded-full flex items-center justify-center flex-none bg-accent/15 border-2 border-accent/25">
+          <svg className="w-5 h-5" style={{ color: '#0f6f5c' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-gray-900 leading-tight">Tutor Mode</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Ask Crawley anything</p>
+        </div>
+      </div>
+      <p className="text-xs text-gray-400 leading-relaxed">
+        Get quizzed, ask for an explanation, or drill your weak spots — anytime.
+      </p>
+      <button
+        onClick={onTutorMode ?? (() => console.log('Tutor Mode: no onTutorMode handler wired up yet'))}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+      >
+        Open Tutor Mode
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+export default function Dashboard({ modules, currentState, userName, userId, onNavigate, onTutorMode }: DashboardProps) {
   const { completedModules, quizScores } = currentState;
 
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -672,6 +704,8 @@ export default function Dashboard({ modules, currentState, userName, userId, onN
         </div>
 
         <div className="w-full xl:w-72 flex-none flex flex-col gap-4 xl:sticky xl:top-6">
+          <TutorModeCard onTutorMode={onTutorMode} />
+
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-5">
             <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-4">Streak</p>
             <StreakTracker userId={userId} />
