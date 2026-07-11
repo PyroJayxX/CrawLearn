@@ -7,6 +7,7 @@ type TutorMode = 'home' | 'quiz' | 'explain' | 'scenario' | 'weakspot';
 interface TutorPageProps {
   modules: ModuleConfig[];
   currentState: LearningState;
+  sectionAttempts: Record<string, Record<string, number>>;
 }
 
 interface QuizQuestion {
@@ -29,7 +30,19 @@ interface GradeResult {
   misses: string[];
 }
 
-export default function TutorPage({ modules, currentState }: TutorPageProps) {
+interface WeakSpot {
+  moduleId: string;
+  moduleTitle: string;
+  sectionId: string;
+  sectionTitle: string;
+  chapter?: string; // e.g. "Chapter 2" — omitted for Finals so /api/quiz falls back to whole-module material
+  score: number;
+  total: number;
+  ratio: number;
+  attempts: number;
+}
+
+export default function TutorPage({ modules, currentState, sectionAttempts }: TutorPageProps) {
   const [mode, setMode] = useState<TutorMode>('home');
   const [selectedModuleId, setSelectedModuleId] = useState(
     modules.find(mod => mod.id === currentState.currentModuleId)?.id ?? modules[0]?.id ?? ''
@@ -63,7 +76,60 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
   const [gradingLoading, setGradingLoading] = useState(false);
   const [gradingError, setGradingError] = useState<string | null>(null);
 
+  // Weak spot targeter state — drilling reuses /api/quiz (same as quiz mode),
+  // but results are never persisted: no saveQuizScore call, unscored practice only.
+  const [drillTarget, setDrillTarget] = useState<WeakSpot | null>(null);
+  const [drillQuestions, setDrillQuestions] = useState<QuizQuestion[]>([]);
+  const [drillIndex, setDrillIndex] = useState(0);
+  const [drillLoading, setDrillLoading] = useState(false);
+  const [drillError, setDrillError] = useState<string | null>(null);
+  const [drillAnswers, setDrillAnswers] = useState<Record<number, number>>({});
+
   const tutorModules = useMemo(() => modules.slice(0, 6), [modules]);
+
+  // Scans ALL modules (not just tutorModules) since weak-spot detection should
+  // reflect whatever the user has actually attempted, not the Quiz-mode dropdown's
+  // content-availability limit.
+  const weakSpots = useMemo<WeakSpot[]>(() => {
+    const list: WeakSpot[] = [];
+
+    modules.forEach(mod => {
+      mod.sections.forEach(sec => {
+        const isQuizBearing = sec.id.endsWith('-quiz') || sec.id.endsWith('final');
+        if (!isQuizBearing) return;
+
+        const score = currentState.quizScores[mod.id]?.[sec.id];
+        if (score === undefined) return;
+
+        const passingScore = sec.passingScore ?? 0;
+        if (score < passingScore) return; // only passed quizzes are weak-spot candidates
+
+        const total = sec.questionCount ?? sec.questions?.length ?? 0;
+        if (!total) return;
+
+        const chapterMatch = sec.id.match(/ch(\d+)-quiz$/);
+        const chapter = chapterMatch ? `Chapter ${chapterMatch[1]}` : undefined;
+
+        list.push({
+          moduleId: mod.id,
+          moduleTitle: mod.title,
+          sectionId: sec.id,
+          sectionTitle: sec.title,
+          chapter,
+          score,
+          total,
+          ratio: score / total,
+          attempts: sectionAttempts[mod.id]?.[sec.id] ?? 0,
+        });
+      });
+    });
+
+    // Lowest score-ratio first; among ties, more attempts = struggled more, so rank weaker.
+    return list.sort((a, b) => {
+      if (a.ratio !== b.ratio) return a.ratio - b.ratio;
+      return b.attempts - a.attempts;
+    });
+  }, [modules, currentState.quizScores, sectionAttempts]);
 
   const promptText = (() => {
     if (mode === 'explain') {
@@ -92,9 +158,20 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
       if (scenarioData) return scenarioData.scenario;
       return 'Which module do you want a scenario from?';
     }
+    if (mode === 'weakspot') {
+      if (drillTarget) {
+        if (drillLoading) return 'Pulling together some practice questions...';
+        if (drillError) return `Hmm, something went wrong: ${drillError}`;
+        if (drillQuestions.length > 0) {
+          return `Practice round (unscored) — Question ${drillIndex + 1} of ${drillQuestions.length}`;
+        }
+        return 'Getting that ready...';
+      }
+      return weakSpots.length > 0
+        ? "Here's where extra practice would help most, ranked from weakest to strongest. Pick one to drill."
+        : "You don't have any passed quizzes yet to analyze — come back once you've completed a few!";
+    }
     switch (mode) {
-      case 'weakspot':
-        return 'This feature is coming soon! Stay tuned.';
       default:
         return 'Hey! What would you like to do today?';
     }
@@ -126,6 +203,23 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
     setUserAnswer('');
     setGradeResult(null);
     setGradingError(null);
+    setDrillTarget(null);
+    setDrillQuestions([]);
+    setDrillIndex(0);
+    setDrillError(null);
+    setDrillAnswers({});
+    setDrillLoading(false);
+  };
+
+  // Leaves an in-progress drill but stays on the weak-spot list, rather than
+  // bouncing all the way back to the home menu.
+  const handleBackToWeakSpotList = () => {
+    setDrillTarget(null);
+    setDrillQuestions([]);
+    setDrillIndex(0);
+    setDrillError(null);
+    setDrillAnswers({});
+    setDrillLoading(false);
   };
 
   const handleSelectAnswer = (qi: number, oi: number, correctIndex: number, isLastQuestion: boolean) => {
@@ -179,6 +273,60 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
 
   const handleNextQuizQuestion = () => {
     setQuizIndex(i => Math.min(i + 1, quizQuestions.length - 1));
+  };
+
+  // Drill flow mirrors handleStartQuiz/handleNextQuizQuestion, but targets a
+  // specific weak-spot section instead of the module/chapter dropdown, and
+  // never calls saveQuizScore — this is unscored practice only.
+  const handleSelectWeakSpot = async (spot: WeakSpot) => {
+    setDrillTarget(spot);
+    setDrillQuestions([]);
+    setDrillIndex(0);
+    setDrillAnswers({});
+    setDrillError(null);
+    setDrillLoading(true);
+
+    try {
+      const res = await fetch(`/api/quiz`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          moduleId: spot.moduleId,
+          moduleTitle: spot.moduleTitle,
+          chapter: spot.chapter, // omitted for finals -> whole-module fallback in quiz.js
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+
+      const data: { questions?: QuizQuestion[]; error?: string } = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.questions || data.questions.length === 0) throw new Error('No questions returned.');
+      setDrillQuestions(data.questions);
+    } catch (err) {
+      setDrillError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setDrillLoading(false);
+    }
+  };
+
+  const handleSelectDrillAnswer = (qi: number, oi: number, correctIndex: number, isLastQuestion: boolean) => {
+    playDragClick();
+    setDrillAnswers(prev => ({ ...prev, [qi]: oi }));
+
+    const isCorrect = oi === correctIndex;
+    setTimeout(() => {
+      if (isCorrect) playCorrect();
+      else playIncorrect();
+
+      if (isLastQuestion) {
+        setTimeout(() => playPass(), 300);
+      }
+    }, 120);
+  };
+
+  const handleNextDrillQuestion = () => {
+    setDrillIndex(i => Math.min(i + 1, drillQuestions.length - 1));
   };
 
   const handleAskCrawley = async () => {
@@ -658,17 +806,130 @@ export default function TutorPage({ modules, currentState }: TutorPageProps) {
             </div>
           )}
 
-          {mode === 'weakspot' && (
-            <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)] opacity-75">
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
-                Coming soon
-              </div>
+          {mode === 'weakspot' && !drillTarget && (
+            <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+              {weakSpots.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
+                  Nothing to analyze yet — pass a few quizzes and check back.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {weakSpots.map(spot => (
+                    <button
+                      key={`${spot.moduleId}-${spot.sectionId}`}
+                      onClick={() => handleSelectWeakSpot(spot)}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 text-left text-sm shadow-sm transition-all hover:border-accent hover:bg-accent hover:text-white hover:shadow-md"
+                    >
+                      <div className="font-medium">
+                        {spot.moduleTitle} · {spot.sectionTitle}
+                      </div>
+                      <div className="mt-1 text-xs opacity-75">
+                        {spot.score}/{spot.total} correct
+                        {spot.attempts > 0 && ` · ${spot.attempts} attempt${spot.attempts === 1 ? '' : 's'}`}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
               <button
                 onClick={resetToHome}
                 className="mt-4 rounded-xl px-3 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
               >
                 ← Back
               </button>
+            </div>
+          )}
+
+          {mode === 'weakspot' && drillTarget && (
+            <div className="w-full max-w-xl rounded-3xl border border-gray-200 bg-white p-5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+              {drillLoading && (
+                <div className="py-6 text-center text-sm text-gray-400">Generating practice questions...</div>
+              )}
+
+              {!drillLoading && drillError && (
+                <div className="space-y-4">
+                  <p className="text-sm text-red-600">{drillError}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={() => handleSelectWeakSpot(drillTarget)}
+                      className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      onClick={handleBackToWeakSpotList}
+                      className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!drillLoading && !drillError && drillQuestions.length > 0 && (() => {
+                const qi = drillIndex;
+                const q = drillQuestions[qi];
+                const picked = drillAnswers[qi];
+                const hasAnswered = picked !== undefined;
+                const isLastQuestion = qi >= drillQuestions.length - 1;
+
+                return (
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                      {drillTarget.moduleTitle} · {drillTarget.sectionTitle} — practice, not saved
+                    </p>
+                    <p className="text-sm font-semibold text-gray-800">{q.question}</p>
+                    <div className="space-y-2">
+                      {q.options.map((opt, oi) => {
+                        const isCorrect = oi === q.correctIndex;
+                        const isPicked = oi === picked;
+                        let stateClasses = 'border-gray-200 bg-white hover:border-accent/60';
+                        if (hasAnswered) {
+                          if (isCorrect) stateClasses = 'border-emerald-400 bg-emerald-50 text-emerald-800';
+                          else if (isPicked) stateClasses = 'border-red-300 bg-red-50 text-red-700';
+                          else stateClasses = 'border-gray-200 bg-white opacity-60';
+                        }
+                        return (
+                          <button
+                            key={oi}
+                            disabled={hasAnswered}
+                            onClick={() => handleSelectDrillAnswer(qi, oi, q.correctIndex, isLastQuestion)}
+                            className={`w-full rounded-lg border px-4 py-2.5 text-left text-sm transition-colors disabled:cursor-default ${stateClasses}`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {hasAnswered && <p className="text-xs leading-relaxed text-gray-500">{q.explanation}</p>}
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      {hasAnswered && !isLastQuestion && (
+                        <button
+                          onClick={handleNextDrillQuestion}
+                          className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+                        >
+                          Next Question
+                        </button>
+                      )}
+                      {hasAnswered && isLastQuestion && (
+                        <button
+                          onClick={handleBackToWeakSpotList}
+                          className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+                        >
+                          Practice Complete
+                        </button>
+                      )}
+                      <button
+                        onClick={handleBackToWeakSpotList}
+                        className="rounded-xl px-3 py-3 text-left text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+                      >
+                        ← Back
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
