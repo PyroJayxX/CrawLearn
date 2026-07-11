@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { LearningState, ModuleConfig, Question } from './types';
 import ModuleNavigator from './components/layout/ModuleNavigator';
@@ -168,7 +169,7 @@ function buildDefaultState(): LearningState {
   };
 }
 
-export default function App() {
+function AppShell() {
   const [session,         setSession]         = useState<Session | null>(null);
   const [sessionLoading,  setSessionLoading]  = useState(true);
   const [minLoadDone,     setMinLoadDone]     = useState(false);
@@ -587,5 +588,31 @@ export default function App() {
         </main>
       </div>
     </div>
+  );
+}
+
+// ── Password recovery page ──────────────────────────────────────────────────
+// Supabase sends users here after they click the reset-password email link.
+// AuthScreen detects the recovery session itself and jumps straight to its
+// "set new password" screen — this wrapper just handles the redirect home
+// afterwards, via the router instead of a hard page reload.
+function UpdatePasswordPage() {
+  const navigate = useNavigate();
+  return (
+    <AuthScreen
+      mode="login"
+      onSuccess={() => navigate('/', { replace: true })}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/update-password" element={<UpdatePasswordPage />} />
+        <Route path="*" element={<AppShell />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
